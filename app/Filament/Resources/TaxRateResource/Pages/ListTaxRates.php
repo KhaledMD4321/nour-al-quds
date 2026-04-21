@@ -1,0 +1,21 @@
+<?php
+
+namespace App\Filament\Resources\TaxRateResource\Pages;
+
+use App\Filament\Resources\TaxRateResource;
+use Filament\Actions\CreateAction;
+use Filament\Resources\Pages\ListRecords;
+
+class ListTaxRates extends ListRecords
+{
+    protected static string $resource = TaxRateResource::class;
+
+    protected static ?string $title = 'الضرائب';
+
+    protected function getHeaderActions(): array
+    {
+        return [
+            CreateAction::make()->label('إضافة ضريبة'),
+        ];
+    }
+}

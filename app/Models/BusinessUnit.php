@@ -3,35 +3,24 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Foundation\Auth\User as Authenticatable;
-use Illuminate\Notifications\Notifiable;
-use Spatie\Permission\Traits\HasRoles;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
-class User extends Authenticatable
+class BusinessUnit extends Model
 {
-    use HasFactory, Notifiable, HasRoles;
+    const TYPE_SHOWROOM     = 'showroom';
+    const TYPE_DISTRIBUTION = 'distribution';
 
     protected $fillable = [
         'name',
-        'email',
-        'password',
-        'business_unit_id',
+        'type',
         'is_active',
-    ];
-
-    protected $hidden = [
-        'password',
-        'remember_token',
     ];
 
     protected function casts(): array
     {
         return [
-            'email_verified_at' => 'datetime',
-            'password'          => 'hashed',
-            'is_active'         => 'boolean',
+            'is_active' => 'boolean',
         ];
     }
 
@@ -44,15 +33,20 @@ class User extends Authenticatable
 
     // ─── Relations ─────────────────────────────────────────────────────────────
 
-    public function businessUnit(): BelongsTo
+    public function users(): HasMany
     {
-        return $this->belongsTo(BusinessUnit::class);
+        return $this->hasMany(User::class);
     }
 
     // ─── Helpers ───────────────────────────────────────────────────────────────
 
-    public function isSuperAdmin(): bool
+    public function isShowroom(): bool
     {
-        return $this->hasRole('super_admin');
+        return $this->type === self::TYPE_SHOWROOM;
+    }
+
+    public function isDistribution(): bool
+    {
+        return $this->type === self::TYPE_DISTRIBUTION;
     }
 }

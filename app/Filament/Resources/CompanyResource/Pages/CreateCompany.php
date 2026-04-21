@@ -1,0 +1,23 @@
+<?php
+
+namespace App\Filament\Resources\CompanyResource\Pages;
+
+use App\Filament\Resources\CompanyResource;
+use Filament\Resources\Pages\CreateRecord;
+
+class CreateCompany extends CreateRecord
+{
+    protected static string $resource = CompanyResource::class;
+
+    protected static ?string $title = 'إضافة مصنّع';
+
+    protected function getCreatedNotificationTitle(): ?string
+    {
+        return 'تم إضافة المصنّع بنجاح';
+    }
+
+    protected function getRedirectUrl(): string
+    {
+        return $this->getResource()::getUrl('index');
+    }
+}
