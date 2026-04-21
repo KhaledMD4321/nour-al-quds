@@ -120,10 +120,11 @@ class CategoryResource extends Resource
                     ->getStateUsing(fn (Category $record): string => $record->full_path)
                     ->toggleable(isToggledHiddenByDefault: true),
 
-                TextColumn::make('products_count')
-                    ->label('عدد الأصناف')
-                    ->counts('products')
-                    ->sortable(),
+                // TODO: restore when Product model exists (Phase 3.3)
+                // TextColumn::make('products_count')
+                //     ->label('عدد الأصناف')
+                //     ->counts('products')
+                //     ->sortable(),
 
                 TextColumn::make('children_count')
                     ->label('تصنيفات فرعية')
