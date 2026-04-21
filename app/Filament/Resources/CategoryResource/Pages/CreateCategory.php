@@ -1,0 +1,23 @@
+<?php
+
+namespace App\Filament\Resources\CategoryResource\Pages;
+
+use App\Filament\Resources\CategoryResource;
+use Filament\Resources\Pages\CreateRecord;
+
+class CreateCategory extends CreateRecord
+{
+    protected static string $resource = CategoryResource::class;
+
+    protected static ?string $title = 'إضافة تصنيف';
+
+    protected function getCreatedNotificationTitle(): ?string
+    {
+        return 'تم إضافة التصنيف بنجاح';
+    }
+
+    protected function getRedirectUrl(): string
+    {
+        return $this->getResource()::getUrl('index');
+    }
+}
