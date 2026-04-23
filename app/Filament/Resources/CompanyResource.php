@@ -9,6 +9,8 @@ use Filament\Actions\EditAction;
 use Filament\Actions\ForceDeleteAction;
 use Filament\Actions\RestoreAction;
 use Filament\Actions\ViewAction;
+use App\Models\LookupType;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Resources\Resource;
@@ -66,10 +68,13 @@ class CompanyResource extends Resource
                         ->maxLength(255)
                         ->placeholder('مثال: إيديال ستاندرد'),
 
-                    TextInput::make('country')
+                    Select::make('country')
                         ->label('بلد المنشأ')
-                        ->maxLength(100)
-                        ->placeholder('مثال: مصر'),
+                        ->options(fn (): array => LookupType::getOptions('country'))
+                        ->default(fn (): ?string => LookupType::getDefault('country'))
+                        ->searchable()
+                        ->preload()
+                        ->placeholder('اختر البلد'),
 
                     TextInput::make('phone')
                         ->label('التليفون')
@@ -109,6 +114,7 @@ class CompanyResource extends Resource
 
                 TextColumn::make('country')
                     ->label('البلد')
+                    ->formatStateUsing(fn (?string $state): string => LookupType::getLabel('country', $state) ?? ($state ?? '—'))
                     ->sortable()
                     ->placeholder('—'),
 

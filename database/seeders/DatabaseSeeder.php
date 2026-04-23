@@ -13,6 +13,7 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         $this->call([
+            LookupSeeder::class,            // must be first — other seeders may depend on it
             CompanySettingsSeeder::class,
             BusinessUnitSeeder::class,
             ChartOfAccountsSeeder::class,
