@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Company extends Model
@@ -19,11 +20,10 @@ class Company extends Model
 
     // ─── Relations ─────────────────────────────────────────────────────────────
 
-    // TODO: restore when Product model exists (Phase 3.3)
-    // public function products(): HasMany
-    // {
-    //     return $this->hasMany(Product::class);
-    // }
+    public function products(): HasMany
+    {
+        return $this->hasMany(Product::class);
+    }
 
     // TODO: restore when PriceListVersion model exists (Phase 3.4)
     // public function priceListVersions(): HasMany

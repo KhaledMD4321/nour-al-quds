@@ -31,10 +31,9 @@ class Category extends Model
             if ($category->children()->count() > 0) {
                 throw new \Exception('مش ممكن تحذف التصنيف ده لأن فيه تصنيفات فرعية');
             }
-            // TODO: restore when Product model exists (Phase 3.3)
-            // if ($category->products()->count() > 0) {
-            //     throw new \Exception('مش ممكن تحذف التصنيف ده لأن فيه أصناف مرتبطة بيه');
-            // }
+            if ($category->products()->count() > 0) {
+                throw new \Exception('مش ممكن تحذف التصنيف ده لأن فيه أصناف مرتبطة بيه');
+            }
         });
     }
 
@@ -57,11 +56,10 @@ class Category extends Model
         return $this->children()->with('childrenRecursive');
     }
 
-    // TODO: restore when Product model exists (Phase 3.3)
-    // public function products(): HasMany
-    // {
-    //     return $this->hasMany(Product::class);
-    // }
+    public function products(): HasMany
+    {
+        return $this->hasMany(Product::class);
+    }
 
     // ─── Scopes ────────────────────────────────────────────────────────────────
 

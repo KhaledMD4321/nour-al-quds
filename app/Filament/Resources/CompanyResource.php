@@ -126,11 +126,10 @@ class CompanyResource extends Resource
                     ->label('المندوب')
                     ->placeholder('—'),
 
-                // TODO: restore when Product model exists (Phase 3.3)
-                // TextColumn::make('products_count')
-                //     ->label('عدد الأصناف')
-                //     ->counts('products')
-                //     ->sortable(),
+                TextColumn::make('products_count')
+                    ->label('عدد الأصناف')
+                    ->counts('products')
+                    ->sortable(),
 
                 TextColumn::make('created_at')
                     ->label('تاريخ الإضافة')

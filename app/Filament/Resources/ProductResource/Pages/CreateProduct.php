@@ -1,0 +1,23 @@
+<?php
+
+namespace App\Filament\Resources\ProductResource\Pages;
+
+use App\Filament\Resources\ProductResource;
+use Filament\Resources\Pages\CreateRecord;
+
+class CreateProduct extends CreateRecord
+{
+    protected static string $resource = ProductResource::class;
+
+    protected static ?string $title = 'إضافة صنف جديد';
+
+    protected function getCreatedNotificationTitle(): ?string
+    {
+        return 'تم إضافة الصنف بنجاح';
+    }
+
+    protected function getRedirectUrl(): string
+    {
+        return $this->getResource()::getUrl('index');
+    }
+}
