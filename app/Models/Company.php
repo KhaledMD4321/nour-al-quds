@@ -25,9 +25,19 @@ class Company extends Model
         return $this->hasMany(Product::class);
     }
 
-    // TODO: restore when PriceListVersion model exists (Phase 3.4)
-    // public function priceListVersions(): HasMany
-    // {
-    //     return $this->hasMany(PriceListVersion::class);
-    // }
+    public function priceListVersions(): HasMany
+    {
+        return $this->hasMany(PriceListVersion::class);
+    }
+
+    /**
+     * الإصدار النشط حالياً (آخر تاريخ سريان).
+     */
+    public function activePriceList(): ?PriceListVersion
+    {
+        return $this->priceListVersions()
+                    ->where('status', 'active')
+                    ->latest('effective_date')
+                    ->first();
+    }
 }

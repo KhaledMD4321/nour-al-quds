@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Product extends Model
@@ -62,6 +63,11 @@ class Product extends Model
         return $this->belongsTo(Category::class);
     }
 
+    public function priceListItems(): HasMany
+    {
+        return $this->hasMany(PriceListItem::class);
+    }
+
     // ─── Scopes ────────────────────────────────────────────────────────────────
 
     /**
@@ -100,5 +106,27 @@ class Product extends Model
     {
         return LookupType::getLabel('unit_of_measure', $this->unit_of_measure)
             ?? $this->unit_of_measure;
+    }
+
+    /**
+     * سعر الصنف من اللستة النشطة للمصنّع بتاعه.
+     * بترجع null لو مفيش مصنّع أو مفيش لستة نشطة.
+     */
+    public function getCurrentPrice(): ?float
+    {
+        if (!$this->company_id) {
+            return null;
+        }
+
+        $activeVersion = PriceListVersion::where('company_id', $this->company_id)
+                                         ->where('status', 'active')
+                                         ->latest('effective_date')
+                                         ->first();
+
+        if (!$activeVersion) {
+            return null;
+        }
+
+        return $activeVersion->getPriceFor($this->id);
     }
 }
