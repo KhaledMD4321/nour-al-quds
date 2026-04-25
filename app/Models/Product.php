@@ -68,6 +68,27 @@ class Product extends Model
         return $this->hasMany(PriceListItem::class);
     }
 
+    public function stockItems(): HasMany
+    {
+        return $this->hasMany(Stock::class);
+    }
+
+    // ─── Stock Helpers ─────────────────────────────────────────────────────────
+
+    /** إجمالي الكمية في كل المخازن */
+    public function getTotalStockAttribute(): float
+    {
+        return (float) $this->stockItems()->sum('quantity');
+    }
+
+    /** كمية الصنف في مخزن معين */
+    public function getStockIn(int $warehouseId): float
+    {
+        return (float) ($this->stockItems()
+            ->where('warehouse_id', $warehouseId)
+            ->value('quantity') ?? 0);
+    }
+
     // ─── Scopes ────────────────────────────────────────────────────────────────
 
     /**
