@@ -5,9 +5,8 @@ namespace App\Modules\Catalog;
 use App\Models\PriceListItem;
 use App\Models\PriceListVersion;
 use App\Models\Product;
-use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
-use Maatwebsite\Excel\Facades\Excel;
+use PhpOffice\PhpSpreadsheet\IOFactory;
 
 class PriceListService
 {
@@ -72,9 +71,9 @@ class PriceListService
      *   summary: array{total_rows:int,new_products:int,existing:int,invalid:int}
      * }
      */
-    public function previewImport(UploadedFile $file, int $companyId): array
+    public function previewImport(string $filePath, int $companyId): array
     {
-        $rows = $this->readExcelFile($file);
+        $rows = $this->readExcelFile($filePath);
 
         $result = [
             'new_products'      => [],
@@ -155,9 +154,9 @@ class PriceListService
      *
      * @return array{version: PriceListVersion, new_products: int, updated: int, skipped: int, message: string}
      */
-    public function confirmImport(UploadedFile $file, int $companyId, ?int $createdBy = null): array
+    public function confirmImport(string $filePath, int $companyId, ?int $createdBy = null): array
     {
-        $preview = $this->previewImport($file, $companyId);
+        $preview = $this->previewImport($filePath, $companyId);
 
         return DB::transaction(function () use ($preview, $companyId, $createdBy) {
             // 1. أرشفة الإصدارات النشطة
@@ -282,21 +281,25 @@ class PriceListService
     // ─── Private helpers ───────────────────────────────────────────────────────
 
     /**
-     * قراءة ملف Excel وإرجاع الصفوف (بدون أول صف headers).
+     * قراءة ملف Excel/CSV وإرجاع الصفوف (بدون أول صف headers).
+     * يستخدم PhpSpreadsheet مباشرةً — لا يحتاج Maatwebsite import class.
      */
-    private function readExcelFile(UploadedFile $file): array
+    private function readExcelFile(string $filePath): array
     {
-        $allRows = Excel::toArray([], $file)[0] ?? [];
+        $spreadsheet = IOFactory::load($filePath);
+        $allRows     = $spreadsheet->getActiveSheet()->toArray(
+            nullValue: null,
+            calculateFormulas: false,
+            formatData: false,
+            returnCellRef: false,
+        );
 
         return collect($allRows)
-            ->slice(1)                         // تجاهل أول صف
-            ->filter(function ($row) {
-                // تجاهل الصفوف الفارغة تماماً
-                return !empty(array_filter(
-                    $row,
-                    fn ($cell) => $cell !== null && $cell !== '',
-                ));
-            })
+            ->slice(1)   // تجاهل أول صف (headers)
+            ->filter(fn ($row) => !empty(array_filter(
+                $row,
+                fn ($cell) => $cell !== null && $cell !== '',
+            )))
             ->values()
             ->toArray();
     }
