@@ -30,6 +30,11 @@ class Company extends Model
         return $this->hasMany(PriceListVersion::class);
     }
 
+    public function suppliers(): HasMany
+    {
+        return $this->hasMany(Supplier::class);
+    }
+
     /**
      * الإصدار النشط حالياً (آخر تاريخ سريان).
      */
