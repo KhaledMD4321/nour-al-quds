@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use App\Modules\Catalog\PriceListService;
 use App\Modules\DataManagement\OpeningBalanceService;
+use App\Modules\Purchases\PurchaseService;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -15,6 +16,7 @@ class AppServiceProvider extends ServiceProvider
     {
         $this->app->singleton(PriceListService::class);
         $this->app->singleton(OpeningBalanceService::class);
+        $this->app->singleton(PurchaseService::class);
     }
 
     /**
