@@ -6,6 +6,7 @@ use App\Modules\Catalog\PriceListService;
 use App\Modules\DataManagement\OpeningBalanceService;
 use App\Modules\Inventory\InventoryService;
 use App\Modules\Purchases\PurchaseService;
+use App\Modules\Sales\InvoiceService;
 use App\Modules\Sales\QuickSaleService;
 use Illuminate\Support\ServiceProvider;
 
@@ -21,6 +22,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->singleton(PurchaseService::class);
         $this->app->singleton(InventoryService::class);
         $this->app->singleton(QuickSaleService::class);
+        $this->app->singleton(InvoiceService::class);
     }
 
     /**

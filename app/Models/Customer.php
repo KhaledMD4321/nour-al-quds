@@ -68,8 +68,12 @@ class Customer extends Model
         return $this->belongsTo(BusinessUnit::class);
     }
 
-    // TODO: uncomment when Invoice/Receipt/Cheque models exist
-    // public function invoices(): HasMany  { return $this->hasMany(Invoice::class); }
+    public function invoices(): HasMany
+    {
+        return $this->hasMany(Invoice::class);
+    }
+
+    // TODO: uncomment when Receipt/Cheque models exist
     // public function receipts(): HasMany  { return $this->hasMany(Receipt::class); }
     // public function cheques(): HasMany   { return $this->hasMany(Cheque::class); }
 

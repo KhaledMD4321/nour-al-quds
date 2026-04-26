@@ -1,0 +1,153 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
+
+class Invoice extends Model
+{
+    use SoftDeletes;
+
+    protected $fillable = [
+        'reference_number',
+        'business_unit_id',
+        'warehouse_id',
+        'customer_id',
+        'created_by',
+        'status',
+        'payment_type',
+        'subtotal',
+        'discount_amount',
+        'tax_amount',
+        'total_amount',
+        'paid_amount',
+        'original_invoice_id',
+        'invoice_date',
+        'due_date',
+        'notes',
+    ];
+
+    protected $casts = [
+        'subtotal'        => 'decimal:2',
+        'discount_amount' => 'decimal:2',
+        'tax_amount'      => 'decimal:2',
+        'total_amount'    => 'decimal:2',
+        'paid_amount'     => 'decimal:2',
+        'invoice_date'    => 'date',
+        'due_date'        => 'date',
+    ];
+
+    // ── Auto reference generation ────────────────────────────────────────────────
+
+    protected static function booted(): void
+    {
+        static::creating(function (Invoice $invoice) {
+            if (empty($invoice->reference_number)) {
+                $invoice->reference_number = static::generateReference();
+            }
+        });
+    }
+
+    public static function generateReference(): string
+    {
+        $last = static::withTrashed()
+            ->whereRaw("reference_number ~ '^INV-[0-9]+$'")
+            ->orderByRaw("CAST(SUBSTRING(reference_number FROM 5) AS INTEGER) DESC")
+            ->value('reference_number');
+
+        $num = $last ? ((int) substr($last, 4)) + 1 : 1;
+
+        return 'INV-' . str_pad($num, 5, '0', STR_PAD_LEFT);
+    }
+
+    // ── Status helpers ───────────────────────────────────────────────────────────
+
+    public function isDraft(): bool
+    {
+        return $this->status === 'draft';
+    }
+
+    public function isCancelled(): bool
+    {
+        return $this->status === 'cancelled';
+    }
+
+    public function isConfirmedOrBeyond(): bool
+    {
+        return in_array($this->status, ['confirmed', 'delivered', 'partially_paid', 'paid']);
+    }
+
+    public static function statusLabel(string $status): string
+    {
+        return match ($status) {
+            'draft'          => 'مسودة',
+            'confirmed'      => 'مؤكدة',
+            'delivered'      => 'مسلّمة',
+            'partially_paid' => 'مدفوعة جزئياً',
+            'paid'           => 'مدفوعة',
+            'cancelled'      => 'ملغاة',
+            default          => $status,
+        };
+    }
+
+    public static function statusColor(string $status): string
+    {
+        return match ($status) {
+            'draft'          => 'gray',
+            'confirmed'      => 'info',
+            'delivered'      => 'primary',
+            'partially_paid' => 'warning',
+            'paid'           => 'success',
+            'cancelled'      => 'danger',
+            default          => 'gray',
+        };
+    }
+
+    // ── Accessors ────────────────────────────────────────────────────────────────
+
+    /** المبلغ المتبقي = الإجمالي - المدفوع */
+    public function getRemainingAmountAttribute(): float
+    {
+        return round((float) $this->total_amount - (float) $this->paid_amount, 2);
+    }
+
+    public function getStatusLabelAttribute(): string
+    {
+        return static::statusLabel($this->status);
+    }
+
+    // ── Relations ────────────────────────────────────────────────────────────────
+
+    public function businessUnit(): BelongsTo
+    {
+        return $this->belongsTo(BusinessUnit::class);
+    }
+
+    public function warehouse(): BelongsTo
+    {
+        return $this->belongsTo(Warehouse::class);
+    }
+
+    public function customer(): BelongsTo
+    {
+        return $this->belongsTo(Customer::class);
+    }
+
+    public function createdBy(): BelongsTo
+    {
+        return $this->belongsTo(\App\Models\User::class, 'created_by');
+    }
+
+    public function originalInvoice(): BelongsTo
+    {
+        return $this->belongsTo(Invoice::class, 'original_invoice_id');
+    }
+
+    public function items(): HasMany
+    {
+        return $this->hasMany(InvoiceItem::class);
+    }
+}
