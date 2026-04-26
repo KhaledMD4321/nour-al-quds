@@ -61,7 +61,7 @@
         </div>
 
         {{-- ══ البحث ══ --}}
-        <div class="bg-white rounded-xl shadow-sm border p-4 mb-4 relative">
+        <div class="bg-white rounded-xl shadow-sm border p-4 mb-4">
             <label class="block text-sm font-medium text-gray-700 mb-2">🔍 ابحث عن الصنف</label>
             <input wire:model.live="searchQuery"
                 type="text"
@@ -71,25 +71,23 @@
 
             {{-- نتائج البحث --}}
             @if(count($searchResults) > 0)
-                <div class="absolute z-50 bg-white border rounded-lg shadow-xl mt-1 max-h-64 overflow-y-auto"
-                     style="right: 1rem; left: 1rem; top: 100%;">
+                <div class="mt-2 border border-gray-200 rounded-lg shadow-lg bg-white overflow-hidden">
                     @foreach($searchResults as $result)
                         <button wire:click="addProduct({{ $result['id'] }})"
-                            class="w-full text-right px-4 py-3 hover:bg-blue-50 border-b last:border-0 transition">
-                            <div class="flex justify-between items-center">
-                                <div>
-                                    <span class="font-medium text-gray-800 text-sm">{{ $result['name'] }}</span>
-                                    @if($result['code'])
-                                        <span class="text-xs text-gray-400 mr-2">{{ $result['code'] }}</span>
-                                    @endif
+                            type="button"
+                            class="w-full text-right px-4 py-3 hover:bg-blue-50 border-b last:border-0 transition flex justify-between items-center">
+                            <div>
+                                <span class="font-medium text-gray-800 text-sm">{{ $result['name'] }}</span>
+                                @if($result['code'])
+                                    <span class="text-xs text-gray-400 mr-2">{{ $result['code'] }}</span>
+                                @endif
+                            </div>
+                            <div class="text-left flex-shrink-0 mr-4">
+                                <div class="text-blue-600 font-bold text-sm">
+                                    {{ number_format($result['price'], 2) }} ج.م
                                 </div>
-                                <div class="text-left mr-4 shrink-0">
-                                    <div class="text-blue-600 font-bold text-sm">
-                                        {{ number_format($result['price'], 2) }} ج.م
-                                    </div>
-                                    <div class="text-xs {{ $result['available'] > 0 ? 'text-green-600' : 'text-red-500' }}">
-                                        متاح: {{ number_format($result['available'], 1) }}
-                                    </div>
+                                <div class="text-xs {{ $result['available'] > 0 ? 'text-green-600' : 'text-red-500' }}">
+                                    متاح: {{ number_format($result['available'], 1) }}
                                 </div>
                             </div>
                         </button>

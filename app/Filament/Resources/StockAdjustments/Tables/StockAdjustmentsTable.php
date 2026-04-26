@@ -4,9 +4,9 @@ namespace App\Filament\Resources\StockAdjustments\Tables;
 
 use App\Models\StockAdjustment;
 use App\Modules\Inventory\InventoryService;
+use Filament\Actions\Action;
 use Filament\Actions\DeleteAction;
-use Filament\Tables\Actions\Action;
-use Filament\Tables\Actions\EditAction;
+use Filament\Actions\EditAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;

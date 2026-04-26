@@ -3,6 +3,7 @@
 namespace App\Livewire;
 
 use App\Models\BusinessUnit;
+use App\Models\PriceListItem;
 use App\Models\Product;
 use App\Models\QuickSale;
 use App\Models\Stock;
@@ -80,14 +81,16 @@ class QuickSaleForm extends Component
             return;
         }
 
+        $warehouseId = $this->warehouseId ?: (Warehouse::first()?->id ?? 0);
+
         $this->searchResults = Product::where('name', 'ilike', '%' . $this->searchQuery . '%')
             ->where('is_active', true)
             ->orderBy('name')
             ->limit(8)
-            ->get(['id', 'name', 'code'])
-            ->map(function (Product $product) {
-                $price     = $product->getCurrentPrice() ?? 0;
-                $stock     = Stock::where('warehouse_id', $this->warehouseId)
+            ->get(['id', 'name', 'code', 'company_id'])
+            ->map(function (Product $product) use ($warehouseId) {
+                $price = $this->resolvePrice($product, $warehouseId);
+                $stock = Stock::where('warehouse_id', $warehouseId)
                     ->where('product_id', $product->id)
                     ->first();
                 $available = $stock ? (float) $stock->quantity : 0;
@@ -220,6 +223,42 @@ class QuickSaleForm extends Component
     }
 
     // ── Helpers ─────────────────────────────────────────────────────────────
+
+    /**
+     * ترتيب أولوية السعر:
+     * 1. قائمة أسعار نشطة للشركة المصنّعة
+     * 2. أي قائمة أسعار (بغض النظر عن الحالة) — آخر إصدار
+     * 3. متوسط تكلفة من المخزن (avg_cost) — كمقترح للكاشير
+     * 4. صفر
+     */
+    private function resolvePrice(Product $product, int $warehouseId): float
+    {
+        // 1. السعر من القائمة النشطة
+        $price = $product->getCurrentPrice();
+        if ($price !== null) {
+            return $price;
+        }
+
+        // 2. آخر سعر معروف من أي إصدار
+        $anyPrice = PriceListItem::where('product_id', $product->id)
+            ->whereHas('version')
+            ->orderByDesc('id')
+            ->value('price');
+        if ($anyPrice !== null) {
+            return (float) $anyPrice;
+        }
+
+        // 3. متوسط التكلفة من المخزن كمقترح
+        $avgCost = Stock::where('warehouse_id', $warehouseId)
+            ->where('product_id', $product->id)
+            ->value('avg_cost');
+        if ($avgCost !== null) {
+            return (float) $avgCost;
+        }
+
+        return 0;
+    }
+
     private function recalcItem(int $index): void
     {
         $item = &$this->items[$index];

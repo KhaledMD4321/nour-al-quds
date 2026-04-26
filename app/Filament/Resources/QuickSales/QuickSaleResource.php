@@ -6,9 +6,10 @@ use App\Filament\Resources\QuickSales\Pages\ListQuickSales;
 use App\Filament\Resources\QuickSales\Pages\ViewQuickSale;
 use App\Filament\Resources\QuickSales\RelationManagers\ItemsRelationManager;
 use App\Models\QuickSale;
+use Filament\Actions\Action;
+use Filament\Actions\ViewAction;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
-use Filament\Tables;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\Filter;
 use Filament\Tables\Table;
@@ -80,14 +81,14 @@ class QuickSaleResource extends Resource
                     ->query(fn (Builder $query) => $query->whereDate('created_at', today())),
             ])
             ->actions([
-                Tables\Actions\Action::make('receipt')
+                Action::make('receipt')
                     ->label('إيصال PDF')
                     ->icon('heroicon-o-printer')
                     ->color('gray')
                     ->url(fn (QuickSale $record) => route('quick-sale.receipt', $record->id))
                     ->openUrlInNewTab(),
 
-                Tables\Actions\ViewAction::make()->label('تفاصيل'),
+                ViewAction::make()->label('تفاصيل'),
             ])
             ->defaultSort('id', 'desc')
             ->striped();

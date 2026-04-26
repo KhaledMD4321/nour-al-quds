@@ -5,11 +5,13 @@ namespace App\Filament\Resources\StockTransfers\RelationManagers;
 use App\Models\Product;
 use App\Models\Stock;
 use App\Models\StockTransfer;
+use Filament\Actions\CreateAction;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\EditAction;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Schemas\Schema;
-use Filament\Tables;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 
@@ -83,11 +85,11 @@ class ItemsRelationManager extends RelationManager
                     ->money('EGP'),
             ])
             ->headerActions($isDraft ? [
-                Tables\Actions\CreateAction::make()->label('إضافة منتج'),
+                CreateAction::make()->label('إضافة منتج'),
             ] : [])
             ->recordActions($isDraft ? [
-                Tables\Actions\EditAction::make()->label('تعديل'),
-                Tables\Actions\DeleteAction::make()->label('حذف'),
+                EditAction::make()->label('تعديل'),
+                DeleteAction::make()->label('حذف'),
             ] : [])
             ->emptyStateHeading('لا توجد بنود بعد')
             ->emptyStateDescription('أضف المنتجات المراد تحويلها');

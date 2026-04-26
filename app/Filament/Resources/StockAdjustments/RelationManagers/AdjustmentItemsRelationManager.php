@@ -6,11 +6,13 @@ use App\Models\Lookup;
 use App\Models\Product;
 use App\Models\StockAdjustment;
 use App\Modules\Inventory\InventoryService;
+use Filament\Actions\CreateAction;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\EditAction;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Schemas\Schema;
-use Filament\Tables;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 
@@ -119,11 +121,11 @@ class AdjustmentItemsRelationManager extends RelationManager
                     ->limit(20),
             ])
             ->headerActions($isDraft ? [
-                Tables\Actions\CreateAction::make()->label('إضافة منتج'),
+                CreateAction::make()->label('إضافة منتج'),
             ] : [])
             ->recordActions($isDraft ? [
-                Tables\Actions\EditAction::make()->label('تعديل'),
-                Tables\Actions\DeleteAction::make()->label('حذف'),
+                EditAction::make()->label('تعديل'),
+                DeleteAction::make()->label('حذف'),
             ] : [])
             ->emptyStateHeading('لا توجد بنود بعد')
             ->emptyStateDescription('أضف المنتجات المراد تسويتها');
