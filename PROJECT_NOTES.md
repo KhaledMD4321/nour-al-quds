@@ -3,8 +3,8 @@
 > **Update this file after every work session with Claude Code.**
 
 ## Current Phase
-Phase 3 — Master Data ✅ (3.1 → 3.7 COMPLETE)
-Next: Phase 3.8 — Opening Balances ⏳
+Phase 3 — Master Data ✅ COMPLETE (3.1 → 3.8)
+Next: Phase 4 — Sales Invoices ⏳
 
 ## Tech Stack
 - Laravel 11 + Filament 5.5.2 + PostgreSQL
@@ -212,6 +212,34 @@ Prefixes used: `CAT-` categories · `PRD-` products · `CUS-` customers · `SUP-
   - `SuppliersTable` — `company.name` column · opening_balance red (danger) when > 0 · `TernaryFilter` for balance and active status
   - **canAccess:** `super_admin` + `showroom_manager` + `distribution_manager`
 
+#### 3.8 Opening Balances ✅
+- **Migration:** `opening_balances` — type enum (customer/supplier/stock/treasury), reference_id, product_id (stock only), debit/credit decimal(15,2), quantity decimal(15,3), unit_cost decimal(15,4), balance_date, created_by FK
+- **Migration:** `stock_movements` — warehouse_id, product_id, type string, quantity decimal(15,3), unit_cost decimal(15,4), **balance_after decimal(15,3) mandatory**, polymorphic reference (reference_type/reference_id), **NO softDeletes** — eternal audit log
+- **Model:** `OpeningBalance`
+  - `getReferenceNameAttribute()` — resolves Customer/Supplier/Warehouse name from reference_id
+  - `getProductNameAttribute()` — resolves Product name for stock type
+- **Model:** `StockMovement`
+  - No softDeletes
+  - `getTypeLabelAttribute()` — Arabic label for movement types (دخول/خروج/تحويل وارد/.../رصيد افتتاحي)
+  - Scopes: `forWarehouse`, `forProduct`, `ofType`
+- **OpeningBalanceService** (`app/Modules/DataManagement/OpeningBalanceService.php`)
+  - `setCustomerBalance(id, amount, date)` — updates `customers.opening_balance` + inserts OB row (idempotent: deletes old first)
+  - `setSupplierBalance(id, amount, date)` — updates `suppliers.opening_balance` + inserts OB row (idempotent)
+  - `setStockBalance(warehouseId, productId, qty, cost, date)` — updates `stock` table + creates `stock_movements` opening record + inserts OB row (idempotent — replaces existing)
+  - `importStockFromExcel(file, warehouseId, date)` — reads Excel (A=code/name, B=qty, C=cost), calls setStockBalance per row, returns `['added', 'skipped', 'errors']`
+- **AppServiceProvider:** `OpeningBalanceService` registered as singleton
+- **OpeningBalancesPage** (`app/Filament/Pages/OpeningBalancesPage.php`)
+  - Custom Filament page — **canAccess: super_admin only**
+  - Navigation: "الإعدادات" group, sort 8, slug `opening-balances`
+  - 3 tabs: أرصدة العملاء / أرصدة الموردين / أرصدة المخزون
+  - Each tab has: input form + save action + existing balances display table
+  - Stock tab has extra: Excel bulk import section (collapsed by default) + summary cards (count + total value)
+  - Shared `balance_date` field across all tabs
+
+  **Bugs fixed during implementation:**
+  - `$navigationGroup` must be `string|\UnitEnum|null` (not `?string`) — PHP type narrowing error
+  - `$view` must be **non-static** (`protected string`) in Filament 5 Pages — `Cannot redeclare non static ... as static` error
+
 ---
 
 ## Database Seeder Order (IMPORTANT)
@@ -234,7 +262,7 @@ CustomerSeeder
 SupplierSeeder
 ```
 
-## Current Database Tables (22 app + 5 Spatie)
+## Current Database Tables (24 app + 5 Spatie)
 
 | # | Table | Phase |
 |---|-------|-------|
@@ -253,7 +281,9 @@ SupplierSeeder
 | 13 | stock | 3.5 |
 | 14 | customers | 3.6 |
 | 15 | suppliers | 3.7 |
-| 16-20 | Spatie RBAC tables | 2.3 |
+| 16 | opening_balances | 3.8 |
+| 17 | stock_movements | 3.8 |
+| 18-22 | Spatie RBAC tables | 2.3 |
 
 ## Admin Panel Navigation Structure
 
@@ -276,7 +306,8 @@ SupplierSeeder
     ├── إعدادات الشركة (edit only)
     ├── الوحدات التشغيلية (CRUD)
     ├── المستخدمين (CRUD + role assignment)
-    └── الضرائب (CRUD)
+    ├── الضرائب (CRUD)
+    └── الأرصدة الافتتاحية (OpeningBalancesPage — super_admin only)
 ```
 
 ## Seed Data Summary
@@ -290,18 +321,21 @@ SupplierSeeder
 | Warehouses | 3 | — |
 | Customers | 7 | CUS-00001 → CUS-00007 |
 | Suppliers | 5 | SUP-00001 → SUP-00005 |
+| Opening balances | 0 | entered manually by admin |
 
 ## Known Issues
 
 - Chart of Accounts: Laravel BelongsTo warnings in logs (cosmetic, framework-level — no impact)
 - `make:filament-resource --generate` prompts interactively on this machine — **create all resource files manually** instead
 - PDF templates: deferred to Phase 4 (no invoice data yet)
-- PurchaseInvoice, Payment, Cheque models: referenced in `Supplier` relations but not yet created — causes no errors until those features are used
+- PurchaseInvoice, Payment, Cheque models: referenced in `Supplier` relations but not yet created — no errors until those modules are built
+- Treasury opening balances: deferred to Phase 5 when `treasuries` table is created
 
-## Next: Phase 3.8 — Opening Balances
+## Next: Phase 4 — Sales Invoices
 
-Complete the master data layer:
-- Customer opening balances already stored in `customers.opening_balance`
-- Supplier opening balances already stored in `suppliers.opening_balance`
-- May need a dedicated journal entry or ledger initialization step
-- Then: Phase 4 — Sales Invoices
+Build order:
+1. `invoices` + `invoice_items` tables
+2. `InvoiceService` — create, confirm, cancel (with stock deduction)
+3. Invoice Filament resource with live item builder
+4. PDF print (A4 Arabic RTL)
+5. Quick Sale (receipt-only, no formal invoice)
