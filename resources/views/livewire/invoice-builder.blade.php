@@ -431,37 +431,144 @@
 
 {{-- ══ Keyboard Shortcuts ══ --}}
 <script>
-(function () {
-    // Space أو Enter على بطاقة صنف = إضافة
-    document.addEventListener('keydown', function (e) {
-        if ((e.code === 'Space' || e.code === 'Enter') && e.target.dataset.productId) {
-            e.preventDefault();
-            const id  = parseInt(e.target.dataset.productId);
-            const cmp = window.Livewire.find(
-                document.querySelector('[wire\\:id]').getAttribute('wire:id')
-            );
-            if (cmp) cmp.call('addProduct', id);
-        }
-    });
+document.addEventListener('DOMContentLoaded', function () {
 
-    // F2 = focus البحث
+    // ══════════════════════════════════════════════════
+    // 1. قائمة الأصناف — التنقل بالأسهم + Space/Enter
+    // ══════════════════════════════════════════════════
+
     document.addEventListener('keydown', function (e) {
+
+        // F2 = focus على خانة البحث
         if (e.code === 'F2') {
             e.preventDefault();
-            const s = document.getElementById('product-search');
-            if (s) s.focus();
+            const search = document.getElementById('product-search');
+            if (search) search.focus();
+            return;
+        }
+
+        // Escape = مسح البحث والرجوع له
+        if (e.code === 'Escape') {
+            const search = document.getElementById('product-search');
+            if (search) {
+                search.value = '';
+                search.dispatchEvent(new Event('input'));
+                search.focus();
+            }
+            return;
+        }
+
+        const focused     = document.activeElement;
+        const productList = document.getElementById('product-list');
+
+        // ── التنقل داخل قائمة الأصناف ────────────────
+        if (productList) {
+            const rows       = Array.from(productList.querySelectorAll('[data-product-id]'));
+            const currentIdx = rows.indexOf(focused);
+
+            if (e.code === 'ArrowDown' && currentIdx >= 0) {
+                e.preventDefault();
+                const next = rows[currentIdx + 1];
+                if (next) next.focus();
+                return;
+            }
+
+            if (e.code === 'ArrowUp' && currentIdx >= 0) {
+                e.preventDefault();
+                if (currentIdx === 0) {
+                    document.getElementById('product-search')?.focus();
+                } else {
+                    rows[currentIdx - 1].focus();
+                }
+                return;
+            }
+
+            // Space أو Enter على صنف = إضافة / زيادة كمية
+            if ((e.code === 'Space' || e.code === 'Enter') && currentIdx >= 0) {
+                e.preventDefault();
+                const id = parseInt(focused.dataset.productId);
+                if (id) getLivewire()?.call('addProduct', id);
+                return;
+            }
+
+            // من خانة البحث: ArrowDown = أول صنف في القائمة
+            if (e.code === 'ArrowDown' &&
+                focused === document.getElementById('product-search')) {
+                e.preventDefault();
+                const firstRow = productList.querySelector('[data-product-id]');
+                if (firstRow) firstRow.focus();
+                return;
+            }
+        }
+
+        // ── التنقل في جدول الفاتورة بـ ↑ ↓ ─────────────
+        if ((e.code === 'ArrowUp' || e.code === 'ArrowDown') &&
+            focused.closest('table') &&
+            focused.tagName === 'INPUT') {
+
+            e.preventDefault();
+            const table      = focused.closest('table');
+            const allInputs  = Array.from(table.querySelectorAll('input[type="number"]'));
+            const idx        = allInputs.indexOf(focused);
+            const colsPerRow = 5; // list_price + d1 + d2 + d3 + quantity
+
+            if (e.code === 'ArrowDown') {
+                const next = allInputs[idx + colsPerRow];
+                if (next) { next.focus(); next.select(); }
+            } else {
+                const prev = allInputs[idx - colsPerRow];
+                if (prev) { prev.focus(); prev.select(); }
+            }
+            return;
+        }
+
+        // ── Enter في جدول = انتقل للخلية التالية ────────
+        if (e.code === 'Enter' &&
+            focused.closest('table') &&
+            focused.tagName === 'INPUT') {
+            e.preventDefault();
+            const table     = focused.closest('table');
+            const allInputs = Array.from(table.querySelectorAll('input[type="number"]'));
+            const idx       = allInputs.indexOf(focused);
+            const next      = allInputs[idx + 1];
+            if (next) { next.focus(); next.select(); }
+            return;
         }
     });
 
-    // Escape في البحث = مسح
-    document.addEventListener('keydown', function (e) {
-        if (e.code === 'Escape') {
-            const s = document.getElementById('product-search');
-            if (s && document.activeElement === s) {
-                s.value = '';
-                s.dispatchEvent(new Event('input'));
-            }
+    // ── Select all عند الدخول لأي خانة رقمية في الجدول ──
+    document.addEventListener('focusin', function (e) {
+        if (e.target.tagName === 'INPUT' &&
+            e.target.type === 'number' &&
+            e.target.closest('table')) {
+            e.target.select();
         }
     });
-}());
+
+    // ══════════════════════════════════════════════════
+    // 2. Helper: الوصول لـ Livewire component
+    // ══════════════════════════════════════════════════
+
+    function getLivewire() {
+        const el = document.querySelector('[wire\\:id]');
+        if (!el) return null;
+        return window.Livewire?.find(el.getAttribute('wire:id')) ?? null;
+    }
+
+    // ══════════════════════════════════════════════════
+    // 3. بعد كل Livewire update — أعد تفعيل tabIndex
+    //    على صفوف قائمة الأصناف
+    // ══════════════════════════════════════════════════
+
+    function refreshTabIndices() {
+        document.querySelectorAll('[data-product-id]').forEach(function (row, i) {
+            row.setAttribute('tabindex', i + 1);
+        });
+    }
+
+    document.addEventListener('livewire:navigated', refreshTabIndices);
+    document.addEventListener('livewire:update',    refreshTabIndices);
+
+    refreshTabIndices();
+});
 </script>
