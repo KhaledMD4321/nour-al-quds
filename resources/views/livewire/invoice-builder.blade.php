@@ -483,11 +483,10 @@ document.addEventListener('DOMContentLoaded', function () {
                 return;
             }
 
-            // Space أو Enter على صنف = إضافة / زيادة كمية
+            // Space أو Enter على صنف = simulate click (wire:click handles the rest)
             if ((e.code === 'Space' || e.code === 'Enter') && currentIdx >= 0) {
                 e.preventDefault();
-                const id = parseInt(focused.dataset.productId);
-                if (id) getLivewire()?.call('addProduct', id);
+                focused.click();
                 return;
             }
 
@@ -546,33 +545,7 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     // ══════════════════════════════════════════════════
-    // 2. Helper: الوصول لـ Livewire component
-    // ══════════════════════════════════════════════════
-
-    function getLivewire() {
-        // ابحث تحديداً عن InvoiceBuilder مش أي component
-        const all = document.querySelectorAll('[wire\\:id]');
-        for (const el of all) {
-            const id        = el.getAttribute('wire:id');
-            const component = window.Livewire?.find(id);
-            if (component && typeof component.call === 'function') {
-                // تأكد إنه InvoiceBuilder بوجود product-list جواه
-                if (el.querySelector('#product-list') || el.id === 'invoice-builder') {
-                    return component;
-                }
-            }
-        }
-        // fallback: آخر component
-        const els = document.querySelectorAll('[wire\\:id]');
-        if (els.length > 0) {
-            const last = els[els.length - 1];
-            return window.Livewire?.find(last.getAttribute('wire:id')) ?? null;
-        }
-        return null;
-    }
-
-    // ══════════════════════════════════════════════════
-    // 3. بعد كل Livewire update — أعد تفعيل tabIndex
+    // 2. بعد كل Livewire update — أعد تفعيل tabIndex
     //    على صفوف قائمة الأصناف
     // ══════════════════════════════════════════════════
 
