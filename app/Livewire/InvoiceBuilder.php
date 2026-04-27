@@ -33,13 +33,17 @@ class InvoiceBuilder extends Component
     public float $defaultD2 = 0;
     public float $defaultD3 = 0;
 
+    // ── خصومات المصنّعين الموجودين في الفاتورة ──────────────────────────────────
+    // ['company_id' => ['name' => '...', 'd1' => 0, 'd2' => 0, 'd3' => 0]]
+    public array $companyDiscounts = [];
+
     // ── فلترة الأصناف ───────────────────────────────────────────────────────────
     public int    $selectedCompanyId = 0;
     public string $searchQuery       = '';
     public array  $productList       = [];
 
     // ── بنود الفاتورة (السلة) ────────────────────────────────────────────────────
-    // كل item: product_id, name, list_price, d1, d2, d3, unit_price, quantity, total, available
+    // كل item: product_id, company_id, name, list_price, d1, d2, d3, unit_price, quantity, total, available
     public array $items = [];
 
     // ── الإجماليات ───────────────────────────────────────────────────────────────
@@ -91,6 +95,10 @@ class InvoiceBuilder extends Component
             $this->recalcItem($i);
         }
         $this->recalcTotals();
+
+        // إعادة بناء companyDiscounts بالخصومات الجديدة
+        $this->companyDiscounts = [];
+        $this->syncCompanyDiscounts();
     }
 
     // ── تغيير الخصم الافتراضي يدوياً — تطبيق على كل البنود ─────────────────────
@@ -107,6 +115,9 @@ class InvoiceBuilder extends Component
             $this->recalcItem($i);
         }
         $this->recalcTotals();
+        // مزامنة companyDiscounts بالخصومات الجديدة
+        $this->companyDiscounts = [];
+        $this->syncCompanyDiscounts();
     }
 
     // ── فلتر المصنّع ──────────────────────────────────────────────────────────────
@@ -158,13 +169,14 @@ class InvoiceBuilder extends Component
                 $cartItem = collect($this->items)->firstWhere('product_id', $product->id);
 
                 return [
-                    'id'        => $product->id,
-                    'name'      => $product->name,
-                    'code'      => $product->code ?? '',
-                    'price'     => $listPrice,
-                    'available' => $available,
-                    'in_cart'   => (bool) $cartItem,
-                    'cart_qty'  => $cartItem ? (float) $cartItem['quantity'] : 0,
+                    'id'         => $product->id,
+                    'name'       => $product->name,
+                    'code'       => $product->code ?? '',
+                    'company_id' => $product->company_id,
+                    'price'      => $listPrice,
+                    'available'  => $available,
+                    'in_cart'    => (bool) $cartItem,
+                    'cart_qty'   => $cartItem ? (float) $cartItem['quantity'] : 0,
                 ];
             })
             ->toArray();
@@ -175,13 +187,14 @@ class InvoiceBuilder extends Component
     {
         $this->errorMessage = '';
 
-        // لو موجود — زوّد الكمية
+        // لو موجود — زوّد الكمية فقط
         foreach ($this->items as $i => $item) {
             if ($item['product_id'] === $productId) {
                 $this->items[$i]['quantity'] = (float) $this->items[$i]['quantity'] + 1;
                 $this->recalcItem($i);
                 $this->recalcTotals();
                 $this->refreshProductListStatus();
+                $this->syncCompanyDiscounts();
                 return;
             }
         }
@@ -198,28 +211,38 @@ class InvoiceBuilder extends Component
                     ->value('quantity') ?? 0)
                 : 0;
             $product = [
-                'id'        => $p->id,
-                'name'      => $p->name,
-                'price'     => $this->resolveListPrice($p),
-                'available' => $available,
+                'id'         => $p->id,
+                'name'       => $p->name,
+                'company_id' => $p->company_id,
+                'price'      => $this->resolveListPrice($p),
+                'available'  => $available,
             ];
         }
 
+        $companyId = $product['company_id'] ?? null;
         $listPrice = (float) $product['price'];
-        $unitPrice = PriceCalculator::calculateUnitPrice(
-            $listPrice,
-            $this->defaultD1,
-            $this->defaultD2,
-            $this->defaultD3,
-        );
+
+        // استخدم خصومات المصنّع لو كانت موجودة، وإلا الخصومات الافتراضية
+        if ($companyId && isset($this->companyDiscounts[$companyId])) {
+            $d1 = (float) $this->companyDiscounts[$companyId]['d1'];
+            $d2 = (float) $this->companyDiscounts[$companyId]['d2'];
+            $d3 = (float) $this->companyDiscounts[$companyId]['d3'];
+        } else {
+            $d1 = $this->defaultD1;
+            $d2 = $this->defaultD2;
+            $d3 = $this->defaultD3;
+        }
+
+        $unitPrice = PriceCalculator::calculateUnitPrice($listPrice, $d1, $d2, $d3);
 
         $this->items[] = [
             'product_id' => $productId,
+            'company_id' => $companyId,
             'name'       => $product['name'],
             'list_price' => $listPrice,
-            'd1'         => $this->defaultD1,
-            'd2'         => $this->defaultD2,
-            'd3'         => $this->defaultD3,
+            'd1'         => $d1,
+            'd2'         => $d2,
+            'd3'         => $d3,
             'unit_price' => $unitPrice,
             'quantity'   => 1,
             'total'      => round($unitPrice, 2),
@@ -228,6 +251,7 @@ class InvoiceBuilder extends Component
 
         $this->recalcTotals();
         $this->refreshProductListStatus();
+        $this->syncCompanyDiscounts();
     }
 
     // ── حذف بند ──────────────────────────────────────────────────────────────────
@@ -237,6 +261,7 @@ class InvoiceBuilder extends Component
         $this->items = array_values($this->items);
         $this->recalcTotals();
         $this->refreshProductListStatus();
+        $this->syncCompanyDiscounts();
     }
 
     // ── تحديث عند تعديل أي حقل في البند مباشرة ──────────────────────────────────
@@ -247,6 +272,25 @@ class InvoiceBuilder extends Component
         }
         $this->recalcTotals();
         $this->refreshProductListStatus();
+    }
+
+    // ── تطبيق خصومات مصنّع معين على كل أصنافه في الفاتورة ──────────────────────
+    public function applyCompanyDiscount(int $companyId): void
+    {
+        if (! isset($this->companyDiscounts[$companyId])) return;
+
+        $cd = $this->companyDiscounts[$companyId];
+
+        foreach ($this->items as $i => $item) {
+            if ((int) ($item['company_id'] ?? 0) === $companyId) {
+                $this->items[$i]['d1'] = (float) $cd['d1'];
+                $this->items[$i]['d2'] = (float) $cd['d2'];
+                $this->items[$i]['d3'] = (float) $cd['d3'];
+                $this->recalcItem($i);
+            }
+        }
+
+        $this->recalcTotals();
     }
 
     // ── حفظ مسودة ────────────────────────────────────────────────────────────────
@@ -260,7 +304,7 @@ class InvoiceBuilder extends Component
         }
 
         try {
-            $invoice             = $this->persistInvoice('draft');
+            $invoice              = $this->persistInvoice('draft');
             $this->savedInvoiceId = $invoice->id;
             $this->successMessage = 'تم حفظ المسودة — ' . $invoice->reference_number;
         } catch (Exception $e) {
@@ -299,23 +343,24 @@ class InvoiceBuilder extends Component
     // ── فاتورة جديدة ─────────────────────────────────────────────────────────────
     public function resetForm(): void
     {
-        $this->items            = [];
-        $this->productList      = [];
-        $this->searchQuery      = '';
+        $this->items             = [];
+        $this->productList       = [];
+        $this->searchQuery       = '';
         $this->selectedCompanyId = 0;
-        $this->customerId       = 0;
-        $this->notes            = '';
-        $this->dueDate          = '';
-        $this->defaultD1        = 0;
-        $this->defaultD2        = 0;
-        $this->defaultD3        = 0;
-        $this->subtotal         = 0;
-        $this->discountAmount   = 0;
-        $this->totalAmount      = 0;
-        $this->successMessage   = '';
-        $this->errorMessage     = '';
-        $this->savedInvoiceId   = null;
-        $this->invoiceDate      = now()->format('Y-m-d');
+        $this->customerId        = 0;
+        $this->notes             = '';
+        $this->dueDate           = '';
+        $this->defaultD1         = 0;
+        $this->defaultD2         = 0;
+        $this->defaultD3         = 0;
+        $this->companyDiscounts  = [];
+        $this->subtotal          = 0;
+        $this->discountAmount    = 0;
+        $this->totalAmount       = 0;
+        $this->successMessage    = '';
+        $this->errorMessage      = '';
+        $this->savedInvoiceId    = null;
+        $this->invoiceDate       = now()->format('Y-m-d');
     }
 
     // ══════════════════════════════════════════════════════════════════════════════
@@ -359,6 +404,41 @@ class InvoiceBuilder extends Component
     }
 
     /**
+     * مزامنة قائمة المصنّعين مع البنود الموجودة في الفاتورة.
+     * - يضيف مصنّعين جدد (بالخصومات الافتراضية الحالية)
+     * - يحذف مصنّعين اتشالت كل أصنافهم
+     */
+    private function syncCompanyDiscounts(): void
+    {
+        $existingCompanyIds = collect($this->items)
+            ->pluck('company_id')
+            ->filter()
+            ->map(fn ($id) => (int) $id)
+            ->unique()
+            ->values();
+
+        // أضيف مصنّعين جدد غير موجودين في companyDiscounts
+        foreach ($existingCompanyIds as $cid) {
+            if (! isset($this->companyDiscounts[$cid])) {
+                $company = Company::find($cid);
+                $this->companyDiscounts[$cid] = [
+                    'name' => $company?->name ?? '—',
+                    'd1'   => $this->defaultD1,
+                    'd2'   => $this->defaultD2,
+                    'd3'   => $this->defaultD3,
+                ];
+            }
+        }
+
+        // احذف مصنّعين اتشالت كل أصنافهم من الفاتورة
+        foreach (array_keys($this->companyDiscounts) as $cid) {
+            if (! $existingCompanyIds->contains((int) $cid)) {
+                unset($this->companyDiscounts[$cid]);
+            }
+        }
+    }
+
+    /**
      * سعر اللستة بالأولوية:
      * 1. قائمة أسعار نشطة للمصنّع
      * 2. آخر سعر معروف من أي إصدار
@@ -379,14 +459,12 @@ class InvoiceBuilder extends Component
             }
         }
 
-        // آخر سعر من أي إصدار
         $anyPrice = PriceListItem::where('product_id', $product->id)
             ->whereHas('version')
             ->orderByDesc('id')
             ->value('price');
         if ($anyPrice !== null) return (float) $anyPrice;
 
-        // avg_cost كمقترح
         if ($this->warehouseId) {
             $avgCost = Stock::where('warehouse_id', $this->warehouseId)
                 ->where('product_id', $product->id)
@@ -399,7 +477,7 @@ class InvoiceBuilder extends Component
 
     private function recalcItem(int $i): void
     {
-        $item              = &$this->items[$i];
+        $item               = &$this->items[$i];
         $item['unit_price'] = PriceCalculator::calculateUnitPrice(
             (float) ($item['list_price'] ?? 0),
             (float) ($item['d1'] ?? 0),
@@ -411,12 +489,10 @@ class InvoiceBuilder extends Component
 
     private function recalcTotals(): void
     {
-        // subtotal = مجموع (list_price × quantity) قبل الخصم
         $this->subtotal = round(
             collect($this->items)->sum(fn ($i) => (float) $i['list_price'] * (float) $i['quantity']),
             2
         );
-        // totalAmount = مجموع unit_price × quantity (بعد الخصومات)
         $this->totalAmount = round(
             collect($this->items)->sum(fn ($i) => (float) $i['total']),
             2

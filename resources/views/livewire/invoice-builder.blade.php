@@ -93,6 +93,84 @@
         </div>
     </div>
 
+    {{-- ══ خصومات المصنّعين (تظهر فقط لما يكون في الفاتورة أصناف) ══ --}}
+    @if(count($companyDiscounts) > 0)
+    <div style="background:white; border:1px solid #dbeafe; border-radius:10px; padding:14px 16px; margin-bottom:12px; box-shadow:0 1px 3px rgba(0,0,0,0.05);">
+
+        <div style="display:flex; align-items:center; gap:8px; margin-bottom:12px;">
+            <span style="font-weight:700; font-size:13px; color:#1d4ed8;">🏭 خصومات المصنّعين</span>
+            <span style="font-size:12px; color:#6b7280;">— عدّل خصم مصنّع واضغط "تطبيق" ليتطبق على كل أصنافه في الفاتورة</span>
+        </div>
+
+        <div style="overflow-x:auto;">
+            <table style="width:100%; border-collapse:collapse; font-size:13px;">
+                <thead>
+                    <tr style="background:#eff6ff; border-bottom:1px solid #dbeafe;">
+                        <th style="padding:7px 12px; text-align:right; font-size:11px; color:#6b7280; font-weight:600;">المصنّع</th>
+                        <th style="padding:7px 12px; text-align:center; font-size:11px; color:#6b7280; font-weight:600; width:120px;">خصم 1 %</th>
+                        <th style="padding:7px 12px; text-align:center; font-size:11px; color:#6b7280; font-weight:600; width:120px;">خصم 2 %</th>
+                        <th style="padding:7px 12px; text-align:center; font-size:11px; color:#6b7280; font-weight:600; width:120px;">خصم 3 %</th>
+                        <th style="padding:7px 12px; text-align:center; font-size:11px; color:#6b7280; font-weight:600; width:90px;">الأصناف</th>
+                        <th style="padding:7px 12px; text-align:center; font-size:11px; color:#6b7280; font-weight:600; width:90px;">تطبيق</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach($companyDiscounts as $companyId => $cd)
+                    <tr style="border-bottom:1px solid #f3f4f6;">
+
+                        {{-- اسم المصنّع --}}
+                        <td style="padding:8px 12px; font-weight:700; color:#1d4ed8; font-size:13px;">
+                            {{ $cd['name'] }}
+                        </td>
+
+                        {{-- خصم 1 --}}
+                        <td style="padding:6px 8px;">
+                            <input wire:model.live.debounce.300ms="companyDiscounts.{{ $companyId }}.d1"
+                                type="number" min="0" max="100" step="0.5"
+                                placeholder="0"
+                                style="width:100%; border:1px solid #d1d5db; border-radius:6px; padding:6px 8px; font-size:13px; text-align:center; box-sizing:border-box;" />
+                        </td>
+
+                        {{-- خصم 2 --}}
+                        <td style="padding:6px 8px;">
+                            <input wire:model.live.debounce.300ms="companyDiscounts.{{ $companyId }}.d2"
+                                type="number" min="0" max="100" step="0.5"
+                                placeholder="0"
+                                style="width:100%; border:1px solid #d1d5db; border-radius:6px; padding:6px 8px; font-size:13px; text-align:center; box-sizing:border-box;" />
+                        </td>
+
+                        {{-- خصم 3 --}}
+                        <td style="padding:6px 8px;">
+                            <input wire:model.live.debounce.300ms="companyDiscounts.{{ $companyId }}.d3"
+                                type="number" min="0" max="100" step="0.5"
+                                placeholder="0"
+                                style="width:100%; border:1px solid #d1d5db; border-radius:6px; padding:6px 8px; font-size:13px; text-align:center; box-sizing:border-box;" />
+                        </td>
+
+                        {{-- عدد الأصناف --}}
+                        <td style="padding:8px 12px; text-align:center;">
+                            <span style="background:#eff6ff; color:#1d4ed8; padding:3px 12px; border-radius:20px; font-size:12px; font-weight:700;">
+                                {{ collect($items)->where('company_id', $companyId)->count() }}
+                            </span>
+                        </td>
+
+                        {{-- زرار تطبيق --}}
+                        <td style="padding:6px 8px; text-align:center;">
+                            <button wire:click="applyCompanyDiscount({{ $companyId }})" type="button"
+                                style="background:#1d4ed8; color:white; border:none; padding:6px 14px; border-radius:6px; cursor:pointer; font-size:12px; font-weight:600; white-space:nowrap;"
+                                onmouseover="this.style.background='#1e40af'"
+                                onmouseout="this.style.background='#1d4ed8'">
+                                تطبيق ✓
+                            </button>
+                        </td>
+                    </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        </div>
+    </div>
+    @endif
+
     {{-- ══ الصفحة الرئيسية: لوحة الأصناف + جدول الفاتورة ══ --}}
     <div style="display:grid; grid-template-columns:360px 1fr; gap:12px; align-items:start;">
 
