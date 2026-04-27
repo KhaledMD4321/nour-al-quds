@@ -1,4 +1,4 @@
-<div dir="rtl" style="padding:16px; max-width:1400px; margin:0 auto; font-family:Cairo,sans-serif;">
+<div id="invoice-builder" dir="rtl" style="padding:16px; max-width:1400px; margin:0 auto; font-family:Cairo,sans-serif;">
 
     {{-- ══ رسالة نجاح ══ --}}
     @if($successMessage)
@@ -550,9 +550,25 @@ document.addEventListener('DOMContentLoaded', function () {
     // ══════════════════════════════════════════════════
 
     function getLivewire() {
-        const el = document.querySelector('[wire\\:id]');
-        if (!el) return null;
-        return window.Livewire?.find(el.getAttribute('wire:id')) ?? null;
+        // ابحث تحديداً عن InvoiceBuilder مش أي component
+        const all = document.querySelectorAll('[wire\\:id]');
+        for (const el of all) {
+            const id        = el.getAttribute('wire:id');
+            const component = window.Livewire?.find(id);
+            if (component && typeof component.call === 'function') {
+                // تأكد إنه InvoiceBuilder بوجود product-list جواه
+                if (el.querySelector('#product-list') || el.id === 'invoice-builder') {
+                    return component;
+                }
+            }
+        }
+        // fallback: آخر component
+        const els = document.querySelectorAll('[wire\\:id]');
+        if (els.length > 0) {
+            const last = els[els.length - 1];
+            return window.Livewire?.find(last.getAttribute('wire:id')) ?? null;
+        }
+        return null;
     }
 
     // ══════════════════════════════════════════════════
