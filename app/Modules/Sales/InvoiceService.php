@@ -81,6 +81,62 @@ class InvoiceService
         });
     }
 
+    // ── تحويل عرض السعر لفاتورة ────────────────────────────────────────────────
+
+    /**
+     * تحويل عرض سعر (quotation) إلى فاتورة بيع رسمية.
+     * ينشئ فاتورة جديدة بنسخة من بنود العرض، ويلغي العرض الأصلي.
+     */
+    public function convertToInvoice(Invoice $quotation): Invoice
+    {
+        if (! $quotation->isQuotation()) {
+            throw new Exception('السجل المحدد ليس عرض سعر');
+        }
+
+        if ($quotation->isCancelled()) {
+            throw new Exception('عرض السعر ملغى ولا يمكن تحويله');
+        }
+
+        return DB::transaction(function () use ($quotation) {
+            $quotation->load('items');
+
+            $invoice = Invoice::create([
+                'type'            => 'sale',
+                'reference_number' => Invoice::generateReference(),
+                'business_unit_id' => $quotation->business_unit_id,
+                'warehouse_id'     => $quotation->warehouse_id,
+                'customer_id'      => $quotation->customer_id,
+                'created_by'       => Auth::id(),
+                'status'           => 'draft',
+                'payment_type'     => $quotation->payment_type,
+                'subtotal'         => $quotation->subtotal,
+                'discount_amount'  => $quotation->discount_amount,
+                'tax_amount'       => $quotation->tax_amount,
+                'total_amount'     => $quotation->total_amount,
+                'invoice_date'     => now()->toDateString(),
+                'notes'            => 'محوّل من عرض سعر ' . $quotation->reference_number,
+            ]);
+
+            foreach ($quotation->items as $item) {
+                InvoiceItem::create([
+                    'invoice_id'  => $invoice->id,
+                    'product_id'  => $item->product_id,
+                    'quantity'    => $item->quantity,
+                    'unit_price'  => $item->unit_price,
+                    'list_price'  => $item->list_price,
+                    'd1'          => $item->d1,
+                    'd2'          => $item->d2,
+                    'd3'          => $item->d3,
+                    'total'       => $item->total,
+                ]);
+            }
+
+            $quotation->update(['status' => 'cancelled']);
+
+            return $invoice;
+        });
+    }
+
     // ── إلغاء الفاتورة ──────────────────────────────────────────────────────────
 
     /**

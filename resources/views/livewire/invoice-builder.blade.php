@@ -13,7 +13,7 @@
             @endif
             <button wire:click="resetForm" type="button"
                 style="background:#16a34a; color:white; border:none; padding:6px 14px; border-radius:6px; cursor:pointer; font-size:12px; font-weight:600;">
-                ➕ فاتورة جديدة
+                ➕ {{ $mode === 'quotation' ? 'عرض جديد' : 'فاتورة جديدة' }}
             </button>
         </div>
     </div>
@@ -263,7 +263,7 @@
             {{-- Header الجدول --}}
             <div style="padding:10px 16px; background:#f9fafb; border-bottom:1px solid #e5e7eb; display:flex; justify-content:space-between; align-items:center;">
                 <span style="font-weight:700; font-size:14px; color:#111827;">
-                    بنود الفاتورة
+                    {{ $mode === 'quotation' ? 'بنود عرض السعر' : 'بنود الفاتورة' }}
                     @if(count($items) > 0)
                     <span style="background:#1d4ed8; color:white; border-radius:20px; padding:1px 10px; font-size:12px; margin-right:6px;">
                         {{ count($items) }}
@@ -309,7 +309,7 @@
 
                             <td style="padding:5px 10px; font-weight:500; color:#111827; max-width:180px;">
                                 <div style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{{ $item['name'] }}</div>
-                                @if((float)$item['available'] < (float)$item['quantity'])
+                                @if($mode !== 'quotation' && (float)$item['available'] < (float)$item['quantity'])
                                     <div style="color:#ef4444; font-size:10px;">⚠️ يتجاوز المتاح ({{ number_format($item['available'], 1) }})</div>
                                 @endif
                             </td>
@@ -413,6 +413,16 @@
                     <span wire:loading wire:target="saveDraft">⏳ جاري الحفظ...</span>
                 </button>
 
+                @if($mode === 'quotation')
+                <button wire:click="confirmInvoice" type="button"
+                    wire:loading.attr="disabled"
+                    style="background:#7c3aed; color:white; border:none; padding:10px 22px; border-radius:8px; font-size:14px; font-weight:700; cursor:pointer; white-space:nowrap; box-shadow:0 2px 8px rgba(124,58,237,0.3);"
+                    onmouseover="this.style.background='#6d28d9'"
+                    onmouseout="this.style.background='#7c3aed'">
+                    <span wire:loading.remove wire:target="confirmInvoice">📄 حفظ عرض السعر</span>
+                    <span wire:loading wire:target="confirmInvoice">⏳ جاري الحفظ...</span>
+                </button>
+                @else
                 <button wire:click="confirmInvoice" type="button"
                     wire:loading.attr="disabled"
                     style="background:#16a34a; color:white; border:none; padding:10px 22px; border-radius:8px; font-size:14px; font-weight:700; cursor:pointer; white-space:nowrap; box-shadow:0 2px 8px rgba(22,163,74,0.3);"
@@ -421,6 +431,7 @@
                     <span wire:loading.remove wire:target="confirmInvoice">✅ تأكيد الفاتورة</span>
                     <span wire:loading wire:target="confirmInvoice">⏳ جاري التأكيد...</span>
                 </button>
+                @endif
             </div>
 
             @endif {{-- end: count($items) > 0 --}}

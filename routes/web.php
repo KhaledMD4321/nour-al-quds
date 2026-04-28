@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\InvoicePdfController;
+use App\Http\Controllers\QuotationPdfController;
 use App\Http\Controllers\QuickSaleReceiptController;
 use Illuminate\Support\Facades\Route;
 
@@ -14,4 +15,7 @@ Route::middleware(['auth'])->group(function () {
 
     Route::get('/invoice/pdf/{id}', [InvoicePdfController::class, 'show'])
         ->name('invoice.pdf');
+
+    Route::get('/quotation/pdf/{id}', [QuotationPdfController::class, 'show'])
+        ->name('quotation.pdf');
 });

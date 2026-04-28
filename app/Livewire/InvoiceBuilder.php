@@ -56,9 +56,13 @@ class InvoiceBuilder extends Component
     public string $errorMessage   = '';
     public ?int   $savedInvoiceId = null;
 
+    // ── وضع التشغيل: invoice | quotation ─────────────────────────────────────────
+    public string $mode = 'invoice';
+
     // ── Mount ─────────────────────────────────────────────────────────────────────
-    public function mount(): void
+    public function mount(string $mode = 'invoice'): void
     {
+        $this->mode        = $mode;
         $this->invoiceDate = now()->format('Y-m-d');
 
         $unit = BusinessUnit::first();
@@ -312,7 +316,7 @@ class InvoiceBuilder extends Component
         }
     }
 
-    // ── تأكيد الفاتورة مباشرة ─────────────────────────────────────────────────────
+    // ── تأكيد / حفظ (يختلف بحسب الوضع) ──────────────────────────────────────────
     public function confirmInvoice(): void
     {
         $this->errorMessage = '';
@@ -323,10 +327,18 @@ class InvoiceBuilder extends Component
         }
 
         try {
-            $invoice = $this->persistInvoice('draft');
-            app(InvoiceService::class)->confirmInvoice($invoice);
-            $this->savedInvoiceId = $invoice->id;
-            $this->successMessage = 'تم تأكيد الفاتورة — ' . $invoice->reference_number;
+            if ($this->mode === 'quotation') {
+                // عرض سعر — يُحفظ بدون خصم مخزون
+                $invoice              = $this->persistInvoice('draft');
+                $this->savedInvoiceId = $invoice->id;
+                $this->successMessage = 'تم حفظ عرض السعر — ' . $invoice->reference_number;
+            } else {
+                // فاتورة بيع — تأكيد + خصم مخزون
+                $invoice = $this->persistInvoice('draft');
+                app(InvoiceService::class)->confirmInvoice($invoice);
+                $this->savedInvoiceId = $invoice->id;
+                $this->successMessage = 'تم تأكيد الفاتورة — ' . $invoice->reference_number;
+            }
         } catch (Exception $e) {
             $this->errorMessage = $e->getMessage();
         }
@@ -336,7 +348,11 @@ class InvoiceBuilder extends Component
     public function printPdf(): void
     {
         if ($this->savedInvoiceId) {
-            $this->redirect(route('invoice.pdf', $this->savedInvoiceId));
+            if ($this->mode === 'quotation') {
+                $this->redirect(route('quotation.pdf', $this->savedInvoiceId));
+            } else {
+                $this->redirect(route('invoice.pdf', $this->savedInvoiceId));
+            }
         }
     }
 
@@ -369,8 +385,13 @@ class InvoiceBuilder extends Component
 
     private function persistInvoice(string $status): Invoice
     {
+        $isQuotation = $this->mode === 'quotation';
+
         $invoice = Invoice::create([
-            'reference_number' => Invoice::generateReference(),
+            'type'             => $isQuotation ? 'quotation' : 'sale',
+            'reference_number' => $isQuotation
+                ? Invoice::generateQuotationReference()
+                : Invoice::generateReference(),
             'business_unit_id' => $this->businessUnitId,
             'warehouse_id'     => $this->warehouseId,
             'customer_id'      => $this->customerId,

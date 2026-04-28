@@ -21,7 +21,7 @@ class QuickSaleResource extends Resource
 
     protected static string|\BackedEnum|null $navigationIcon  = 'heroicon-o-receipt-percent';
     protected static string|\UnitEnum|null   $navigationGroup = 'المبيعات';
-    protected static ?int                    $navigationSort  = 4;
+    protected static ?int                    $navigationSort  = 6;
     protected static ?string                 $navigationLabel  = 'سجل المبيعات السريعة';
     protected static ?string                 $modelLabel       = 'إيصال بيع سريع';
     protected static ?string                 $pluralModelLabel = 'سجل المبيعات السريعة';

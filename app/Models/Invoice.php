@@ -13,6 +13,7 @@ class Invoice extends Model
 
     protected $fillable = [
         'reference_number',
+        'type',
         'business_unit_id',
         'warehouse_id',
         'customer_id',
@@ -54,6 +55,7 @@ class Invoice extends Model
     public static function generateReference(): string
     {
         $last = static::withTrashed()
+            ->where('type', '!=', 'quotation')
             ->whereRaw("reference_number ~ '^INV-[0-9]+$'")
             ->orderByRaw("CAST(SUBSTRING(reference_number FROM 5) AS INTEGER) DESC")
             ->value('reference_number');
@@ -61,6 +63,19 @@ class Invoice extends Model
         $num = $last ? ((int) substr($last, 4)) + 1 : 1;
 
         return 'INV-' . str_pad($num, 5, '0', STR_PAD_LEFT);
+    }
+
+    public static function generateQuotationReference(): string
+    {
+        $last = static::withTrashed()
+            ->where('type', 'quotation')
+            ->whereRaw("reference_number ~ '^QUO-[0-9]+$'")
+            ->orderByRaw("CAST(SUBSTRING(reference_number FROM 5) AS INTEGER) DESC")
+            ->value('reference_number');
+
+        $num = $last ? ((int) substr($last, 4)) + 1 : 1;
+
+        return 'QUO-' . str_pad($num, 5, '0', STR_PAD_LEFT);
     }
 
     // ── Status helpers ───────────────────────────────────────────────────────────
@@ -80,6 +95,11 @@ class Invoice extends Model
         return in_array($this->status, ['confirmed', 'delivered', 'partially_paid', 'paid']);
     }
 
+    public function isQuotation(): bool
+    {
+        return $this->type === 'quotation';
+    }
+
     public static function statusLabel(string $status): string
     {
         return match ($status) {
@@ -89,6 +109,7 @@ class Invoice extends Model
             'partially_paid' => 'مدفوعة جزئياً',
             'paid'           => 'مدفوعة',
             'cancelled'      => 'ملغاة',
+            'quotation'      => 'عرض سعر',
             default          => $status,
         };
     }
