@@ -100,6 +100,24 @@ class Invoice extends Model
         return $this->type === 'quotation';
     }
 
+    public function isSaleReturn(): bool
+    {
+        return $this->type === 'sale_return';
+    }
+
+    public static function generateReturnReference(): string
+    {
+        $last = self::withTrashed()
+            ->where('type', 'sale_return')
+            ->whereRaw("reference_number ~ '^RET-[0-9]+$'")
+            ->orderByRaw("CAST(SUBSTRING(reference_number FROM 5) AS INTEGER) DESC")
+            ->value('reference_number');
+
+        $num = $last ? ((int) substr($last, 4)) + 1 : 1;
+
+        return 'RET-' . str_pad($num, 5, '0', STR_PAD_LEFT);
+    }
+
     public static function statusLabel(string $status): string
     {
         return match ($status) {
@@ -110,6 +128,7 @@ class Invoice extends Model
             'paid'           => 'مدفوعة',
             'cancelled'      => 'ملغاة',
             'quotation'      => 'عرض سعر',
+            'sale_return'    => 'مرتجع مبيعات',
             default          => $status,
         };
     }
@@ -123,6 +142,7 @@ class Invoice extends Model
             'partially_paid' => 'warning',
             'paid'           => 'success',
             'cancelled'      => 'danger',
+            'sale_return'    => 'danger',
             default          => 'gray',
         };
     }

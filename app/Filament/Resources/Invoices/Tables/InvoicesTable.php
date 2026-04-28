@@ -3,6 +3,8 @@
 namespace App\Filament\Resources\Invoices\Tables;
 
 use App\Models\Invoice;
+use Filament\Actions\Action;
+use Filament\Actions\ViewAction;
 use Filament\Tables\Columns\BadgeColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\Filter;
@@ -102,6 +104,21 @@ class InvoicesTable
                 Filter::make('today')
                     ->label('اليوم')
                     ->query(fn (Builder $query) => $query->whereDate('invoice_date', today())),
+            ])
+            ->actions([
+                Action::make('return')
+                    ->label('مرتجع')
+                    ->icon('heroicon-o-arrow-uturn-right')
+                    ->color('warning')
+                    ->visible(fn (Invoice $record): bool =>
+                        $record->type === 'sale' &&
+                        in_array($record->status, ['confirmed', 'delivered', 'partially_paid', 'paid'])
+                    )
+                    ->url(fn (Invoice $record): string =>
+                        route('filament.admin.pages.sale-return', ['invoice' => $record->id])
+                    ),
+
+                ViewAction::make()->label('تفاصيل'),
             ])
             ->defaultSort('id', 'desc')
             ->striped();

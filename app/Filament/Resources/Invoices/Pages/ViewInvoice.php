@@ -21,6 +21,17 @@ class ViewInvoice extends ViewRecord
         $invoice = $this->getRecord();
 
         return [
+            // ── مرتجع ────────────────────────────────────────────────────────
+            Action::make('return')
+                ->label('إنشاء مرتجع')
+                ->icon('heroicon-o-arrow-uturn-right')
+                ->color('warning')
+                ->visible(fn () =>
+                    $invoice->type === 'sale' &&
+                    in_array($invoice->status, ['confirmed', 'delivered', 'partially_paid', 'paid'])
+                )
+                ->url(fn () => route('filament.admin.pages.sale-return', ['invoice' => $invoice->id])),
+
             // ── PDF ──────────────────────────────────────────────────────────
             Action::make('pdf')
                 ->label('طباعة PDF')
