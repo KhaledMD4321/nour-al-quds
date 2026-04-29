@@ -3,6 +3,7 @@
 use App\Http\Controllers\InvoicePdfController;
 use App\Http\Controllers\QuotationPdfController;
 use App\Http\Controllers\QuickSaleReceiptController;
+use App\Http\Controllers\ReceiptPrintController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -18,4 +19,7 @@ Route::middleware(['auth'])->group(function () {
 
     Route::get('/quotation/pdf/{id}', [QuotationPdfController::class, 'show'])
         ->name('quotation.pdf');
+
+    Route::get('/receipts/{receipt}/print', [ReceiptPrintController::class, 'show'])
+        ->name('receipts.print');
 });

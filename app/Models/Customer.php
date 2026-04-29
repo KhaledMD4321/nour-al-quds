@@ -73,8 +73,12 @@ class Customer extends Model
         return $this->hasMany(Invoice::class);
     }
 
-    // TODO: uncomment when Receipt/Cheque models exist
-    // public function receipts(): HasMany  { return $this->hasMany(Receipt::class); }
+    public function receipts(): HasMany
+    {
+        return $this->hasMany(Receipt::class);
+    }
+
+    // TODO: uncomment when Cheque model exists (Phase 5.4)
     // public function cheques(): HasMany   { return $this->hasMany(Cheque::class); }
 
     // ─── Scopes ────────────────────────────────────────────────────────────────
@@ -145,5 +149,29 @@ class Customer extends Model
     public function getHasCreditAttribute(): bool
     {
         return (float) $this->credit_limit > 0;
+    }
+
+    /**
+     * الرصيد الحالي = الرصيد الافتتاحي + إجمالي الفواتير - إجمالي المدفوعات
+     */
+    public function getCurrentBalanceAttribute(): float
+    {
+        $totalInvoiced = $this->invoices()
+            ->whereNotIn('status', ['cancelled'])
+            ->sum('total_amount');
+
+        $totalPaid = $this->receipts()->sum('amount');
+
+        return round((float) $this->opening_balance + (float) $totalInvoiced - (float) $totalPaid, 2);
+    }
+
+    /**
+     * الفواتير المفتوحة (غير مدفوعة بالكامل)
+     */
+    public function openInvoices()
+    {
+        return $this->invoices()
+            ->whereIn('status', ['unpaid', 'partially_paid'])
+            ->orderBy('invoice_date');
     }
 }

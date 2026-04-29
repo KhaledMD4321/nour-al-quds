@@ -191,4 +191,39 @@ class Invoice extends Model
     {
         return $this->hasMany(InvoiceItem::class);
     }
+
+    public function receipts(): HasMany
+    {
+        return $this->hasMany(Receipt::class);
+    }
+
+    // ── Payment helpers ──────────────────────────────────────────────────────────
+
+    public function isFullyPaid(): bool
+    {
+        return $this->status === 'paid';
+    }
+
+    /**
+     * أعد حساب paid_amount وحدِّث status بناءً على إجمالي الإيصالات.
+     * يُستدعى داخل transaction بعد إنشاء إيصال جديد.
+     */
+    public function refreshPaymentStatus(): void
+    {
+        $paid = (float) $this->receipts()->sum('amount');
+
+        $this->paid_amount = $paid;
+
+        $total = (float) $this->total_amount;
+
+        if ($paid <= 0) {
+            $this->status = in_array($this->status, ['delivered', 'confirmed']) ? $this->status : 'confirmed';
+        } elseif ($paid >= $total) {
+            $this->status = 'paid';
+        } else {
+            $this->status = 'partially_paid';
+        }
+
+        $this->saveQuietly();
+    }
 }
