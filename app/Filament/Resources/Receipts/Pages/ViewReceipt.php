@@ -20,7 +20,7 @@ class ViewReceipt extends ViewRecord
                 ->color('gray')
                 ->url(fn () => route('receipts.print', $this->record))
                 ->openUrlInNewTab()
-                ->visible(fn () => auth()->user()?->can('print_receipt')),
+                ->visible(fn () => auth()->user()?->isSuperAdmin() || auth()->user()?->can('finance.receipt.print')),
         ];
     }
 }

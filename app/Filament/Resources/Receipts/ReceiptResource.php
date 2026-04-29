@@ -42,12 +42,23 @@ class ReceiptResource extends Resource
 
     public static function canAccess(): bool
     {
-        return auth()->user()?->can('view_any_receipt') ?? false;
+        $user = auth()->user();
+        if (! $user) return false;
+        if ($user->isSuperAdmin()) return true;
+        return $user->can('finance.receipt.view');
+    }
+
+    public static function canViewAny(): bool
+    {
+        return static::canAccess();
     }
 
     public static function canCreate(): bool
     {
-        return auth()->user()?->can('create_receipt') ?? false;
+        $user = auth()->user();
+        if (! $user) return false;
+        if ($user->isSuperAdmin()) return true;
+        return $user->can('finance.receipt.create');
     }
 
     public static function canEdit($record): bool
@@ -57,7 +68,7 @@ class ReceiptResource extends Resource
 
     public static function canDelete($record): bool
     {
-        return auth()->user()?->can('delete_receipt') ?? false;
+        return auth()->user()?->isSuperAdmin() ?? false;
     }
 
     // ── Scope ─────────────────────────────────────────────────────────────────────
@@ -305,7 +316,7 @@ class ReceiptResource extends Resource
                     ->color('gray')
                     ->url(fn (Receipt $record) => route('receipts.print', $record))
                     ->openUrlInNewTab()
-                    ->visible(fn () => auth()->user()?->can('print_receipt')),
+                    ->visible(fn () => auth()->user()?->isSuperAdmin() || auth()->user()?->can('finance.receipt.print')),
             ])
             ->bulkActions([]);
     }

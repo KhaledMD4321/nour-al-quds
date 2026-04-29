@@ -13,7 +13,7 @@ class ReceiptPrintController extends Controller
         $user = auth()->user();
 
         // تحقق من الصلاحية والوحدة
-        if (! $user?->can('print_receipt')) {
+        if (! $user?->isSuperAdmin() && ! $user?->can('finance.receipt.print')) {
             abort(403);
         }
 
