@@ -30,7 +30,7 @@ class ViewInvoice extends ViewRecord
                     $invoice->type === 'sale' &&
                     in_array($invoice->status, ['confirmed', 'delivered', 'partially_paid', 'paid'])
                 )
-                ->url(fn () => route('filament.admin.pages.sale-return', ['invoice' => $invoice->id])),
+                ->url(fn () => \App\Filament\Pages\SaleReturn::getUrl(['invoice' => $invoice->id])),
 
             // ── PDF ──────────────────────────────────────────────────────────
             Action::make('pdf')

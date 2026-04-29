@@ -115,7 +115,7 @@ class InvoicesTable
                         in_array($record->status, ['confirmed', 'delivered', 'partially_paid', 'paid'])
                     )
                     ->url(fn (Invoice $record): string =>
-                        route('filament.admin.pages.sale-return', ['invoice' => $record->id])
+                        \App\Filament\Pages\SaleReturn::getUrl(['invoice' => $record->id])
                     ),
 
                 ViewAction::make()->label('تفاصيل'),
