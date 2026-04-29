@@ -8,18 +8,24 @@ use App\Models\QuickSale;
 use App\Models\QuickSaleItem;
 use App\Models\Stock;
 use App\Models\StockMovement;
+use App\Modules\Finance\TreasuryService;
 use Exception;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
 class QuickSaleService
 {
+    public function __construct(
+        protected TreasuryService $treasuryService,
+    ) {}
+
     /**
      * تنفيذ بيع سريع كامل في transaction واحدة
      *
      * $data = [
      *   'business_unit_id' => 1,
      *   'warehouse_id'     => 1,
+     *   'treasury_id'      => 1,  // إلزامي
      *   'customer_name'    => 'أحمد محمد',  // nullable
      *   'notes'            => null,
      *   'items' => [
@@ -36,6 +42,10 @@ class QuickSaleService
             throw new Exception('لازم تضيف صنف واحد على الأقل');
         }
 
+        if (empty($data['treasury_id'])) {
+            throw new Exception('لازم تختار خزينة للبيع السريع');
+        }
+
         return DB::transaction(function () use ($data) {
 
             // 1. حساب الإجمالي
@@ -48,7 +58,7 @@ class QuickSaleService
                 'reference_number' => QuickSale::generateReference(),
                 'business_unit_id' => $data['business_unit_id'],
                 'warehouse_id'     => $data['warehouse_id'],
-                'treasury_id'      => $data['treasury_id'] ?? null,
+                'treasury_id'      => $data['treasury_id'],
                 'total_amount'     => $totalAmount,
                 'payment_method'   => $data['payment_method'] ?? 'cash',
                 'customer_name'    => $data['customer_name'] ?? null,
@@ -106,6 +116,16 @@ class QuickSaleService
                     'created_by'     => Auth::id(),
                 ]);
             }
+
+            // 4. إضافة الإيراد للخزينة — سجل حركة مقبوضات
+            $this->treasuryService->addFunds(
+                treasuryId:    (int) $data['treasury_id'],
+                amount:        $totalAmount,
+                description:   'بيع سريع — ' . $sale->reference_number,
+                referenceType: QuickSale::class,
+                referenceId:   $sale->id,
+                createdBy:     Auth::id(),
+            );
 
             return $sale;
         });
