@@ -15,11 +15,11 @@ use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
-use Filament\Forms\Get;
-use Filament\Forms\Set;
+use Filament\Schemas\Components\Utilities\Get;
+use Filament\Schemas\Components\Utilities\Set;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
-use Filament\Tables\Actions\ViewAction;
+use Filament\Actions\ViewAction;
 use Filament\Tables\Columns\BadgeColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
@@ -310,7 +310,7 @@ class ReceiptResource extends Resource
             ])
             ->actions([
                 ViewAction::make(),
-                \Filament\Tables\Actions\Action::make('print')
+                \Filament\Actions\Action::make('print')
                     ->label('طباعة')
                     ->icon('heroicon-o-printer')
                     ->color('gray')
