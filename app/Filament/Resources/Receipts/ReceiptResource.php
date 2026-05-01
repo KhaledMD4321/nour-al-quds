@@ -5,6 +5,7 @@ namespace App\Filament\Resources\Receipts;
 use App\Filament\Resources\Receipts\Pages\CreateReceipt;
 use App\Filament\Resources\Receipts\Pages\ListReceipts;
 use App\Filament\Resources\Receipts\Pages\ViewReceipt;
+use App\Models\BusinessUnit;
 use App\Models\Customer;
 use App\Models\Invoice;
 use App\Models\Receipt;
@@ -94,6 +95,17 @@ class ReceiptResource extends Resource
             Section::make('بيانات الإيصال')
                 ->columns(2)
                 ->schema([
+
+                    // الوحدة — مخفية للموظف العادي لكن dehydrated دائماً
+                    Select::make('business_unit_id')
+                        ->label('الوحدة')
+                        ->options(BusinessUnit::pluck('name', 'id'))
+                        ->required()
+                        ->default(fn () => auth()->user()?->business_unit_id)
+                        ->disabled(fn () => ! auth()->user()?->isSuperAdmin())
+                        ->dehydrated()
+                        ->hidden(fn () => ! auth()->user()?->isSuperAdmin())
+                        ->columnSpanFull(),
 
                     Select::make('customer_id')
                         ->label('العميل')
