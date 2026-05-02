@@ -91,4 +91,36 @@ class Supplier extends Model
 
         return 'SUP-' . str_pad($nextNumber, 5, '0', STR_PAD_LEFT);
     }
+
+    // ─── Financial Helpers ────────────────────────────────────────────────────
+
+    /**
+     * الرصيد الحالي = رصيد افتتاحي + فواتير مشتريات - مرتجعات - مدفوعات
+     * موجب = مستحق للمورد، سالب = دائن لنا
+     */
+    public function getCurrentBalanceAttribute(): float
+    {
+        $purchased = (float) $this->purchaseInvoices()
+            ->whereIn('status', ['confirmed', 'paid'])
+            ->sum('total_amount');
+
+        $returned = (float) PurchaseReturn::where('supplier_id', $this->id)
+            ->where('status', 'confirmed')
+            ->sum('total_amount');
+
+        $paid = (float) $this->payments()->sum('amount');
+
+        return round((float) $this->opening_balance + $purchased - $returned - $paid, 2);
+    }
+
+    /**
+     * فواتير مشتريات غير مدفوعة بالكامل
+     */
+    public function openPurchaseInvoices()
+    {
+        return $this->purchaseInvoices()
+            ->whereIn('status', ['confirmed'])
+            ->whereRaw('total_amount > paid_amount')
+            ->orderBy('invoice_date');
+    }
 }

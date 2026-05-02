@@ -106,4 +106,25 @@ class PurchaseInvoice extends Model
     {
         return (float) $this->total_amount - (float) $this->paid_amount;
     }
+
+    public function payments(): HasMany
+    {
+        return $this->hasMany(Payment::class);
+    }
+
+    public function isFullyPaid(): bool
+    {
+        return $this->remaining_amount <= 0.005;
+    }
+
+    /**
+     * حدّث status لـ paid لو الفاتورة اتدفعت كلها.
+     * purchase_invoices مفيهاش partial_paid — بتفضل confirmed.
+     */
+    public function refreshPaymentStatus(): void
+    {
+        if ($this->isFullyPaid() && $this->status !== 'paid') {
+            $this->update(['status' => 'paid']);
+        }
+    }
 }
