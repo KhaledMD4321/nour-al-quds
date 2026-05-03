@@ -7,14 +7,11 @@ use App\Models\ChartOfAccount;
 use App\Models\JournalEntryLine;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
-use Filament\Forms\Concerns\InteractsWithForms;
-use Filament\Forms\Contracts\HasForms;
-use Filament\Forms\Form;
 use Filament\Pages\Page;
+use Filament\Schemas\Schema;
 
-class GeneralLedger extends Page implements HasForms
+class GeneralLedger extends Page
 {
-    use InteractsWithForms;
 
     protected static string|\BackedEnum|null $navigationIcon  = 'heroicon-o-book-open';
     protected static string|\UnitEnum|null   $navigationGroup = 'المحاسبة';
@@ -44,48 +41,38 @@ class GeneralLedger extends Page implements HasForms
         if (! auth()->user()?->isSuperAdmin()) {
             $this->business_unit_id = auth()->user()?->business_unit_id;
         }
-
-        $this->form->fill([
-            'account_id'       => null,
-            'from_date'        => $this->from_date,
-            'to_date'          => $this->to_date,
-            'business_unit_id' => $this->business_unit_id,
-        ]);
     }
 
-    public function form(Form $form): Form
+    public function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
-                Select::make('account_id')
-                    ->label('الحساب')
-                    ->options(fn () => ChartOfAccount::where('is_active', true)
-                        ->orderBy('code')
-                        ->get()
-                        ->mapWithKeys(fn ($a) => [$a->id => $a->code . ' — ' . $a->name])
-                        ->toArray()
-                    )
-                    ->searchable()
-                    ->live(),
+        return $schema->components([
+            Select::make('account_id')
+                ->label('الحساب')
+                ->options(fn () => ChartOfAccount::where('is_active', true)
+                    ->orderBy('code')
+                    ->get()
+                    ->mapWithKeys(fn ($a) => [$a->id => $a->code . ' — ' . $a->name])
+                    ->toArray()
+                )
+                ->searchable()
+                ->live(),
 
-                DatePicker::make('from_date')
-                    ->label('من تاريخ')
-                    ->live()
-                    ->displayFormat('Y-m-d'),
+            DatePicker::make('from_date')
+                ->label('من تاريخ')
+                ->live()
+                ->displayFormat('Y-m-d'),
 
-                DatePicker::make('to_date')
-                    ->label('إلى تاريخ')
-                    ->live()
-                    ->displayFormat('Y-m-d'),
+            DatePicker::make('to_date')
+                ->label('إلى تاريخ')
+                ->live()
+                ->displayFormat('Y-m-d'),
 
-                Select::make('business_unit_id')
-                    ->label('الوحدة')
-                    ->options(fn () => ['' => 'كل الوحدات'] + BusinessUnit::pluck('name', 'id')->toArray())
-                    ->visible(fn () => auth()->user()?->isSuperAdmin())
-                    ->live(),
-            ])
-            ->columns(4)
-            ->statePath('');
+            Select::make('business_unit_id')
+                ->label('الوحدة')
+                ->options(fn () => ['' => 'كل الوحدات'] + BusinessUnit::pluck('name', 'id')->toArray())
+                ->visible(fn () => auth()->user()?->isSuperAdmin())
+                ->live(),
+        ])->columns(4);
     }
 
     public function getLines()
