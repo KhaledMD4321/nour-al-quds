@@ -47,10 +47,7 @@
         </div>
         @endif
 
-        {{-- ── زر التصدير ── --}}
-        <div style="margin-top: 16px;">
-            {{ $this->exportAction }}
-        </div>
+        {{-- ── زر التصدير (موجود في header الصفحة) ── --}}
 
     </div>
 </x-filament-panels::page>

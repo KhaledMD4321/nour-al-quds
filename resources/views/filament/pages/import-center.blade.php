@@ -7,7 +7,7 @@
 
             {{-- رابط تحميل القالب --}}
             <div style="margin-top: 12px;">
-                <a href="{{ route('filament.admin.pages.import-center') }}?download_template=1"
+                <a href="{{ \App\Filament\Pages\ImportCenterPage::getUrl() }}"
                    wire:click.prevent="getTemplate"
                    style="font-size: 12px; color: #1e40af; text-decoration: none; font-weight: 600;">
                     ⬇ تحميل قالب Excel لـ {{ match($this->import_type) { 'customers' => 'العملاء', 'suppliers' => 'الموردين', 'products' => 'الأصناف', default => $this->import_type } }}

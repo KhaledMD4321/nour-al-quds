@@ -24,19 +24,19 @@ class DataCleanupService
     public function findDuplicateCustomers(): Collection
     {
         // تكرار بالاسم
-        $byName = Customer::select('name', DB::raw('COUNT(*) as cnt'))
+        $byName = Customer::select('name')
             ->whereNull('deleted_at')
             ->groupBy('name')
-            ->having('cnt', '>', 1)
+            ->havingRaw('COUNT(*) > 1')
             ->pluck('name');
 
         // تكرار بالتليفون
-        $byPhone = Customer::select('phone', DB::raw('COUNT(*) as cnt'))
+        $byPhone = Customer::select('phone')
             ->whereNull('deleted_at')
             ->whereNotNull('phone')
             ->where('phone', '!=', '')
             ->groupBy('phone')
-            ->having('cnt', '>', 1)
+            ->havingRaw('COUNT(*) > 1')
             ->pluck('phone');
 
         $groups = collect();
@@ -59,10 +59,10 @@ class DataCleanupService
      */
     public function findDuplicateProducts(): Collection
     {
-        $byName = Product::select('name', DB::raw('COUNT(*) as cnt'))
+        $byName = Product::select('name')
             ->whereNull('deleted_at')
             ->groupBy('name')
-            ->having('cnt', '>', 1)
+            ->havingRaw('COUNT(*) > 1')
             ->pluck('name');
 
         return $byName->map(fn ($name) => [
