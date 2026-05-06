@@ -162,11 +162,12 @@ class ImportCenterPage extends Page
     public function getTemplate(): \Symfony\Component\HttpFoundation\StreamedResponse
     {
         $headers = ImportService::getTemplate($this->import_type);
-        $csv     = implode(',', $headers) . "\n";
+        // \xEF\xBB\xBF = UTF-8 BOM — ضروري لكي يعرف Excel إن الملف عربي
+        $csv     = "\xEF\xBB\xBF" . implode(',', $headers) . "\n";
         $name    = 'template_' . $this->import_type . '.csv';
 
         return response()->streamDownload(fn () => print($csv), $name, [
-            'Content-Type' => 'text/csv; charset=utf-8',
+            'Content-Type' => 'text/csv; charset=utf-8-sig',
         ]);
     }
 }
