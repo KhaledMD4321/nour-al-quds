@@ -107,6 +107,9 @@ class StocksTable
             ->recordActions([])
             ->toolbarActions([])
             ->defaultSort('product.name')
-            ->striped();
+            ->striped()
+            ->emptyStateHeading('لا توجد أرصدة حالياً')
+            ->emptyStateDescription('الأرصدة هتظهر تلقائي لما تبدأ عمليات الشراء والبيع')
+            ->emptyStateIcon('heroicon-o-archive-box');
     }
 }

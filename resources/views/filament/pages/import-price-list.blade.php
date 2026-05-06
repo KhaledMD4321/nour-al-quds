@@ -7,59 +7,20 @@
 
         <form wire:submit.prevent="previewFile" class="space-y-6">
 
-            {{-- Company selector via Filament Schema --}}
+            {{-- Company selector + FileUpload via Filament Schema --}}
             {{ $this->form }}
 
-            {{-- File upload section --}}
-            <x-filament::section>
-                <x-slot name="heading">رفع ملف Excel</x-slot>
-                <x-slot name="description">
-                    ارفع ملف Excel أو CSV — أول صف = عناوين الأعمدة
-                </x-slot>
-
-                <div class="space-y-4">
-
-                    {{-- File input --}}
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
-                            ملف Excel / CSV
-                            <span class="text-danger-500">*</span>
-                        </label>
-                        <input
-                            type="file"
-                            wire:model="excelFile"
-                            accept=".xlsx,.xls,.csv"
-                            class="block w-full text-sm text-gray-700 dark:text-gray-300
-                                   file:me-4 file:py-2 file:px-4
-                                   file:rounded-lg file:border-0
-                                   file:text-sm file:font-semibold
-                                   file:bg-primary-50 file:text-primary-700
-                                   dark:file:bg-primary-900 dark:file:text-primary-300
-                                   hover:file:bg-primary-100
-                                   border border-gray-300 dark:border-gray-600
-                                   rounded-lg px-3 py-2"
-                        />
-                        <div wire:loading wire:target="excelFile" class="mt-1 text-xs text-gray-500">
-                            جاري الرفع…
-                        </div>
-                        @error('excelFile')
-                            <p class="mt-1 text-sm text-danger-600">{{ $message }}</p>
-                        @enderror
-                    </div>
-
-                    {{-- Format guide --}}
-                    <div class="rounded-lg bg-info-50 dark:bg-info-900/20 p-4 text-sm text-info-800 dark:text-info-200 border border-info-200 dark:border-info-800">
-                        <p class="font-semibold mb-2">📋 تنسيق الملف المطلوب:</p>
-                        <div class="grid grid-cols-2 gap-1 font-mono text-xs">
-                            <span class="font-bold">العمود A:</span> <span>كود الصنف (اختياري — يتولّد تلقائياً لو فاضي)</span>
-                            <span class="font-bold">العمود B:</span> <span>اسم الصنف (مطلوب)</span>
-                            <span class="font-bold">العمود C:</span> <span>السعر (مطلوب — رقم موجب)</span>
-                            <span class="font-bold">العمود D:</span> <span>وحدة القياس (اختياري — الافتراضي: piece)</span>
-                        </div>
-                        <p class="mt-2 text-xs text-info-600 dark:text-info-400">الصف الأول = عناوين الأعمدة (يُتجاهل تلقائياً)</p>
-                    </div>
+            {{-- Format guide --}}
+            <div class="rounded-lg bg-info-50 dark:bg-info-900/20 p-4 text-sm text-info-800 dark:text-info-200 border border-info-200 dark:border-info-800">
+                <p class="font-semibold mb-2">📋 تنسيق الملف المطلوب:</p>
+                <div class="grid grid-cols-2 gap-1 font-mono text-xs">
+                    <span class="font-bold">العمود A:</span> <span>كود الصنف (اختياري — يتولّد تلقائياً لو فاضي)</span>
+                    <span class="font-bold">العمود B:</span> <span>اسم الصنف (مطلوب)</span>
+                    <span class="font-bold">العمود C:</span> <span>السعر (مطلوب — رقم موجب)</span>
+                    <span class="font-bold">العمود D:</span> <span>وحدة القياس (اختياري — الافتراضي: piece)</span>
                 </div>
-            </x-filament::section>
+                <p class="mt-2 text-xs text-info-600 dark:text-info-400">الصف الأول = عناوين الأعمدة (يُتجاهل تلقائياً)</p>
+            </div>
 
             {{-- Submit button --}}
             <div class="flex justify-end">

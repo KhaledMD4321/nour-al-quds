@@ -1,10 +1,12 @@
 <?php
 
+use App\Http\Controllers\CustomerStatementPrintController;
 use App\Http\Controllers\InvoicePdfController;
+use App\Http\Controllers\PaymentPrintController;
 use App\Http\Controllers\QuotationPdfController;
 use App\Http\Controllers\QuickSaleReceiptController;
-use App\Http\Controllers\PaymentPrintController;
 use App\Http\Controllers\ReceiptPrintController;
+use App\Http\Controllers\SupplierStatementPrintController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -26,4 +28,10 @@ Route::middleware(['auth'])->group(function () {
 
     Route::get('/payments/{payment}/print', [PaymentPrintController::class, 'show'])
         ->name('payments.print');
+
+    Route::get('/statements/customer', [CustomerStatementPrintController::class, 'show'])
+        ->name('customer-statement.print');
+
+    Route::get('/statements/supplier', [SupplierStatementPrintController::class, 'show'])
+        ->name('supplier-statement.print');
 });

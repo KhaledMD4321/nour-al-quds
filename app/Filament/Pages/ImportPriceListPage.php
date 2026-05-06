@@ -4,12 +4,13 @@ namespace App\Filament\Pages;
 
 use App\Models\Company;
 use App\Modules\Catalog\PriceListService;
+use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Select;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
-use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
+use Illuminate\Support\Facades\Storage;
 
 class ImportPriceListPage extends Page
 {
@@ -22,11 +23,11 @@ class ImportPriceListPage extends Page
 
     // ─── Form state ────────────────────────────────────────────────────────────
 
-    /** Schema form state — company selector only. */
-    public array $data = ['company_id' => null];
-
-    /** Standalone Livewire file upload — separate from Schema form. */
-    public ?TemporaryUploadedFile $excelFile = null;
+    /** Schema form state — company selector + file upload. */
+    public array $data = [
+        'company_id' => null,
+        'excel_file' => null,
+    ];
 
     // ─── Preview state ─────────────────────────────────────────────────────────
 
@@ -61,6 +62,23 @@ class ImportPriceListPage extends Page
                             ->preload()
                             ->placeholder('اختر المصنّع'),
                     ]),
+
+                Section::make('ملف الأسعار')
+                    ->description('ارفع ملف Excel أو CSV — أول صف = عناوين الأعمدة')
+                    ->schema([
+                        FileUpload::make('excel_file')
+                            ->label('ملف Excel / CSV')
+                            ->required()
+                            ->acceptedFileTypes([
+                                'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                                'application/vnd.ms-excel',
+                                'text/csv',
+                            ])
+                            ->maxSize(10240)
+                            ->disk('local')
+                            ->directory('temp/price-list-imports')
+                            ->helperText('الصف الأول = عناوين الأعمدة (يُتجاهل تلقائياً)'),
+                    ]),
             ]);
     }
 
@@ -69,28 +87,38 @@ class ImportPriceListPage extends Page
     /** المرحلة الأولى: قراءة الملف وعرض المعاينة — بدون حفظ. */
     public function previewFile(): void
     {
-        $this->validate([
-            'data.company_id' => 'required|integer|exists:companies,id',
-            'excelFile'       => 'required|file|mimes:xlsx,xls,csv|max:10240',
-        ], [
-            'data.company_id.required' => 'اختر المصنّع الأول',
-            'data.company_id.exists'   => 'المصنّع المختار غير موجود',
-            'excelFile.required'       => 'ارفع ملف Excel أو CSV',
-            'excelFile.mimes'          => 'نوع الملف غير مدعوم — ارفع xlsx أو xls أو csv',
-            'excelFile.max'            => 'حجم الملف أكبر من 10 ميجا',
-        ]);
+        // getState() validates all components and saves uploaded files to disk.
+        // Throws \Filament\Support\Exceptions\Halt on validation failure.
+        $state = $this->form->getState();
+
+        // FileUpload returns a string (single file path relative to disk root)
+        $uploadedPath = $state['excel_file'] ?? null;
+
+        if (! $uploadedPath) {
+            Notification::make()
+                ->title('ارفع ملف Excel أو CSV')
+                ->danger()
+                ->send();
+            return;
+        }
+
+        // Resolve absolute path — FileUpload stores relative to disk root
+        $relativePath = is_array($uploadedPath) ? array_values($uploadedPath)[0] : $uploadedPath;
+        $filePath     = Storage::disk('local')->path($relativePath);
+
+        if (! file_exists($filePath)) {
+            Notification::make()
+                ->title('الملف مش موجود — حاول ترفع الملف تاني')
+                ->danger()
+                ->send();
+            return;
+        }
 
         try {
-            $filePath = $this->excelFile->getRealPath();
-
-            if (! file_exists($filePath)) {
-                throw new \RuntimeException('الملف مش موجود — حاول ترفع الملف تاني');
-            }
-
-            $service         = app(PriceListService::class);
-            $this->preview   = $service->previewImport($filePath, (int) $this->data['company_id']);
-            $this->tempFilePath = $filePath;
-            $this->showPreview  = true;
+            $service             = app(PriceListService::class);
+            $this->preview       = $service->previewImport($filePath, (int) $state['company_id']);
+            $this->tempFilePath  = $filePath;
+            $this->showPreview   = true;
 
         } catch (\Exception $e) {
             Notification::make()
@@ -128,8 +156,8 @@ class ImportPriceListPage extends Page
                 ->persistent()
                 ->send();
 
-            $this->reset(['showPreview', 'preview', 'excelFile', 'tempFilePath']);
-            $this->data = ['company_id' => null];
+            $this->reset(['showPreview', 'preview', 'tempFilePath']);
+            $this->data = ['company_id' => null, 'excel_file' => null];
 
             $this->redirect(
                 \App\Filament\Resources\PriceListVersionResource::getUrl('index')

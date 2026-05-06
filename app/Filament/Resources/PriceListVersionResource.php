@@ -2,17 +2,15 @@
 
 namespace App\Filament\Resources;
 
-use App\Filament\Pages\ImportPriceListPage;
 use App\Filament\Resources\PriceListVersionResource\Pages;
+use App\Filament\Resources\PriceListVersionResource\RelationManagers;
 use App\Models\Company;
 use App\Models\PriceListVersion;
-use App\Models\Product;
 use App\Modules\Catalog\PriceListService;
 use Filament\Actions\Action;
 use Filament\Actions\EditAction;
 use Filament\Actions\ViewAction;
 use Filament\Forms\Components\DatePicker;
-use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
@@ -98,43 +96,6 @@ class PriceListVersionResource extends Resource
                         ->columnSpanFull(),
                 ])
                 ->columns(2),
-
-            Section::make('بنود الأسعار')
-                ->schema([
-                    Repeater::make('items')
-                        ->relationship()
-                        ->label('')
-                        ->schema([
-                            Select::make('product_id')
-                                ->label('الصنف')
-                                ->options(fn (): array => Product::orderBy('name')->pluck('name', 'id')->toArray())
-                                ->searchable()
-                                ->preload()
-                                ->required()
-                                ->columnSpan(2),
-
-                            TextInput::make('price')
-                                ->label('السعر')
-                                ->numeric()
-                                ->required()
-                                ->minValue(0.0001)
-                                ->step(0.0001)
-                                ->prefix('ج.م.')
-                                ->columnSpan(1),
-                        ])
-                        ->columns(3)
-                        ->defaultItems(0)
-                        ->addActionLabel('إضافة صنف')
-                        ->reorderable(false)
-                        ->collapsible()
-                        ->itemLabel(fn (array $state): ?string =>
-                            isset($state['product_id'])
-                                ? (Product::find($state['product_id'])?->name ?? '—') . ' — ' . ($state['price'] ?? '0') . ' ج.م.'
-                                : null
-                        ),
-                ])
-                // إخفاء عند الإنشاء — البنود تتضاف بعد الحفظ أو من Excel
-                ->visible(fn (?PriceListVersion $record): bool => $record !== null),
 
         ]);
     }
@@ -229,6 +190,15 @@ class PriceListVersionResource extends Resource
             ])
             ->defaultSort('created_at', 'desc')
             ->striped();
+    }
+
+    // ─── Relations ─────────────────────────────────────────────────────────────
+
+    public static function getRelations(): array
+    {
+        return [
+            RelationManagers\PriceListItemsRelationManager::class,
+        ];
     }
 
     // ─── Pages ─────────────────────────────────────────────────────────────────
