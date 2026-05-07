@@ -107,6 +107,14 @@ class JournalEntryResource extends Resource
         ]);
     }
 
+    // ── Eager Load ────────────────────────────────────────────────────────────
+
+    public static function getEloquentQuery(): Builder
+    {
+        return parent::getEloquentQuery()
+            ->with(['createdBy', 'lines']);
+    }
+
     // ── Table ─────────────────────────────────────────────────────────────────
 
     public static function table(Table $table): Table

@@ -77,12 +77,14 @@ class ReceiptResource extends Resource
     {
         $user = auth()->user();
 
+        $base = parent::getEloquentQuery()
+            ->with(['customer', 'invoice', 'treasury', 'businessUnit', 'createdBy']);
+
         if ($user?->isSuperAdmin()) {
-            return parent::getEloquentQuery();
+            return $base;
         }
 
-        return parent::getEloquentQuery()
-            ->where('business_unit_id', $user?->business_unit_id);
+        return $base->where('business_unit_id', $user?->business_unit_id);
     }
 
     // ── Form ─────────────────────────────────────────────────────────────────────

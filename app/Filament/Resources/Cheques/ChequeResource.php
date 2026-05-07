@@ -78,11 +78,14 @@ class ChequeResource extends Resource
     public static function getEloquentQuery(): Builder
     {
         $user = auth()->user();
+        $base = parent::getEloquentQuery()
+            ->with(['customer', 'supplier', 'treasury', 'businessUnit', 'createdBy']);
+
         if ($user?->isSuperAdmin()) {
-            return parent::getEloquentQuery();
+            return $base;
         }
-        return parent::getEloquentQuery()
-            ->where('business_unit_id', $user?->business_unit_id);
+
+        return $base->where('business_unit_id', $user?->business_unit_id);
     }
 
     // ── Form ─────────────────────────────────────────────────────────────────

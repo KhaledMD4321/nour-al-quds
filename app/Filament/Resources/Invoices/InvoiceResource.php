@@ -27,6 +27,14 @@ class InvoiceResource extends Resource
     protected static ?string                 $pluralModelLabel    = 'فواتير المبيعات';
     protected static ?string                 $recordTitleAttribute = 'reference_number';
 
+    // ── Eager Load ─────────────────────────────────────────────────────────────
+
+    public static function getEloquentQuery(): Builder
+    {
+        return parent::getEloquentQuery()
+            ->with(['customer', 'businessUnit', 'warehouse', 'createdBy']);
+    }
+
     // ── Form & Table ────────────────────────────────────────────────────────────
 
     public static function form(Schema $schema): Schema
