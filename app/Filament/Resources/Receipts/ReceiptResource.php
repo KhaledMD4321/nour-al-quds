@@ -21,7 +21,6 @@ use Filament\Schemas\Components\Utilities\Set;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Actions\ViewAction;
-use Filament\Tables\Columns\BadgeColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;

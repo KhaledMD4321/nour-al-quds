@@ -5,7 +5,6 @@ namespace App\Filament\Resources\Invoices\Tables;
 use App\Models\Invoice;
 use Filament\Actions\Action;
 use Filament\Actions\ViewAction;
-use Filament\Tables\Columns\BadgeColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\SelectFilter;

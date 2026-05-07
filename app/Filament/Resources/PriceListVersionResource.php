@@ -18,7 +18,6 @@ use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
-use Filament\Tables\Columns\BadgeColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
@@ -128,8 +127,9 @@ class PriceListVersionResource extends Resource
                     ->counts('items')
                     ->sortable(),
 
-                BadgeColumn::make('status')
+                TextColumn::make('status')
                     ->label('الحالة')
+                    ->badge()
                     ->formatStateUsing(fn (string $state): string => match ($state) {
                         'active'   => 'نشطة',
                         'archived' => 'مؤرشفة',

@@ -12,7 +12,6 @@ use Filament\Forms\Components\Toggle;
 use Filament\Resources\Resource;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
-use Filament\Tables\Columns\BadgeColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\ToggleColumn;
 use Filament\Tables\Filters\SelectFilter;
@@ -132,8 +131,9 @@ class ChartOfAccountResource extends Resource
                         return $indent . $state;
                     }),
 
-                BadgeColumn::make('type')
+                TextColumn::make('type')
                     ->label('النوع')
+                    ->badge()
                     ->formatStateUsing(fn (string $state): string => self::typeLabel($state))
                     ->color(fn (string $state): string => self::typeColor($state)),
 
