@@ -46,6 +46,19 @@ class QuickSaleService
             throw new Exception('لازم تختار خزينة للبيع السريع');
         }
 
+        // تحقق من صحة بنود البيع
+        foreach ($data['items'] as $i => $item) {
+            $qty   = (float) ($item['quantity'] ?? 0);
+            $price = (float) ($item['unit_price'] ?? 0);
+            $row   = $i + 1;
+            if ($qty <= 0) {
+                throw new Exception("الصف {$row}: الكمية لازم تكون أكبر من صفر");
+            }
+            if ($price <= 0) {
+                throw new Exception("الصف {$row}: السعر لازم يكون أكبر من صفر");
+            }
+        }
+
         return DB::transaction(function () use ($data) {
 
             // 1. حساب الإجمالي

@@ -102,6 +102,9 @@ class PaymentService
         if (empty($data['amount']) || (float) $data['amount'] <= 0) {
             throw new InvalidArgumentException('المبلغ لازم يكون أكبر من صفر');
         }
+        if ((float) $data['amount'] > 10_000_000) {
+            throw new InvalidArgumentException('المبلغ كبير بشكل غير طبيعي — راجع الإدخال');
+        }
 
         if (! in_array($data['payment_method'] ?? null, ['cash', 'cheque', 'bank_transfer'])) {
             throw new InvalidArgumentException('طريقة الدفع غير صحيحة');

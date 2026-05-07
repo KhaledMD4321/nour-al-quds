@@ -48,6 +48,14 @@ class ReceiptService
      */
     public function createReceipt(array $data): Receipt
     {
+        // حماية من أخطاء الإدخال
+        if (empty($data['amount']) || (float) $data['amount'] <= 0) {
+            throw new \InvalidArgumentException('المبلغ لازم يكون أكبر من صفر');
+        }
+        if ((float) $data['amount'] > 10_000_000) {
+            throw new \InvalidArgumentException('المبلغ كبير بشكل غير طبيعي — راجع الإدخال');
+        }
+
         return DB::transaction(function () use ($data) {
 
             // 0. توليد رقم الإيصال مرة واحدة
