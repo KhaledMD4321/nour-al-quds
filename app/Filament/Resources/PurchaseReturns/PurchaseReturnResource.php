@@ -21,10 +21,14 @@ use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
+use App\Filament\Concerns\HasModuleGuard;
 use Throwable;
 
 class PurchaseReturnResource extends Resource
 {
+    use HasModuleGuard;
+    protected static string $module = 'purchases';
+
     protected static ?string $model = PurchaseReturn::class;
 
     protected static string|\BackedEnum|null $navigationIcon  = 'heroicon-o-arrow-uturn-left';

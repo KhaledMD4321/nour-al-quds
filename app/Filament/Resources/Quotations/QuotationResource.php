@@ -13,11 +13,15 @@ use Filament\Schemas\Schema;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\Filter;
 use Filament\Tables\Table;
+use App\Filament\Concerns\HasModuleGuard;
 use Illuminate\Database\Eloquent\Builder;
 use Throwable;
 
 class QuotationResource extends Resource
 {
+    use HasModuleGuard;
+    protected static string $module = 'sales';
+
     protected static ?string $model = Invoice::class;
 
     protected static string|\BackedEnum|null $navigationIcon  = 'heroicon-o-document-magnifying-glass';

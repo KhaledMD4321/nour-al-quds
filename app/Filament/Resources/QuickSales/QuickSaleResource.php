@@ -13,10 +13,14 @@ use Filament\Schemas\Schema;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\Filter;
 use Filament\Tables\Table;
+use App\Filament\Concerns\HasModuleGuard;
 use Illuminate\Database\Eloquent\Builder;
 
 class QuickSaleResource extends Resource
 {
+    use HasModuleGuard;
+    protected static string $module = 'sales';
+
     protected static ?string $model = QuickSale::class;
 
     protected static string|\BackedEnum|null $navigationIcon  = 'heroicon-o-receipt-percent';

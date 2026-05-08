@@ -28,10 +28,14 @@ use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Table;
+use App\Filament\Concerns\HasModuleGuard;
 use Illuminate\Database\Eloquent\Model;
 
 class ProductResource extends Resource
 {
+    use HasModuleGuard;
+    protected static string $module = 'catalog';
+
     protected static ?string $model = Product::class;
 
     protected static string|\UnitEnum|null $navigationGroup = 'الشركات والأصناف';

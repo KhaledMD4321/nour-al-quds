@@ -11,10 +11,14 @@ use App\Filament\Resources\StockTransfers\Tables\StockTransfersTable;
 use App\Models\StockTransfer;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
+use App\Filament\Concerns\HasModuleGuard;
 use Filament\Tables\Table;
 
 class StockTransferResource extends Resource
 {
+    use HasModuleGuard;
+    protected static string $module = 'inventory';
+
     protected static ?string $model = StockTransfer::class;
 
     protected static string|\BackedEnum|null $navigationIcon  = 'heroicon-o-arrows-right-left';

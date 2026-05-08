@@ -16,10 +16,14 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\ToggleColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\TernaryFilter;
+use App\Filament\Concerns\HasModuleGuard;
 use Filament\Tables\Table;
 
 class ChartOfAccountResource extends Resource
 {
+    use HasModuleGuard;
+    protected static string $module = 'accounting';
+
     protected static ?string $model = ChartOfAccount::class;
 
     protected static string|\UnitEnum|null $navigationGroup = 'المحاسبة';

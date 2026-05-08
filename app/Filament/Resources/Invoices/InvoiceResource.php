@@ -8,6 +8,7 @@ use App\Filament\Resources\Invoices\Pages\ViewInvoice;
 use App\Filament\Resources\Invoices\RelationManagers\ItemsRelationManager;
 use App\Filament\Resources\Invoices\Schemas\InvoiceForm;
 use App\Filament\Resources\Invoices\Tables\InvoicesTable;
+use App\Filament\Concerns\HasModuleGuard;
 use App\Models\Invoice;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
@@ -17,6 +18,9 @@ use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class InvoiceResource extends Resource
 {
+    use HasModuleGuard;
+
+    protected static string $module = 'sales';
     protected static ?string $model = Invoice::class;
 
     protected static string|\BackedEnum|null $navigationIcon      = 'heroicon-o-document-text';

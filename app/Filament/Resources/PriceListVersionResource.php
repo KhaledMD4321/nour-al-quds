@@ -20,10 +20,14 @@ use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
+use App\Filament\Concerns\HasModuleGuard;
 use Filament\Tables\Table;
 
 class PriceListVersionResource extends Resource
 {
+    use HasModuleGuard;
+    protected static string $module = 'catalog';
+
     protected static ?string $model = PriceListVersion::class;
 
     protected static string|\UnitEnum|null $navigationGroup = 'الشركات والأصناف';

@@ -29,10 +29,14 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use App\Filament\Concerns\HasModuleGuard;
 use Illuminate\Support\HtmlString;
 
 class PaymentResource extends Resource
 {
+    use HasModuleGuard;
+    protected static string $module = 'finance';
+
     protected static ?string $model = Payment::class;
 
     protected static string|\BackedEnum|null $navigationIcon  = 'heroicon-o-banknotes';

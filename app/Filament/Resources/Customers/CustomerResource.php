@@ -12,12 +12,16 @@ use App\Models\Customer;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Tables\Table;
+use App\Filament\Concerns\HasModuleGuard;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class CustomerResource extends Resource
 {
+    use HasModuleGuard;
+    protected static string $module = 'customers';
+
     protected static ?string $model = Customer::class;
 
     protected static string|\BackedEnum|null $navigationIcon  = 'heroicon-o-user-group';

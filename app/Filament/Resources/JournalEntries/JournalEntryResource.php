@@ -22,10 +22,14 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
+use App\Filament\Concerns\HasModuleGuard;
 use Illuminate\Database\Eloquent\Builder;
 
 class JournalEntryResource extends Resource
 {
+    use HasModuleGuard;
+    protected static string $module = 'accounting';
+
     protected static ?string $model = JournalEntry::class;
 
     protected static string|\BackedEnum|null $navigationIcon  = 'heroicon-o-book-open';

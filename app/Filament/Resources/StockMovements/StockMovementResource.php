@@ -9,10 +9,14 @@ use Filament\Schemas\Schema;
 use Filament\Tables;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
+use App\Filament\Concerns\HasModuleGuard;
 use Filament\Tables\Table;
 
 class StockMovementResource extends Resource
 {
+    use HasModuleGuard;
+    protected static string $module = 'inventory';
+
     protected static ?string $model = StockMovement::class;
 
     protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-arrow-path';

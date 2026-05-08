@@ -13,11 +13,15 @@ use App\Models\Warehouse;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Tables\Table;
+use App\Filament\Concerns\HasModuleGuard;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class WarehouseResource extends Resource
 {
+    use HasModuleGuard;
+    protected static string $module = 'inventory';
+
     protected static ?string $model = Warehouse::class;
 
     protected static string|\BackedEnum|null $navigationIcon  = 'heroicon-o-building-storefront';

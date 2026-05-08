@@ -13,11 +13,15 @@ use App\Models\PurchaseInvoice;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Tables\Table;
+use App\Filament\Concerns\HasModuleGuard;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class PurchaseInvoiceResource extends Resource
 {
+    use HasModuleGuard;
+    protected static string $module = 'purchases';
+
     protected static ?string $model = PurchaseInvoice::class;
 
     protected static string|\BackedEnum|null $navigationIcon  = 'heroicon-o-shopping-cart';

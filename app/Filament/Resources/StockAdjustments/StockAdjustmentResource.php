@@ -11,10 +11,14 @@ use App\Filament\Resources\StockAdjustments\Tables\StockAdjustmentsTable;
 use App\Models\StockAdjustment;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
+use App\Filament\Concerns\HasModuleGuard;
 use Filament\Tables\Table;
 
 class StockAdjustmentResource extends Resource
 {
+    use HasModuleGuard;
+    protected static string $module = 'inventory';
+
     protected static ?string $model = StockAdjustment::class;
 
     protected static string|\BackedEnum|null $navigationIcon  = 'heroicon-o-adjustments-horizontal';

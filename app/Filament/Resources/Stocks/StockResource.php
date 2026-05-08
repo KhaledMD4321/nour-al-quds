@@ -7,10 +7,14 @@ use App\Filament\Resources\Stocks\Tables\StocksTable;
 use App\Models\Stock;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
+use App\Filament\Concerns\HasModuleGuard;
 use Filament\Tables\Table;
 
 class StockResource extends Resource
 {
+    use HasModuleGuard;
+    protected static string $module = 'inventory';
+
     protected static ?string $model = Stock::class;
 
     protected static string|\BackedEnum|null $navigationIcon  = 'heroicon-o-archive-box';

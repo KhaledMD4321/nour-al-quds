@@ -21,10 +21,14 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Filters\TrashedFilter;
+use App\Filament\Concerns\HasModuleGuard;
 use Filament\Tables\Table;
 
 class CategoryResource extends Resource
 {
+    use HasModuleGuard;
+    protected static string $module = 'catalog';
+
     protected static ?string $model = Category::class;
 
     protected static string|\UnitEnum|null $navigationGroup = 'الشركات والأصناف';
