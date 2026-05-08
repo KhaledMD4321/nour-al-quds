@@ -129,7 +129,7 @@ app/
 └── Providers/
 
 config/
-├── modules.php     ← تشغيل/إيقاف أي module بسطر واحد
+├── modules.php     ← fallback defaults لحالة الوحدات (المصدر الحقيقي جدول modules)
 └── backup.php      ← spatie/laravel-backup config
 
 routes/
@@ -162,6 +162,8 @@ docs/               ← المواصفات التفصيلية
 | `quick_sales` | البيع السريع | بدون فاتورة رسمية |
 | `fiscal_periods` | الفترات المالية | is_closed |
 | `treasuries` | الخزائن والبنوك | type: cash/bank, current_balance |
+| `system_settings` | إعدادات النظام (key-value) | group+key unique; types: text/number/toggle/select/textarea/file/color |
+| `modules` | وحدات النظام (تفعيل/تعطيل) | code unique; is_active = boolean |
 
 ## خريطة الحسابات (chart_of_accounts)
 
@@ -226,6 +228,10 @@ docs/               ← المواصفات التفصيلية
 5. **Migration → Model → Service → Filament Resource** — ده الترتيب دايماً
 6. **TopProductsWidget** يستخدم `Widget` مش `TableWidget` (PostgreSQL GROUP BY)
 7. **لو عملت widget extends ChartWidget** — `$heading` مش static (يطلع error)
+8. **SystemSetting** — `SystemSetting::get('group.key', $default)` لقراءة الإعدادات (كاش 1 ساعة)
+9. **Module check** — `Module::isActive('sales')` — الـ Resources بتستخدم `HasModuleGuard` trait
+10. **Livewire method reset()** محجوز — استخدم `discardChanges()` أو أي اسم آخر
+11. **RoleManager** — لا تعدّل صلاحيات `super_admin` من الكود أبداً
 
 ## Phases Summary
 
@@ -238,3 +244,9 @@ docs/               ← المواصفات التفصيلية
 | 8 | Dashboard Widgets + Statement Pages + Print | 3536542 |
 | 8A-1 | Bug fixes: BadgeColumn, GROUP BY, BOM encoding | 79b5af6 |
 | 8A-2 | Cleanup: N+1, Validation, Audit Log, Security, Backup, Indexes | 57b2ea8 |
+| 8B-1 | SystemSetting model + migration + seeder (41 settings, 7 groups) | 3dfa36e |
+| 8B-2 | SystemSettings Page (7 tabs, Livewire, file upload for logo) | 77043d3 |
+| 8B-3 | Connect code to SystemSetting: prefixes, digits, business rules | 9d1477f |
+| 8B-4 | RoleManager page: Spatie permissions grouped by category | 028b056 |
+| 8B-5 | Frontend polish: brandName, NavigationGroups, empty states x28 | 1d8b7da |
+| 8B-6 | Module toggle: modules table + Model + HasModuleGuard trait x23 | 5a46130 |
