@@ -111,7 +111,7 @@ class SystemSettings extends Page
     }
 
     /** إعادة تعيين التبويب النشط إلى القيم المحفوظة */
-    public function reset(): void
+    public function discardChanges(): void
     {
         $this->loadSettings();
 

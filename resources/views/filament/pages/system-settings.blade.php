@@ -166,7 +166,7 @@
             <div class="flex items-center justify-end gap-3">
                 <button
                     type="button"
-                    wire:click="reset"
+                    wire:click="discardChanges"
                     class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-600 transition"
                 >
                     إلغاء التغييرات
