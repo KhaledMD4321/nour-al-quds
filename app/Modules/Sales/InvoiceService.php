@@ -9,6 +9,7 @@ use App\Models\InvoiceItem;
 use App\Models\Product;
 use App\Models\Stock;
 use App\Models\StockMovement;
+use App\Models\SystemSetting;
 use Exception;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -49,9 +50,12 @@ class InvoiceService
 
                 if ($available < $qty) {
                     $productName = $item->product?->name ?? '#' . $item->product_id;
-                    throw new Exception(
-                        "الكمية المطلوبة للصنف \"{$productName}\" ({$qty}) أكبر من المتاح ({$available})"
-                    );
+                    if (! SystemSetting::get('business_rules.allow_negative_stock', false)) {
+                        throw new Exception(
+                            "الكمية المطلوبة للصنف \"{$productName}\" ({$qty}) أكبر من المتاح ({$available})"
+                        );
+                    }
+                    // allow_negative_stock=true — نكمل بدون رصيد
                 }
 
                 $balanceAfter = $available - $qty;
@@ -220,6 +224,10 @@ class InvoiceService
             ->value('total_outstanding') ?? 0;
 
         if (((float) $outstanding + (float) $invoice->total_amount) > $creditLimit) {
+            // إذا كان الإعداد يسمح بتجاوز الحد — تحذير فقط وليس رفضاً
+            if (SystemSetting::get('business_rules.allow_over_credit_limit', false)) {
+                return; // السماح بالمتابعة
+            }
             throw new Exception(
                 sprintf(
                     'تجاوز حد الائتمان للعميل — الحد: %s ج.م — المستحق: %s ج.م',

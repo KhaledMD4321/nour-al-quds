@@ -8,6 +8,7 @@ use App\Models\QuickSale;
 use App\Models\QuickSaleItem;
 use App\Models\Stock;
 use App\Models\StockMovement;
+use App\Models\SystemSetting;
 use App\Modules\Finance\TreasuryService;
 use Exception;
 use Illuminate\Support\Facades\Auth;
@@ -94,9 +95,12 @@ class QuickSaleService
 
                 if ($available < $qty) {
                     $productName = Product::find($itemData['product_id'])?->name ?? '#' . $itemData['product_id'];
-                    throw new Exception(
-                        "الكمية المطلوبة للصنف \"{$productName}\" ({$qty}) أكبر من المتاح ({$available})"
-                    );
+                    if (! SystemSetting::get('business_rules.allow_negative_stock', false)) {
+                        throw new Exception(
+                            "الكمية المطلوبة للصنف \"{$productName}\" ({$qty}) أكبر من المتاح ({$available})"
+                        );
+                    }
+                    // allow_negative_stock=true — نكمل بدون رصيد
                 }
 
                 // إنشاء البند

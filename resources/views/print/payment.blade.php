@@ -137,8 +137,8 @@
 
 {{-- ── Header ── --}}
 <div class="header">
-    <div class="company-name">نور القدس</div>
-    <div class="company-sub">{{ $payment->businessUnit->name ?? 'نور القدس للأدوات الصحية' }}</div>
+    <div class="company-name">{{ \App\Models\SystemSetting::get('company.name', 'نور القدس') }}</div>
+    <div class="company-sub">{{ $payment->businessUnit->name ?? \App\Models\SystemSetting::get('company.name', 'نور القدس للأدوات الصحية') }}</div>
     <div class="doc-title">سند صرف</div>
 </div>
 

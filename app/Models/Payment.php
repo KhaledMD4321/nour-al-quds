@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\SystemSetting;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -112,13 +113,17 @@ class Payment extends Model
 
     public static function generateReference(): string
     {
+        $prefix = SystemSetting::get('numbering.payment_prefix', 'PAY-');
+        $digits = (int) SystemSetting::get('numbering.digits', 5);
+        $len    = strlen($prefix);
+
         $last = static::withTrashed()
-            ->where('payment_number', 'like', 'PAY-%')
+            ->where('payment_number', 'like', $prefix . '%')
             ->orderByDesc('id')
             ->value('payment_number');
 
-        $next = $last ? ((int) substr($last, 4)) + 1 : 1;
+        $next = $last ? ((int) substr($last, $len)) + 1 : 1;
 
-        return 'PAY-' . str_pad($next, 5, '0', STR_PAD_LEFT);
+        return $prefix . str_pad($next, $digits, '0', STR_PAD_LEFT);
     }
 }

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\SystemSetting;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -125,13 +126,17 @@ class Cheque extends Model
 
     public static function generateReference(): string
     {
+        $prefix = SystemSetting::get('numbering.cheque_prefix', 'CHQ-');
+        $digits = (int) SystemSetting::get('numbering.digits', 5);
+        $len    = strlen($prefix);
+
         $last = self::withTrashed()
-            ->where('cheque_number', 'like', 'CHQ-%')
+            ->where('cheque_number', 'like', $prefix . '%')
             ->orderByDesc('id')
             ->value('cheque_number');
 
-        $next = $last ? ((int) substr($last, 4)) + 1 : 1;
+        $next = $last ? ((int) substr($last, $len)) + 1 : 1;
 
-        return 'CHQ-' . str_pad($next, 5, '0', STR_PAD_LEFT);
+        return $prefix . str_pad($next, $digits, '0', STR_PAD_LEFT);
     }
 }

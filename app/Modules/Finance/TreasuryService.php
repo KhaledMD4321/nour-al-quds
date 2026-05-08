@@ -2,6 +2,7 @@
 
 namespace App\Modules\Finance;
 
+use App\Models\SystemSetting;
 use App\Models\Treasury;
 use App\Models\TreasuryTransaction;
 use Illuminate\Support\Facades\Auth;
@@ -87,11 +88,15 @@ class TreasuryService
             }
 
             if ((float) $treasury->current_balance < $amount) {
-                throw new RuntimeException(
-                    "رصيد الخزينة \"{$treasury->name}\" غير كافٍ. " .
+                $action = SystemSetting::get('business_rules.negative_treasury_action', 'reject');
+                $msg = "رصيد الخزينة \"{$treasury->name}\" غير كافٍ. " .
                     "الرصيد الحالي: " . number_format((float) $treasury->current_balance, 2) . " ج.م، " .
-                    "المطلوب: " . number_format($amount, 2) . " ج.م"
-                );
+                    "المطلوب: " . number_format($amount, 2) . " ج.م";
+                if ($action === 'reject') {
+                    throw new RuntimeException($msg);
+                }
+                // action = 'warn' — نسجّل warning ونكمل
+                logger()->warning("TreasuryService: {$msg}");
             }
 
             $newBalance = (float) $treasury->current_balance - $amount;

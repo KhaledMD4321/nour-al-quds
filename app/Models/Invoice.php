@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\SystemSetting;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -54,28 +55,36 @@ class Invoice extends Model
 
     public static function generateReference(): string
     {
+        $prefix = SystemSetting::get('numbering.invoice_prefix', 'INV-');
+        $digits = (int) SystemSetting::get('numbering.digits', 5);
+        $len    = strlen($prefix);
+
         $last = static::withTrashed()
             ->where('type', '!=', 'quotation')
-            ->whereRaw("reference_number ~ '^INV-[0-9]+$'")
-            ->orderByRaw("CAST(SUBSTRING(reference_number FROM 5) AS INTEGER) DESC")
+            ->whereRaw("reference_number ~ '^" . addslashes($prefix) . "[0-9]+$'")
+            ->orderByRaw("CAST(SUBSTRING(reference_number FROM " . ($len + 1) . ") AS INTEGER) DESC")
             ->value('reference_number');
 
-        $num = $last ? ((int) substr($last, 4)) + 1 : 1;
+        $num = $last ? ((int) substr($last, $len)) + 1 : 1;
 
-        return 'INV-' . str_pad($num, 5, '0', STR_PAD_LEFT);
+        return $prefix . str_pad($num, $digits, '0', STR_PAD_LEFT);
     }
 
     public static function generateQuotationReference(): string
     {
+        $prefix = SystemSetting::get('numbering.quotation_prefix', 'QUO-');
+        $digits = (int) SystemSetting::get('numbering.digits', 5);
+        $len    = strlen($prefix);
+
         $last = static::withTrashed()
             ->where('type', 'quotation')
-            ->whereRaw("reference_number ~ '^QUO-[0-9]+$'")
-            ->orderByRaw("CAST(SUBSTRING(reference_number FROM 5) AS INTEGER) DESC")
+            ->whereRaw("reference_number ~ '^" . addslashes($prefix) . "[0-9]+$'")
+            ->orderByRaw("CAST(SUBSTRING(reference_number FROM " . ($len + 1) . ") AS INTEGER) DESC")
             ->value('reference_number');
 
-        $num = $last ? ((int) substr($last, 4)) + 1 : 1;
+        $num = $last ? ((int) substr($last, $len)) + 1 : 1;
 
-        return 'QUO-' . str_pad($num, 5, '0', STR_PAD_LEFT);
+        return $prefix . str_pad($num, $digits, '0', STR_PAD_LEFT);
     }
 
     // ── Status helpers ───────────────────────────────────────────────────────────

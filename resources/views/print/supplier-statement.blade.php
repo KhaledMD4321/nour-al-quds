@@ -65,7 +65,7 @@
 
     {{-- Header --}}
     <div class="header">
-        <div class="company-name">نور القدس للأدوات الصحية</div>
+        <div class="company-name">{{ \App\Models\SystemSetting::get('company.name', 'نور القدس للأدوات الصحية') }}</div>
         <div class="doc-title">كشف حساب مورد</div>
         <div class="doc-period">
             الفترة:
