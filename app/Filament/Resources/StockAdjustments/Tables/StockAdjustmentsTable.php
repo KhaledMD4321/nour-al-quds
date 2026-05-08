@@ -88,6 +88,9 @@ class StockAdjustmentsTable
                     ->visible(fn (StockAdjustment $record): bool => $record->isDraft()),
             ])
             ->defaultSort('id', 'desc')
+            ->emptyStateHeading('لا توجد تسويات مخزون')
+            ->emptyStateDescription('ابدأ بإضافة تسوية جديدة.')
+            ->emptyStateIcon('heroicon-o-inbox')
             ->striped();
     }
 }

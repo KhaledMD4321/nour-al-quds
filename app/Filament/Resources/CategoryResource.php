@@ -185,6 +185,9 @@ class CategoryResource extends Resource
                     ->visible(fn (): bool => auth()->user()->hasRole('super_admin')),
             ])
             ->defaultSort('sort_order', 'asc')
+            ->emptyStateHeading('لا توجد تصنيفات')
+            ->emptyStateDescription('ابدأ بإضافة تصنيف جديد.')
+            ->emptyStateIcon('heroicon-o-inbox')
             ->striped();
     }
 

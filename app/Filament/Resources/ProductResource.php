@@ -250,6 +250,9 @@ class ProductResource extends Resource
                     ->visible(fn (): bool => auth()->user()->hasRole('super_admin')),
             ])
             ->defaultSort('name')
+            ->emptyStateHeading('لا توجد منتجات')
+            ->emptyStateDescription('ابدأ بإضافة منتج جديد.')
+            ->emptyStateIcon('heroicon-o-inbox')
             ->striped();
     }
 

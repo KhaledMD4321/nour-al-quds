@@ -109,6 +109,9 @@ class SuppliersTable
                 ]),
             ])
             ->defaultSort('name')
+            ->emptyStateHeading('لا يوجد موردون')
+            ->emptyStateDescription('ابدأ بإضافة مورد جديد.')
+            ->emptyStateIcon('heroicon-o-inbox')
             ->striped();
     }
 }

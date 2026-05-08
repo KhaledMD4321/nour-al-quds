@@ -144,6 +144,9 @@ class PurchaseInvoicesTable
                 ]),
             ])
             ->defaultSort('created_at', 'desc')
+            ->emptyStateHeading('لا توجد فواتير مشتريات')
+            ->emptyStateDescription('ابدأ بإضافة فاتورة مشتريات جديدة.')
+            ->emptyStateIcon('heroicon-o-inbox')
             ->striped();
     }
 }

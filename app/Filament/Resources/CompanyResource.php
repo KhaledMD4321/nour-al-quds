@@ -151,6 +151,9 @@ class CompanyResource extends Resource
                     ->visible(fn () => auth()->user()->hasRole('super_admin')),
             ])
             ->defaultSort('name')
+            ->emptyStateHeading('لا توجد شركات')
+            ->emptyStateDescription('ابدأ بإضافة شركة جديدة.')
+            ->emptyStateIcon('heroicon-o-inbox')
             ->striped();
     }
 

@@ -189,6 +189,9 @@ class PriceListVersionResource extends Resource
                     ->visible(fn (PriceListVersion $record): bool => $record->status === 'active'),
             ])
             ->defaultSort('created_at', 'desc')
+            ->emptyStateHeading('لا توجد قوائم أسعار')
+            ->emptyStateDescription('ابدأ بإضافة قائمة أسعار جديدة.')
+            ->emptyStateIcon('heroicon-o-inbox')
             ->striped();
     }
 

@@ -181,6 +181,9 @@ class LookupTypeResource extends Resource
                     }),
             ])
             ->defaultSort('id')
+            ->emptyStateHeading('لا توجد قيم مرجعية')
+            ->emptyStateDescription('ابدأ بإضافة قيمة جديدة.')
+            ->emptyStateIcon('heroicon-o-inbox')
             ->striped();
     }
 

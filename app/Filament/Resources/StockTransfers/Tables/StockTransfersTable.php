@@ -87,6 +87,9 @@ class StockTransfersTable
                     ->visible(fn (StockTransfer $record): bool => $record->isDraft()),
             ])
             ->defaultSort('id', 'desc')
+            ->emptyStateHeading('لا توجد تحويلات مخزون')
+            ->emptyStateDescription('ابدأ بإضافة تحويل جديد.')
+            ->emptyStateIcon('heroicon-o-inbox')
             ->striped();
     }
 }

@@ -146,6 +146,9 @@ class ChartOfAccountResource extends Resource
                     ->label('نشط'),
             ])
             ->defaultSort('code', 'asc')
+            ->emptyStateHeading('لا توجد حسابات')
+            ->emptyStateDescription('ابدأ بإضافة حساب جديد.')
+            ->emptyStateIcon('heroicon-o-inbox')
             ->filters([
                 SelectFilter::make('type')
                     ->label('النوع')

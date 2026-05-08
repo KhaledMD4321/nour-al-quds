@@ -465,6 +465,9 @@ class ChequeResource extends Resource
 
             ])
             ->bulkActions([])
+            ->emptyStateHeading('لا توجد شيكات')
+            ->emptyStateDescription('ابدأ بإضافة شيك جديد.')
+            ->emptyStateIcon('heroicon-o-inbox')
             ->paginated([25, 50, 100]);
     }
 

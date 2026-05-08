@@ -106,6 +106,9 @@ class WarehousesTable
                 ]),
             ])
             ->defaultSort('created_at', 'desc')
+            ->emptyStateHeading('لا توجد مستودعات')
+            ->emptyStateDescription('ابدأ بإضافة مستودع جديد.')
+            ->emptyStateIcon('heroicon-o-inbox')
             ->striped();
     }
 }

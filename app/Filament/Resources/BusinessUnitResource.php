@@ -90,6 +90,9 @@ class BusinessUnitResource extends Resource
                     ->label('نشطة'),
             ])
             ->defaultSort('id')
+            ->emptyStateHeading('لا توجد وحدات تشغيلية')
+            ->emptyStateDescription('ابدأ بإضافة وحدة تشغيلية جديدة.')
+            ->emptyStateIcon('heroicon-o-inbox')
             ->striped();
     }
 

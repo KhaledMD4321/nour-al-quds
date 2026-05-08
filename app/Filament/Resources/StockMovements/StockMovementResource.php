@@ -96,6 +96,9 @@ class StockMovementResource extends Resource
                     ]),
             ])
             ->defaultSort('id', 'desc')
+            ->emptyStateHeading('لا توجد حركات مخزون')
+            ->emptyStateDescription('لا توجد حركات مخزون مسجّلة.')
+            ->emptyStateIcon('heroicon-o-arrow-path')
             ->striped();
     }
 

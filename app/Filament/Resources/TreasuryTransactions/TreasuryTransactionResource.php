@@ -173,6 +173,9 @@ class TreasuryTransactionResource extends Resource
                     }),
             ])
             ->defaultSort('id', 'desc')
+            ->emptyStateHeading('لا توجد معاملات خزينة')
+            ->emptyStateDescription('ابدأ بإضافة معاملة جديدة.')
+            ->emptyStateIcon('heroicon-o-inbox')
             ->striped()
             ->paginated([25, 50, 100]);
     }

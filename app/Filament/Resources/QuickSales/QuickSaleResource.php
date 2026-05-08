@@ -91,6 +91,9 @@ class QuickSaleResource extends Resource
                 ViewAction::make()->label('تفاصيل'),
             ])
             ->defaultSort('id', 'desc')
+            ->emptyStateHeading('لا توجد مبيعات سريعة')
+            ->emptyStateDescription('ابدأ بإضافة عملية بيع جديدة.')
+            ->emptyStateIcon('heroicon-o-inbox')
             ->striped();
     }
 

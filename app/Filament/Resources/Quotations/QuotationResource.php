@@ -159,6 +159,9 @@ class QuotationResource extends Resource
                     ->url(fn (Invoice $record) => static::getUrl('view', ['record' => $record])),
             ])
             ->defaultSort('id', 'desc')
+            ->emptyStateHeading('لا توجد عروض أسعار')
+            ->emptyStateDescription('ابدأ بإضافة عرض سعر جديد.')
+            ->emptyStateIcon('heroicon-o-inbox')
             ->striped();
     }
 

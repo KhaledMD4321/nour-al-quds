@@ -241,6 +241,9 @@ class JournalEntryResource extends Resource
 
             ])
             ->bulkActions([])
+            ->emptyStateHeading('لا توجد قيود يومية')
+            ->emptyStateDescription('ابدأ بإضافة قيد يومي جديد.')
+            ->emptyStateIcon('heroicon-o-inbox')
             ->paginated([25, 50, 100]);
     }
 

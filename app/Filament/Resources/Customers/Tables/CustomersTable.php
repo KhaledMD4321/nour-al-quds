@@ -139,6 +139,9 @@ class CustomersTable
                 ]),
             ])
             ->defaultSort('name')
+            ->emptyStateHeading('لا يوجد عملاء')
+            ->emptyStateDescription('ابدأ بإضافة عميل جديد.')
+            ->emptyStateIcon('heroicon-o-inbox')
             ->striped();
     }
 }

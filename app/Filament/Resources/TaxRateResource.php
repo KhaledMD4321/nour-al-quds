@@ -105,6 +105,9 @@ class TaxRateResource extends Resource
                 DeleteAction::make()->label('حذف'),
             ])
             ->defaultSort('id')
+            ->emptyStateHeading('لا توجد ضرائب')
+            ->emptyStateDescription('ابدأ بإضافة ضريبة جديدة.')
+            ->emptyStateIcon('heroicon-o-inbox')
             ->striped();
     }
 

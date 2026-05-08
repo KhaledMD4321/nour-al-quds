@@ -403,6 +403,9 @@ class PaymentResource extends Resource
                     ->visible(fn () => auth()->user()?->isSuperAdmin() || auth()->user()?->can('finance.payment.print')),
             ])
             ->bulkActions([])
+            ->emptyStateHeading('لا توجد سندات صرف')
+            ->emptyStateDescription('ابدأ بإضافة سند صرف جديد.')
+            ->emptyStateIcon('heroicon-o-inbox')
             ->paginated([25, 50, 100]);
     }
 

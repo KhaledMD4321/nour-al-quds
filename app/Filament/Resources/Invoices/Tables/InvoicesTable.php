@@ -120,6 +120,9 @@ class InvoicesTable
                 ViewAction::make()->label('تفاصيل'),
             ])
             ->defaultSort('id', 'desc')
+            ->emptyStateHeading('لا توجد فواتير')
+            ->emptyStateDescription('ابدأ بإضافة فاتورة جديدة.')
+            ->emptyStateIcon('heroicon-o-inbox')
             ->striped();
     }
 }

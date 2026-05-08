@@ -165,6 +165,9 @@ class UserResource extends Resource
                     ->hidden(fn (User $record): bool => $record->id === 1),
             ])
             ->defaultSort('id')
+            ->emptyStateHeading('لا يوجد مستخدمون')
+            ->emptyStateDescription('ابدأ بإضافة مستخدم جديد.')
+            ->emptyStateIcon('heroicon-o-inbox')
             ->striped();
     }
 

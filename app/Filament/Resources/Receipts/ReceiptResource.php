@@ -331,7 +331,10 @@ class ReceiptResource extends Resource
                     ->openUrlInNewTab()
                     ->visible(fn () => auth()->user()?->isSuperAdmin() || auth()->user()?->can('finance.receipt.print')),
             ])
-            ->bulkActions([]);
+            ->bulkActions([])
+            ->emptyStateHeading('لا توجد سندات قبض')
+            ->emptyStateDescription('ابدأ بإضافة سند قبض جديد.')
+            ->emptyStateIcon('heroicon-o-inbox');
     }
 
     // ── Pages ─────────────────────────────────────────────────────────────────────

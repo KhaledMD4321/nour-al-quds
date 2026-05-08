@@ -187,6 +187,9 @@ class PurchaseReturnResource extends Resource
                     ),
             ])
             ->defaultSort('id', 'desc')
+            ->emptyStateHeading('لا توجد مرتجعات مشتريات')
+            ->emptyStateDescription('ابدأ بإضافة مرتجع جديد.')
+            ->emptyStateIcon('heroicon-o-inbox')
             ->striped();
     }
 

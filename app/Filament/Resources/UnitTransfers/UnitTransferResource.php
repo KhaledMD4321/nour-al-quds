@@ -232,6 +232,9 @@ class UnitTransferResource extends Resource
                     ),
             ])
             ->defaultSort('id', 'desc')
+            ->emptyStateHeading('لا توجد تحويلات')
+            ->emptyStateDescription('ابدأ بإضافة تحويل جديد.')
+            ->emptyStateIcon('heroicon-o-inbox')
             ->striped();
     }
 

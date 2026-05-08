@@ -130,6 +130,9 @@ class FiscalPeriodResource extends Resource
             ])
             ->defaultSort('year', 'desc')
             ->defaultSort('month', 'desc')
+            ->emptyStateHeading('لا توجد فترات مالية')
+            ->emptyStateDescription('ابدأ بإضافة فترة مالية جديدة.')
+            ->emptyStateIcon('heroicon-o-inbox')
             ->striped();
     }
 
