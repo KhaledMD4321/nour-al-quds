@@ -3,10 +3,10 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\LookupTypeResource\Pages;
+use App\Filament\Resources\LookupTypeResource\RelationManagers\LookupValuesRelationManager;
 use App\Models\LookupType;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\EditAction;
-use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
@@ -81,46 +81,6 @@ class LookupTypeResource extends Resource
                 ])
                 ->columns(2),
 
-            Section::make('القيم')
-                ->schema([
-                    Repeater::make('values')
-                        ->relationship()
-                        ->label('')
-                        ->schema([
-                            TextInput::make('code')
-                                ->label('الكود')
-                                ->required()
-                                ->maxLength(50)
-                                ->placeholder('piece'),
-
-                            TextInput::make('label')
-                                ->label('الاسم بالعربي')
-                                ->required()
-                                ->maxLength(100)
-                                ->placeholder('قطعة'),
-
-                            TextInput::make('sort_order')
-                                ->label('الترتيب')
-                                ->numeric()
-                                ->default(0)
-                                ->minValue(0),
-
-                            Toggle::make('is_active')
-                                ->label('نشط')
-                                ->default(true),
-
-                            Toggle::make('is_default')
-                                ->label('افتراضي'),
-                        ])
-                        ->columns(5)
-                        ->defaultItems(1)
-                        ->addActionLabel('إضافة قيمة جديدة')
-                        ->reorderable()
-                        ->reorderableWithDragAndDrop()
-                        ->collapsible()
-                        ->itemLabel(fn (array $state): ?string => $state['label'] ?? null),
-                ]),
-
         ]);
     }
 
@@ -138,12 +98,15 @@ class LookupTypeResource extends Resource
                 TextColumn::make('code')
                     ->label('الكود')
                     ->searchable()
+                    ->fontFamily('mono')
                     ->badge()
                     ->color('gray'),
 
                 TextColumn::make('values_count')
                     ->label('عدد القيم')
                     ->counts('values')
+                    ->badge()
+                    ->color('info')
                     ->sortable(),
 
                 IconColumn::make('is_system')
@@ -185,6 +148,15 @@ class LookupTypeResource extends Resource
             ->emptyStateDescription('ابدأ بإضافة قيمة جديدة.')
             ->emptyStateIcon('heroicon-o-inbox')
             ->striped();
+    }
+
+    // ─── Relations ─────────────────────────────────────────────────────────────
+
+    public static function getRelations(): array
+    {
+        return [
+            LookupValuesRelationManager::class,
+        ];
     }
 
     // ─── Pages ─────────────────────────────────────────────────────────────────
