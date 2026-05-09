@@ -2,13 +2,16 @@
 
 namespace App\Models;
 
+use App\Traits\HasCustomFields;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Company extends Model
 {
-    use SoftDeletes;
+    use SoftDeletes, HasCustomFields;
+
+    protected function getCustomFieldEntityType(): string { return 'company'; }
 
     protected $fillable = [
         'name',

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Traits\HasCustomFields;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -9,7 +10,9 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Supplier extends Model
 {
-    use SoftDeletes;
+    use SoftDeletes, HasCustomFields;
+
+    protected function getCustomFieldEntityType(): string { return 'supplier'; }
 
     protected $fillable = [
         'code',
