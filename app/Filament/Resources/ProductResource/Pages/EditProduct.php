@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\ProductResource\Pages;
 
 use App\Filament\Resources\ProductResource;
+use App\Services\CustomFieldRenderer;
 use Filament\Actions\DeleteAction;
 use Filament\Resources\Pages\EditRecord;
 
@@ -27,5 +28,16 @@ class EditProduct extends EditRecord
     protected function getRedirectUrl(): string
     {
         return $this->getResource()::getUrl('index');
+    }
+
+    protected function mutateFormDataBeforeFill(array $data): array
+    {
+        $data['custom_fields'] = CustomFieldRenderer::loadValues($this->getRecord());
+        return $data;
+    }
+
+    protected function afterSave(): void
+    {
+        CustomFieldRenderer::saveValues($this->getRecord(), $this->data);
     }
 }

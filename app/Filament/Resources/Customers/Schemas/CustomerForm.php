@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\Customers\Schemas;
 
 use App\Models\LookupType;
+use App\Services\CustomFieldRenderer;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
@@ -140,6 +141,18 @@ class CustomerForm
                 ])
                 ->columns(2)
                 ->collapsible(),
+
+            // ─── حقول مخصصة (ديناميكية) ──────────────────────────────────────
+            ...array_filter([
+                (function () {
+                    $components = CustomFieldRenderer::formComponents('customer');
+                    if (empty($components)) return null;
+                    return Section::make('بيانات إضافية')
+                        ->schema($components)
+                        ->columns(2)
+                        ->collapsible();
+                })(),
+            ]),
 
         ]);
     }

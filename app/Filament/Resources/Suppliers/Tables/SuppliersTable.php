@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Suppliers\Tables;
 
+use App\Services\CustomFieldRenderer;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
@@ -65,6 +66,9 @@ class SuppliersTable
                     ->date('d/m/Y')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
+
+                // ─── حقول مخصصة قابلة للبحث ───
+                ...CustomFieldRenderer::tableColumns('supplier'),
 
             ])
             ->filters([

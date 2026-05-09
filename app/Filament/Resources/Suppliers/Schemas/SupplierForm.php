@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Suppliers\Schemas;
 
+use App\Services\CustomFieldRenderer;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
@@ -87,6 +88,18 @@ class SupplierForm
                 ])
                 ->columns(2)
                 ->collapsible(),
+
+            // ─── حقول مخصصة (ديناميكية) ──────────────────────────────────────
+            ...array_filter([
+                (function () {
+                    $components = CustomFieldRenderer::formComponents('supplier');
+                    if (empty($components)) return null;
+                    return Section::make('بيانات إضافية')
+                        ->schema($components)
+                        ->columns(2)
+                        ->collapsible();
+                })(),
+            ]),
 
         ]);
     }

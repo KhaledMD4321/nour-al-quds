@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\Suppliers\Pages;
 
 use App\Filament\Resources\Suppliers\SupplierResource;
+use App\Services\CustomFieldRenderer;
 use Filament\Resources\Pages\CreateRecord;
 
 class CreateSupplier extends CreateRecord
@@ -19,5 +20,10 @@ class CreateSupplier extends CreateRecord
     protected function getRedirectUrl(): string
     {
         return $this->getResource()::getUrl('view', ['record' => $this->getRecord()]);
+    }
+
+    protected function afterCreate(): void
+    {
+        CustomFieldRenderer::saveValues($this->getRecord(), $this->data);
     }
 }

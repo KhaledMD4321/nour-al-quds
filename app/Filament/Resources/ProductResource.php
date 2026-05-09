@@ -3,6 +3,7 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\ProductResource\Pages;
+use App\Services\CustomFieldRenderer;
 use App\Models\Category;
 use App\Models\Company;
 use App\Models\LookupType;
@@ -154,6 +155,18 @@ class ProductResource extends Resource
                 ])
                 ->columns(1)
                 ->collapsed(),
+
+            // ─── حقول مخصصة (ديناميكية) ──────────────────────────────────────
+            ...array_filter([
+                (function () {
+                    $components = CustomFieldRenderer::formComponents('product');
+                    if (empty($components)) return null;
+                    return Section::make('بيانات إضافية')
+                        ->schema($components)
+                        ->columns(2)
+                        ->collapsible();
+                })(),
+            ]),
         ]);
     }
 
@@ -214,6 +227,9 @@ class ProductResource extends Resource
                     ->dateTime('d/m/Y')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
+
+                // ─── حقول مخصصة قابلة للبحث ───
+                ...CustomFieldRenderer::tableColumns('product'),
             ])
             ->filters([
                 SelectFilter::make('company_id')

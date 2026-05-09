@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\CompanyResource\Pages;
 
 use App\Filament\Resources\CompanyResource;
+use App\Services\CustomFieldRenderer;
 use Filament\Resources\Pages\CreateRecord;
 
 class CreateCompany extends CreateRecord
@@ -19,5 +20,10 @@ class CreateCompany extends CreateRecord
     protected function getRedirectUrl(): string
     {
         return $this->getResource()::getUrl('index');
+    }
+
+    protected function afterCreate(): void
+    {
+        CustomFieldRenderer::saveValues($this->getRecord(), $this->data);
     }
 }

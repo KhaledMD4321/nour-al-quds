@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\Customers\Pages;
 
 use App\Filament\Resources\Customers\CustomerResource;
+use App\Services\CustomFieldRenderer;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\ForceDeleteAction;
 use Filament\Actions\RestoreAction;
@@ -31,5 +32,16 @@ class EditCustomer extends EditRecord
     protected function getRedirectUrl(): string
     {
         return $this->getResource()::getUrl('view', ['record' => $this->getRecord()]);
+    }
+
+    protected function mutateFormDataBeforeFill(array $data): array
+    {
+        $data['custom_fields'] = CustomFieldRenderer::loadValues($this->getRecord());
+        return $data;
+    }
+
+    protected function afterSave(): void
+    {
+        CustomFieldRenderer::saveValues($this->getRecord(), $this->data);
     }
 }

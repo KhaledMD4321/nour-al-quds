@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\Customers\Pages;
 
 use App\Filament\Resources\Customers\CustomerResource;
+use App\Services\CustomFieldRenderer;
 use Filament\Resources\Pages\CreateRecord;
 
 class CreateCustomer extends CreateRecord
@@ -19,5 +20,10 @@ class CreateCustomer extends CreateRecord
     protected function getRedirectUrl(): string
     {
         return $this->getResource()::getUrl('view', ['record' => $this->getRecord()]);
+    }
+
+    protected function afterCreate(): void
+    {
+        CustomFieldRenderer::saveValues($this->getRecord(), $this->data);
     }
 }

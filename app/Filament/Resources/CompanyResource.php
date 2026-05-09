@@ -3,6 +3,7 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\CompanyResource\Pages;
+use App\Services\CustomFieldRenderer;
 use App\Models\Company;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\EditAction;
@@ -93,6 +94,18 @@ class CompanyResource extends Resource
                         ->columnSpanFull(),
                 ])
                 ->columns(2),
+
+            // ─── حقول مخصصة (ديناميكية) ──────────────────────────────────────
+            ...array_filter([
+                (function () {
+                    $components = CustomFieldRenderer::formComponents('company');
+                    if (empty($components)) return null;
+                    return Section::make('بيانات إضافية')
+                        ->schema($components)
+                        ->columns(2)
+                        ->collapsible();
+                })(),
+            ]),
         ]);
     }
 
@@ -136,6 +149,9 @@ class CompanyResource extends Resource
                     ->dateTime('d/m/Y')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
+
+                // ─── حقول مخصصة قابلة للبحث ───
+                ...CustomFieldRenderer::tableColumns('company'),
             ])
             ->filters([
                 TrashedFilter::make()

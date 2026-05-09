@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\Customers\Tables;
 
 use App\Models\LookupType;
+use App\Services\CustomFieldRenderer;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
@@ -98,6 +99,9 @@ class CustomersTable
                     ->date('d/m/Y')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
+
+                // ─── حقول مخصصة قابلة للبحث ───
+                ...CustomFieldRenderer::tableColumns('customer'),
 
             ])
             ->filters([
