@@ -116,6 +116,7 @@ class ChartOfAccountsTree extends Page
         $this->newAccount['parent_id']     = $parentId;
 
         if ($parentId) {
+            // حساب فرعي — يقترح الكود بناءً على آخر ابن
             $parent = ChartOfAccount::find($parentId);
             if ($parent) {
                 $this->newAccount['type'] = $parent->type;
@@ -126,6 +127,20 @@ class ChartOfAccountsTree extends Page
                     ? (string) ((int) $lastChild->code + 1)
                     : $parent->code . '1';
             }
+        } else {
+            // حساب رئيسي — يقترح الرقم التالي (1000, 2000, 3000, ...)
+            $lastParent = ChartOfAccount::whereNull('parent_id')
+                ->orderByDesc('code')
+                ->first();
+            if ($lastParent) {
+                $lastCode  = (int) $lastParent->code;
+                $step      = 1000;
+                $suggested = (int) (ceil(($lastCode + 1) / $step) * $step);
+                $this->newAccount['code'] = (string) $suggested;
+            } else {
+                $this->newAccount['code'] = '1000';
+            }
+            $this->newAccount['type'] = 'asset';
         }
     }
 
