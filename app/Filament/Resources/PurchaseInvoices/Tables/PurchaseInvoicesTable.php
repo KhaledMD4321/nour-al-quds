@@ -106,6 +106,13 @@ class PurchaseInvoicesTable
 
                 EditAction::make()->label('تعديل'),
 
+                Action::make('print')
+                    ->label('طباعة')
+                    ->icon('heroicon-o-printer')
+                    ->color('info')
+                    ->url(fn (PurchaseInvoice $record): string => route('purchase-invoices.print', $record))
+                    ->openUrlInNewTab(),
+
                 // ── تأكيد الاستلام ─────────────────────────────────────────
                 Action::make('confirm')
                     ->label('تأكيد الاستلام')

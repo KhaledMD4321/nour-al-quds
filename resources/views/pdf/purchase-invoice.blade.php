@@ -2,20 +2,12 @@
 <html dir="rtl" lang="ar">
 <head>
     <meta charset="UTF-8">
-    <title>{{ $invoice->type === 'quotation' ? 'عرض سعر' : ($invoice->type === 'sale_return' ? 'مرتجع' : 'فاتورة') }} {{ $invoice->reference_number }}</title>
+    <title>فاتورة مشتريات {{ $invoice->reference_number }}</title>
 
     @php
-        $isQuotation  = $invoice->type === 'quotation';
-        $isSaleReturn = $invoice->type === 'sale_return';
-        $baseColor    = \App\Models\SystemSetting::get('print.header_color', '#1e40af');
-        $headerColor  = $isQuotation ? '#7c3aed' : $baseColor;
-        $showDiscount = (bool) \App\Models\SystemSetting::get('invoice.show_discount', true);
+        $primaryColor = '#b45309';          // برتقالي ثابت لفواتير الشراء
         $showSig      = (bool) \App\Models\SystemSetting::get('invoice.show_signature', true);
-        $terms        = $isQuotation ? '' : \App\Models\SystemSetting::get('invoice.terms', '');
-        $returnPolicy = $isQuotation ? '' : \App\Models\SystemSetting::get('invoice.return_policy', '');
-        $warranty     = $isQuotation ? '' : \App\Models\SystemSetting::get('invoice.warranty', '');
         $footerNote   = \App\Models\SystemSetting::get('invoice.footer_note', '');
-        $validityDays = \App\Models\SystemSetting::get('invoice.default_payment_days', 30);
     @endphp
 
     <style>
@@ -33,7 +25,7 @@
         .header {
             display: table;
             width: 100%;
-            border-bottom: 3px solid {{ $headerColor }};
+            border-bottom: 3px solid {{ $primaryColor }};
             padding-bottom: 12px;
             margin-bottom: 14px;
         }
@@ -42,7 +34,7 @@
         .company-name {
             font-size: 19px;
             font-weight: bold;
-            color: {{ $headerColor }};
+            color: {{ $primaryColor }};
             margin-bottom: 4px;
         }
         .company-sub  { font-size: 10px; color: #6b7280; line-height: 1.7; }
@@ -51,7 +43,7 @@
         /* ─── شريط العنوان ─── */
         .invoice-title-bar {
             text-align: center;
-            background: {{ $headerColor }};
+            background: {{ $primaryColor }};
             color: white;
             padding: 7px 12px;
             border-radius: 6px;
@@ -81,9 +73,9 @@
             padding-bottom: 4px;
             margin-bottom: 5px;
         }
-        .info-row     { margin-bottom: 3px; font-size: 11px; color: #374151; }
-        .info-label   { color: #9ca3af; font-size: 10px; }
-        .info-val     { font-weight: 600; color: #111827; }
+        .info-row   { margin-bottom: 3px; font-size: 11px; color: #374151; }
+        .info-label { color: #9ca3af; font-size: 10px; }
+        .info-val   { font-weight: 600; color: #111827; }
 
         /* ─── جدول البنود ─── */
         table.items {
@@ -92,7 +84,7 @@
             margin-bottom: 13px;
             font-size: 10.5px;
         }
-        table.items thead { background: {{ $headerColor }}; color: #fff; }
+        table.items thead { background: {{ $primaryColor }}; color: #fff; }
         table.items th {
             padding: 7px 8px;
             text-align: right;
@@ -106,7 +98,7 @@
             border-bottom: 1px solid #f3f4f6;
             color: #374151;
         }
-        table.items tbody tr:nth-child(even) td { background: #fafafa; }
+        table.items tbody tr:nth-child(even) td { background: #fdf7ef; }
 
         /* ─── الإجماليات ─── */
         .totals-wrap  { display: table; width: 100%; margin-bottom: 13px; }
@@ -122,15 +114,15 @@
         .t-row > div  { display: table-cell; padding: 5px 11px; font-size: 11px; }
         .t-row > div:first-child { text-align: right; color: #4b5563; font-weight: 600; width: 55%; }
         .t-row > div:last-child  { text-align: left;  color: #111827; font-weight: 600; }
-        .t-grand      { background: {{ $headerColor }}; }
+        .t-grand      { background: {{ $primaryColor }}; }
         .t-grand > div { color: white !important; font-size: 13px !important; font-weight: 800 !important; padding: 8px 11px !important; }
         .t-paid  > div { color: #059669 !important; }
         .t-rem   > div { color: #dc2626 !important; background: #fef2f2; font-weight: 800 !important; }
 
-        /* ─── الشروط ─── */
-        .terms-box {
-            background: #f9fafb;
-            border: 1px solid #e5e7eb;
+        /* ─── ملاحظات ─── */
+        .notes-box {
+            background: #fffbf5;
+            border: 1px solid #fed7aa;
             border-radius: 6px;
             padding: 9px 12px;
             margin-bottom: 13px;
@@ -138,7 +130,7 @@
             color: #4b5563;
             line-height: 1.7;
         }
-        .terms-title { font-weight: bold; color: #374151; margin-bottom: 2px; }
+        .notes-title { font-weight: bold; color: #374151; margin-bottom: 2px; }
 
         /* ─── التوقيعات ─── */
         .sig-wrap { display: table; width: 100%; margin-top: 32px; }
@@ -157,7 +149,7 @@
         }
         .sig-name { font-size: 9px; color: #9ca3af; margin-top: 2px; }
 
-        /* ─── التذييل ─── */
+        /* ─── التذييل الثابت ─── */
         .footer {
             position: fixed;
             bottom: 8mm;
@@ -168,6 +160,15 @@
             color: #9ca3af;
             border-top: 1px solid #e5e7eb;
             padding-top: 4px;
+        }
+
+        /* ─── شارة الحالة ─── */
+        .status-badge {
+            display: inline-block;
+            font-size: 9px;
+            font-weight: bold;
+            padding: 2px 8px;
+            border-radius: 4px;
         }
     </style>
 </head>
@@ -190,36 +191,26 @@
         </div>
     </div>
 
-    {{-- ═══ شريط نوع الفاتورة ═══ --}}
-    <div class="invoice-title-bar">
-        @if($invoice->type === 'quotation')   عرض سعر
-        @elseif($invoice->type === 'sale_return') إشعار مرتجع
-        @else فاتورة مبيعات
-        @endif
-    </div>
-
-    {{-- ═══ بانر صلاحية عرض السعر ═══ --}}
-    @if($isQuotation)
-        <div style="background: #ede9fe; border: 1px solid #c4b5fd; border-radius: 6px;
-                    padding: 7px 14px; margin-bottom: 13px; font-size: 10px;
-                    color: #5b21b6; text-align: center;">
-            هذا المستند عرض سعر وليس فاتورة رسمية —
-            الأسعار سارية لمدة {{ $validityDays }} يوماً من تاريخ الإصدار
-        </div>
-    @endif
+    {{-- ═══ شريط النوع ═══ --}}
+    <div class="invoice-title-bar">فاتورة مشتريات</div>
 
     {{-- ═══ صناديق البيانات ═══ --}}
     <div class="info-section">
-        {{-- بيانات العميل --}}
+        {{-- بيانات المورد --}}
         <div class="info-box">
-            <div class="info-box-title">بيانات العميل</div>
-            <div class="info-row"><span class="info-val">{{ $invoice->customer->name }}</span></div>
-            <div class="info-row"><span class="info-label">كود: </span>{{ $invoice->customer->code }}</div>
-            @if($invoice->customer->phone)
-                <div class="info-row"><span class="info-label">هاتف: </span>{{ $invoice->customer->phone }}</div>
+            <div class="info-box-title">بيانات المورد</div>
+            <div class="info-row"><span class="info-val">{{ $invoice->supplier->name }}</span></div>
+            @if($invoice->supplier->code)
+                <div class="info-row"><span class="info-label">كود: </span>{{ $invoice->supplier->code }}</div>
             @endif
-            @if($invoice->customer->address)
-                <div class="info-row"><span class="info-label">عنوان: </span>{{ $invoice->customer->address }}</div>
+            @if($invoice->supplier->phone)
+                <div class="info-row"><span class="info-label">هاتف: </span>{{ $invoice->supplier->phone }}</div>
+            @endif
+            @if($invoice->supplier->address)
+                <div class="info-row"><span class="info-label">عنوان: </span>{{ $invoice->supplier->address }}</div>
+            @endif
+            @if($invoice->supplier->tax_registration_number)
+                <div class="info-row"><span class="info-label">ضريبي: </span>{{ $invoice->supplier->tax_registration_number }}</div>
             @endif
         </div>
 
@@ -228,16 +219,23 @@
             <div class="info-box-title">بيانات الفاتورة</div>
             <div class="info-row">
                 <span class="info-label">رقم الفاتورة: </span>
-                <span style="font-family: monospace; font-weight: 800; color: {{ $headerColor }};">{{ $invoice->reference_number }}</span>
+                <span style="font-family: monospace; font-weight: 800; color: {{ $primaryColor }};">{{ $invoice->reference_number }}</span>
             </div>
-            <div class="info-row"><span class="info-label">التاريخ: </span>{{ $invoice->invoice_date->format('d/m/Y') }}</div>
+            @if($invoice->invoice_number)
+                <div class="info-row"><span class="info-label">رقم فاتورة المورد: </span>{{ $invoice->invoice_number }}</div>
+            @endif
+            <div class="info-row"><span class="info-label">تاريخ الفاتورة: </span>{{ $invoice->invoice_date->format('d/m/Y') }}</div>
             @if($invoice->due_date)
                 <div class="info-row"><span class="info-label">تاريخ الاستحقاق: </span>{{ $invoice->due_date->format('d/m/Y') }}</div>
             @endif
             <div class="info-row">
-                <span class="info-label">طريقة الدفع: </span>
-                {{ match($invoice->payment_type) { 'cash' => 'نقدي', 'credit' => 'آجل', 'cheque' => 'شيك', default => $invoice->payment_type } }}
+                <span class="info-label">الحالة: </span>
+                <span class="status-badge" style="background: {{ $invoice->status === 'paid' ? '#dcfce7' : ($invoice->status === 'confirmed' ? '#dbeafe' : '#f3f4f6') }};
+                    color: {{ $invoice->status === 'paid' ? '#166534' : ($invoice->status === 'confirmed' ? '#1e40af' : '#4b5563') }};">
+                    {{ $invoice->status_label }}
+                </span>
             </div>
+            <div class="info-row"><span class="info-label">المخزن: </span>{{ $invoice->warehouse->name }}</div>
             <div class="info-row"><span class="info-label">الوحدة التشغيلية: </span>{{ $invoice->businessUnit->name }}</div>
             @if($invoice->createdBy)
                 <div class="info-row"><span class="info-label">المحرّر: </span>{{ $invoice->createdBy->name }}</div>
@@ -251,15 +249,9 @@
             <tr>
                 <th class="c" style="width: 28px;">#</th>
                 <th>الصنف</th>
-                <th class="c" style="width: 52px;">الكمية</th>
-                @if($showDiscount)
-                    <th class="c" style="width: 68px;">سعر اللستة</th>
-                    <th class="c" style="width: 40px;">خ1%</th>
-                    <th class="c" style="width: 40px;">خ2%</th>
-                    <th class="c" style="width: 40px;">خ3%</th>
-                @endif
-                <th class="c" style="width: 72px;">سعر الوحدة</th>
-                <th class="l" style="width: 80px;">الإجمالي</th>
+                <th class="c" style="width: 60px;">الكمية</th>
+                <th class="c" style="width: 80px;">سعر الشراء</th>
+                <th class="l" style="width: 88px;">الإجمالي</th>
             </tr>
         </thead>
         <tbody>
@@ -268,18 +260,9 @@
                     <td class="c">{{ $i + 1 }}</td>
                     <td>
                         <span style="font-weight: 600;">{{ $item->product->name }}</span>
-                        @if($item->product->company)
-                            <span style="font-size: 9px; color: #9ca3af;"> ({{ $item->product->company->name }})</span>
-                        @endif
                     </td>
-                    <td class="c">{{ number_format($item->quantity, 0) }}</td>
-                    @if($showDiscount)
-                        <td class="c">{{ number_format($item->list_price, 2) }}</td>
-                        <td class="c" style="color: #dc2626;">{{ number_format($item->discount_1, 1) }}</td>
-                        <td class="c" style="color: #dc2626;">{{ number_format($item->discount_2, 1) }}</td>
-                        <td class="c" style="color: #dc2626;">{{ number_format($item->discount_3, 1) }}</td>
-                    @endif
-                    <td class="c">{{ number_format($item->unit_price, 2) }}</td>
+                    <td class="c">{{ number_format($item->quantity, 2) }}</td>
+                    <td class="c">{{ number_format($item->unit_cost, 2) }}</td>
                     <td class="l" style="font-weight: 700;">{{ number_format($item->total, 2) }}</td>
                 </tr>
             @endforeach
@@ -294,23 +277,23 @@
                 <div>إجمالي البنود</div>
                 <div>{{ number_format($invoice->subtotal, 2) }} ج.م</div>
             </div>
-            @if((float) $invoice->discount_amount > 0)
-                <div class="t-row">
-                    <div style="color: #dc2626;">(-) خصم إضافي</div>
-                    <div style="color: #dc2626;">{{ number_format($invoice->discount_amount, 2) }} ج.م</div>
-                </div>
-            @endif
             @if((float) ($invoice->tax_amount ?? 0) > 0)
                 <div class="t-row">
                     <div>ضريبة</div>
                     <div>{{ number_format($invoice->tax_amount, 2) }} ج.م</div>
                 </div>
             @endif
+            @if((float) ($invoice->total_landed_cost ?? 0) > 0)
+                <div class="t-row">
+                    <div>تكاليف شحن وتخليص</div>
+                    <div>{{ number_format($invoice->total_landed_cost, 2) }} ج.م</div>
+                </div>
+            @endif
             <div class="t-row t-grand">
-                <div>الإجمالي النهائي</div>
+                <div>إجمالي الفاتورة</div>
                 <div>{{ number_format($invoice->total_amount, 2) }} ج.م</div>
             </div>
-            @if(!$isQuotation && (float) $invoice->paid_amount > 0)
+            @if((float) $invoice->paid_amount > 0)
                 <div class="t-row t-paid">
                     <div>المدفوع</div>
                     <div>{{ number_format($invoice->paid_amount, 2) }} ج.م</div>
@@ -325,63 +308,33 @@
         </div>
     </div>
 
-    {{-- ═══ ملاحظات الفاتورة ═══ --}}
+    {{-- ═══ ملاحظات ═══ --}}
     @if($invoice->notes)
-        <div class="terms-box">
-            <div class="terms-title">ملاحظات:</div>
+        <div class="notes-box">
+            <div class="notes-title">ملاحظات:</div>
             {{ $invoice->notes }}
         </div>
     @endif
 
-    {{-- ═══ الشروط والأحكام (من الإعدادات) ═══ --}}
-    @if($terms || $returnPolicy || $warranty || $footerNote)
-        <div class="terms-box">
-            @if($terms)
-                <div class="terms-title">شروط البيع:</div>
-                <div>{{ $terms }}</div>
-            @endif
-            @if($returnPolicy)
-                <div class="terms-title" style="margin-top: 5px;">سياسة المرتجع:</div>
-                <div>{{ $returnPolicy }}</div>
-            @endif
-            @if($warranty)
-                <div class="terms-title" style="margin-top: 5px;">الضمان:</div>
-                <div>{{ $warranty }}</div>
-            @endif
-            @if($footerNote)
-                <div style="margin-top: 7px; padding-top: 5px; border-top: 1px dashed #d1d5db;">{{ $footerNote }}</div>
-            @endif
+    @if($footerNote)
+        <div class="notes-box" style="border-color: #e5e7eb; background: #f9fafb;">
+            {{ $footerNote }}
         </div>
     @endif
 
     {{-- ═══ التوقيعات ═══ --}}
     @if($showSig)
-        @if($isQuotation)
-            {{-- عرض السعر: محرّر + عميل فقط --}}
-            <div class="sig-wrap">
-                <div class="sig-cell" style="width:50%;">
-                    <div class="sig-line">المحرّر</div>
-                    <div class="sig-name">{{ $invoice->createdBy?->name ?? '' }}</div>
-                </div>
-                <div class="sig-cell" style="width:50%;">
-                    <div class="sig-line">العميل</div>
-                </div>
+        <div class="sig-wrap">
+            <div class="sig-cell">
+                <div class="sig-line">المستلم</div>
             </div>
-        @else
-            {{-- فاتورة مبيعات / مرتجع: محرّر + مستلم + مدير --}}
-            <div class="sig-wrap">
-                <div class="sig-cell">
-                    <div class="sig-line">المحرّر</div>
-                    <div class="sig-name">{{ $invoice->createdBy?->name ?? '' }}</div>
-                </div>
-                <div class="sig-cell">
-                    <div class="sig-line">المستلم</div>
-                </div>
-                <div class="sig-cell">
-                    <div class="sig-line">المدير</div>
-                </div>
+            <div class="sig-cell">
+                <div class="sig-line">أمين المخزن</div>
             </div>
-        @endif
+            <div class="sig-cell">
+                <div class="sig-line">المدير</div>
+            </div>
+        </div>
     @endif
 
     {{-- ═══ التذييل الثابت ═══ --}}

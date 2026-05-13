@@ -3,6 +3,7 @@
 use App\Http\Controllers\CustomerStatementPrintController;
 use App\Http\Controllers\InvoicePdfController;
 use App\Http\Controllers\PaymentPrintController;
+use App\Http\Controllers\PurchaseInvoicePrintController;
 use App\Http\Controllers\QuotationPdfController;
 use App\Http\Controllers\QuickSaleReceiptController;
 use App\Http\Controllers\ReceiptPrintController;
@@ -28,6 +29,9 @@ Route::middleware(['auth'])->group(function () {
 
     Route::get('/payments/{payment}/print', [PaymentPrintController::class, 'show'])
         ->name('payments.print');
+
+    Route::get('/purchase-invoices/{purchaseInvoice}/print', [PurchaseInvoicePrintController::class, 'print'])
+        ->name('purchase-invoices.print');
 
     Route::get('/statements/customer', [CustomerStatementPrintController::class, 'show'])
         ->name('customer-statement.print');

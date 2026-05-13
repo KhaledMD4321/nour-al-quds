@@ -10,8 +10,8 @@ class QuotationPdfController extends Controller
 {
     public function show(int $id)
     {
-        $quotation = Invoice::with([
-            'items.product',
+        $invoice = Invoice::with([
+            'items.product.company',
             'customer',
             'businessUnit',
             'warehouse',
@@ -20,9 +20,9 @@ class QuotationPdfController extends Controller
 
         $company = CompanySetting::first();
 
-        $pdf = Pdf::loadView('pdf.quotation', compact('quotation', 'company'))
+        $pdf = Pdf::loadView('pdf.invoice', compact('invoice', 'company'))
             ->setPaper('A4', 'portrait');
 
-        return $pdf->stream('quotation-' . $quotation->reference_number . '.pdf');
+        return $pdf->stream('quotation-' . $invoice->reference_number . '.pdf');
     }
 }
