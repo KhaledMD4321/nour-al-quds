@@ -184,4 +184,69 @@ class RoleManager extends Page
         if (! $this->selectedRoleId) return null;
         return Role::find($this->selectedRoleId)?->name;
     }
+
+    /** ترجمة اسم الصلاحية الإنجليزي إلى تسمية عربية واضحة */
+    public function getPermissionLabel(string $name): string
+    {
+        $labels = [
+            // المبيعات
+            'sales.invoice.view'         => 'عرض الفواتير',
+            'sales.invoice.create'       => 'إنشاء فاتورة',
+            'sales.invoice.edit'         => 'تعديل فاتورة',
+            'sales.invoice.delete'       => 'حذف فاتورة',
+            'sales.invoice.confirm'      => 'تأكيد فاتورة',
+            'sales.invoice.print'        => 'طباعة فاتورة',
+            'sales.invoice.return'       => 'مرتجع مبيعات',
+            'sales.quotation.view'       => 'عرض عروض الأسعار',
+            'sales.quotation.create'     => 'إنشاء عرض سعر',
+            'sales.quotation.convert'    => 'تحويل عرض لفاتورة',
+            'sales.quick.create'         => 'بيع سريع',
+            'sales.quick.view'           => 'عرض المبيعات السريعة',
+            // المخزون
+            'inventory.view'             => 'عرض المخزون',
+            'inventory.transfer'         => 'تحويل مخزون',
+            'inventory.adjust'           => 'تسوية مخزون',
+            // الخزينة
+            'finance.treasury.view'      => 'عرض الخزائن',
+            'finance.treasury.create'    => 'إنشاء خزينة',
+            'finance.treasury.edit'      => 'تعديل خزينة',
+            'finance.treasury.transfer'  => 'تحويل بين خزائن',
+            'finance.treasury.summary'   => 'النظرة الشاملة',
+            // سندات القبض
+            'finance.receipt.view'       => 'عرض سندات القبض',
+            'finance.receipt.create'     => 'إنشاء سند قبض',
+            'finance.receipt.print'      => 'طباعة سند قبض',
+            'finance.receipt.delete'     => 'حذف سند قبض',
+            // سندات الصرف
+            'finance.payment.view'       => 'عرض سندات الصرف',
+            'finance.payment.create'     => 'إنشاء سند صرف',
+            'finance.payment.print'      => 'طباعة سند صرف',
+            'finance.payment.delete'     => 'حذف سند صرف',
+            // الشيكات
+            'finance.cheque.view'        => 'عرض الشيكات',
+            'finance.cheque.create'      => 'إنشاء شيك',
+            'finance.cheque.deposit'     => 'إيداع شيك',
+            'finance.cheque.collect'     => 'تحصيل شيك',
+            'finance.cheque.bounce'      => 'رفض شيك',
+            'finance.cheque.replace'     => 'استبدال شيك',
+            // المحاسبة
+            'accounting.journal.view'       => 'عرض القيود اليومية',
+            'accounting.journal.create'     => 'إنشاء قيد يدوي',
+            'accounting.journal.reverse'    => 'عكس قيد',
+            'accounting.ledger.view'        => 'دفتر الأستاذ',
+            'accounting.trial_balance.view' => 'ميزان المراجعة',
+            // التقارير
+            'reports.sales'              => 'تقارير المبيعات',
+            'reports.purchases'          => 'تقارير المشتريات',
+            'reports.inventory'          => 'تقارير المخزون',
+            'reports.profit_loss'        => 'الأرباح والخسائر',
+            'reports.cash_flow'          => 'التدفقات النقدية',
+            'reports.aging'              => 'تقرير الأعمار',
+            // الإعدادات
+            'settings.view'              => 'عرض الإعدادات',
+            'settings.edit'              => 'تعديل الإعدادات',
+        ];
+
+        return $labels[$name] ?? $name;
+    }
 }
