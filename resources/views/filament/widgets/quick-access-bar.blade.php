@@ -81,7 +81,7 @@
 
                     {{-- الاختصارات مجمّعة بالقسم --}}
                     @php
-                        $grouped = collect($this->getAvailableActions())->groupBy('group');
+                        $grouped = collect($this->getAvailableActions())->groupBy('group', preserveKeys: true);
                     @endphp
 
                     @foreach($grouped as $group => $actions)
