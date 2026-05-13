@@ -374,26 +374,32 @@
             </div>
 
             {{-- شريط الإجماليات --}}
-            <div style="padding:12px 16px; border-top:2px solid #e5e7eb; background:#f9fafb; display:flex; align-items:center; gap:28px; flex-wrap:wrap;">
+            <div style="padding:10px 16px; border-top:1px solid #e5e7eb; background:#f9fafb;
+                        display:flex; align-items:center; gap:24px; flex-wrap:wrap;">
                 <div style="text-align:center;">
-                    <div style="font-size:11px; color:#6b7280; margin-bottom:2px;">مجموع اللستة</div>
+                    <div style="font-size:10px; color:#9ca3af; margin-bottom:2px;">مجموع اللستة</div>
                     <div style="font-size:14px; font-weight:600; color:#374151;">
                         {{ number_format($subtotal, 2) }} ج.م
                     </div>
                 </div>
                 @if($discountAmount > 0)
                 <div style="text-align:center;">
-                    <div style="font-size:11px; color:#6b7280; margin-bottom:2px;">إجمالي الخصم</div>
+                    <div style="font-size:10px; color:#9ca3af; margin-bottom:2px;">إجمالي الخصم</div>
                     <div style="font-size:14px; font-weight:600; color:#dc2626;">
                         − {{ number_format($discountAmount, 2) }} ج.م
                     </div>
                 </div>
                 @endif
-                <div style="margin-right:auto; text-align:center;">
-                    <div style="font-size:11px; color:#6b7280; margin-bottom:2px;">الإجمالي الكلي</div>
-                    <div style="font-size:24px; font-weight:800; color:#1d4ed8;">
-                        {{ number_format($totalAmount, 2) }} ج.م
-                    </div>
+            </div>
+
+            {{-- الإجمالي النهائي البارز --}}
+            <div style="background: linear-gradient(135deg, #1e40af, #3b82f6); color: white;
+                        border-radius: 0 0 10px 10px; padding: 14px 20px;
+                        display: flex; justify-content: space-between; align-items: center;">
+                <div style="font-size: 14px; font-weight: 600; opacity: 0.9;">إجمالي الفاتورة</div>
+                <div style="font-size: 26px; font-weight: 800; letter-spacing: -0.5px;">
+                    {{ number_format($totalAmount, 2) }}
+                    <span style="font-size: 15px; font-weight: 600; opacity: 0.85;">ج.م</span>
                 </div>
             </div>
 

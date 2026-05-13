@@ -166,11 +166,15 @@
                 @endforeach
 
                 {{-- الإجمالي الكلي --}}
-                <div style="background:#f9fafb; padding:16px; border-top:1px solid #e5e7eb; display:flex; justify-content:space-between; align-items:center;">
-                    <span style="font-weight:700; color:#374151; font-size:16px;">الإجمالي</span>
-                    <span style="font-weight:700; color:#1d4ed8; font-size:24px;">
-                        {{ number_format($totalAmount, 2) }} ج.م
-                    </span>
+                <div style="background: linear-gradient(135deg, #059669, #10b981); color: white;
+                            border-radius: 0 0 10px 10px; padding: 16px 20px; text-align: center;
+                            border-top: 2px solid #047857;">
+                    <div style="font-size: 12px; opacity: 0.85; margin-bottom: 2px;">الإجمالي</div>
+                    <div style="font-size: 34px; font-weight: 800; letter-spacing: -1px; line-height: 1.1;">
+                        {{ number_format($totalAmount, 2) }}
+                        <span style="font-size: 16px; opacity: 0.85; font-weight: 600;">ج.م</span>
+                    </div>
+                    <div style="font-size: 11px; opacity: 0.75; margin-top: 2px;">{{ count($items) }} صنف</div>
                 </div>
             </div>
 
