@@ -228,9 +228,11 @@ class ChequeResource extends Resource
 
                 TextColumn::make('cheque_number')
                     ->label('رقم الشيك')
+                    ->fontFamily('mono')
+                    ->weight('bold')
                     ->searchable()
                     ->sortable()
-                    ->weight('bold'),
+                    ->copyable(),
 
                 TextColumn::make('direction')
                     ->label('الاتجاه')
@@ -268,16 +270,17 @@ class ChequeResource extends Resource
                     ->money('EGP')
                     ->sortable()
                     ->weight('bold')
+                    ->color(fn (Cheque $record): string => $record->direction === 'incoming' ? 'success' : 'danger')
                     ->alignEnd(),
 
                 TextColumn::make('due_date')
                     ->label('تاريخ الاستحقاق')
-                    ->date('Y-m-d')
+                    ->date('d/m/Y')
                     ->sortable()
-                    ->color(fn (Cheque $record) =>
-                        $record->isPending() || $record->isDeposited()
-                            ? ($record->due_date->isPast() ? 'danger' : ($record->due_date->diffInDays(today()) <= 3 ? 'warning' : null))
-                            : null
+                    ->color(fn (Cheque $record): ?string =>
+                        ($record->isPending() || $record->isDeposited())
+                            ? ($record->due_date->isPast() ? 'danger' : ($record->due_date->diffInDays(today()) <= 3 ? 'warning' : 'gray'))
+                            : 'gray'
                     ),
 
                 TextColumn::make('customer.name')
@@ -469,10 +472,11 @@ class ChequeResource extends Resource
 
             ])
             ->bulkActions([])
+            ->paginated([25, 50, 100])
             ->emptyStateHeading('لا توجد شيكات')
             ->emptyStateDescription('ابدأ بإضافة شيك جديد.')
-            ->emptyStateIcon('heroicon-o-inbox')
-            ->paginated([25, 50, 100]);
+            ->emptyStateIcon('heroicon-o-document-check')
+            ->striped();
     }
 
     // ── Pages ─────────────────────────────────────────────────────────────────

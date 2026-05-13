@@ -243,9 +243,10 @@ class TreasuryResource extends Resource
                 EditAction::make()->label('تعديل'),
             ])
             ->defaultSort('business_unit_id')
+            ->paginated([25, 50, 100])
             ->emptyStateHeading('لا توجد خزائن')
             ->emptyStateDescription('ابدأ بإضافة خزينة جديدة.')
-            ->emptyStateIcon('heroicon-o-inbox')
+            ->emptyStateIcon('heroicon-o-banknotes')
             ->striped();
     }
 

@@ -194,6 +194,7 @@ class ProductResource extends Resource
                     ->label('الصنف')
                     ->searchable()
                     ->sortable()
+                    ->weight('semibold')
                     ->limit(50),
 
                 TextColumn::make('company.name')
@@ -215,8 +216,10 @@ class ProductResource extends Resource
 
                 TextColumn::make('list_price')
                     ->label('السعر')
-                    ->money('EGP', locale: 'ar_EG')
-                    ->sortable(),
+                    ->money('EGP')
+                    ->sortable()
+                    ->weight('bold')
+                    ->alignEnd(),
 
                 IconColumn::make('is_active')
                     ->label('نشط')
@@ -270,9 +273,10 @@ class ProductResource extends Resource
                     ->visible(fn (): bool => auth()->user()->hasRole('super_admin')),
             ])
             ->defaultSort('name')
+            ->paginated([25, 50, 100])
             ->emptyStateHeading('لا توجد منتجات')
             ->emptyStateDescription('ابدأ بإضافة منتج جديد.')
-            ->emptyStateIcon('heroicon-o-inbox')
+            ->emptyStateIcon('heroicon-o-cube')
             ->striped();
     }
 

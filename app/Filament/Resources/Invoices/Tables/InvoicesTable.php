@@ -19,6 +19,8 @@ class InvoicesTable
             ->columns([
                 TextColumn::make('reference_number')
                     ->label('رقم الفاتورة')
+                    ->fontFamily('mono')
+                    ->weight('bold')
                     ->searchable()
                     ->sortable()
                     ->copyable(),
@@ -26,12 +28,15 @@ class InvoicesTable
                 TextColumn::make('invoice_date')
                     ->label('التاريخ')
                     ->date('d/m/Y')
-                    ->sortable(),
+                    ->sortable()
+                    ->color('gray'),
 
                 TextColumn::make('customer.name')
                     ->label('العميل')
+                    ->weight('semibold')
                     ->searchable()
-                    ->sortable(),
+                    ->sortable()
+                    ->limit(35),
 
                 TextColumn::make('businessUnit.name')
                     ->label('الوحدة')
@@ -68,7 +73,9 @@ class InvoicesTable
                 TextColumn::make('total_amount')
                     ->label('الإجمالي')
                     ->money('EGP')
-                    ->sortable(),
+                    ->weight('bold')
+                    ->sortable()
+                    ->alignEnd(),
 
                 TextColumn::make('remaining_amount')
                     ->label('المتبقي')
@@ -120,9 +127,10 @@ class InvoicesTable
                 ViewAction::make()->label('تفاصيل'),
             ])
             ->defaultSort('id', 'desc')
+            ->paginated([25, 50, 100])
             ->emptyStateHeading('لا توجد فواتير')
             ->emptyStateDescription('ابدأ بإضافة فاتورة جديدة.')
-            ->emptyStateIcon('heroicon-o-inbox')
+            ->emptyStateIcon('heroicon-o-document-text')
             ->striped();
     }
 }

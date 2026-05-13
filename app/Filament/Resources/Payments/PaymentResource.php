@@ -320,14 +320,17 @@ class PaymentResource extends Resource
             ->columns([
                 TextColumn::make('payment_number')
                     ->label('رقم السند')
+                    ->fontFamily('mono')
+                    ->weight('bold')
                     ->searchable()
                     ->sortable()
-                    ->weight('bold'),
+                    ->copyable(),
 
                 TextColumn::make('payment_date')
                     ->label('التاريخ')
-                    ->date('Y-m-d')
-                    ->sortable(),
+                    ->date('d/m/Y')
+                    ->sortable()
+                    ->color('gray'),
 
                 TextColumn::make('category')
                     ->label('النوع')
@@ -338,11 +341,13 @@ class PaymentResource extends Resource
                 TextColumn::make('supplier.name')
                     ->label('المورد')
                     ->default('مصروف تشغيلي')
+                    ->weight('semibold')
                     ->limit(25)
                     ->searchable(),
 
                 TextColumn::make('purchaseInvoice.reference_number')
                     ->label('فاتورة الشراء')
+                    ->fontFamily('mono')
                     ->default('—'),
 
                 TextColumn::make('amount')
@@ -407,10 +412,11 @@ class PaymentResource extends Resource
                     ->visible(fn () => auth()->user()?->isSuperAdmin() || auth()->user()?->can('finance.payment.print')),
             ])
             ->bulkActions([])
+            ->paginated([25, 50, 100])
             ->emptyStateHeading('لا توجد سندات صرف')
             ->emptyStateDescription('ابدأ بإضافة سند صرف جديد.')
             ->emptyStateIcon('heroicon-o-inbox')
-            ->paginated([25, 50, 100]);
+            ->striped();
     }
 
     // ── Pages ─────────────────────────────────────────────────────────────────

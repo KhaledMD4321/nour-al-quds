@@ -77,7 +77,8 @@ class TreasuryTransactionResource extends Resource
                 TextColumn::make('transaction_date')
                     ->label('التاريخ')
                     ->date('d/m/Y')
-                    ->sortable(),
+                    ->sortable()
+                    ->color('gray'),
 
                 TextColumn::make('treasury.name')
                     ->label('الخزينة')
@@ -116,7 +117,8 @@ class TreasuryTransactionResource extends Resource
                 TextColumn::make('balance_after')
                     ->label('الرصيد بعد الحركة')
                     ->money('EGP')
-                    ->color('gray'),
+                    ->color('gray')
+                    ->alignEnd(),
 
                 TextColumn::make('description')
                     ->label('البيان')
@@ -179,7 +181,7 @@ class TreasuryTransactionResource extends Resource
             ->defaultSort('id', 'desc')
             ->emptyStateHeading('لا توجد معاملات خزينة')
             ->emptyStateDescription('ابدأ بإضافة معاملة جديدة.')
-            ->emptyStateIcon('heroicon-o-inbox')
+            ->emptyStateIcon('heroicon-o-arrows-right-left')
             ->striped()
             ->paginated([25, 50, 100]);
     }

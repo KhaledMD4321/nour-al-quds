@@ -137,7 +137,8 @@ class JournalEntryResource extends Resource
                 TextColumn::make('entry_date')
                     ->label('التاريخ')
                     ->date('d/m/Y')
-                    ->sortable(),
+                    ->sortable()
+                    ->color('gray'),
 
                 TextColumn::make('description')
                     ->label('البيان')
@@ -247,7 +248,7 @@ class JournalEntryResource extends Resource
             ->bulkActions([])
             ->emptyStateHeading('لا توجد قيود يومية')
             ->emptyStateDescription('ابدأ بإضافة قيد يومي جديد.')
-            ->emptyStateIcon('heroicon-o-inbox')
+            ->emptyStateIcon('heroicon-o-book-open')
             ->paginated([25, 50, 100]);
     }
 

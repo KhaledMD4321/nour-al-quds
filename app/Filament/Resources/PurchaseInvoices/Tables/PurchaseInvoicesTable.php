@@ -23,9 +23,10 @@ class PurchaseInvoicesTable
 
                 TextColumn::make('reference_number')
                     ->label('رقم الفاتورة')
+                    ->fontFamily('mono')
+                    ->weight('bold')
                     ->searchable()
                     ->sortable()
-                    ->weight('bold')
                     ->copyable(),
 
                 TextColumn::make('supplier.name')
@@ -40,7 +41,8 @@ class PurchaseInvoicesTable
                 TextColumn::make('invoice_date')
                     ->label('التاريخ')
                     ->date('d/m/Y')
-                    ->sortable(),
+                    ->sortable()
+                    ->color('gray'),
 
                 TextColumn::make('invoice_number')
                     ->label('رقم المورد')
@@ -56,7 +58,10 @@ class PurchaseInvoicesTable
                 TextColumn::make('total_amount')
                     ->label('الإجمالي الكلي')
                     ->money('EGP')
-                    ->sortable(),
+                    ->weight('bold')
+                    ->color('danger')
+                    ->sortable()
+                    ->alignEnd(),
 
                 TextColumn::make('status')
                     ->label('الحالة')
@@ -151,9 +156,10 @@ class PurchaseInvoicesTable
                 ]),
             ])
             ->defaultSort('created_at', 'desc')
+            ->paginated([25, 50, 100])
             ->emptyStateHeading('لا توجد فواتير مشتريات')
             ->emptyStateDescription('ابدأ بإضافة فاتورة مشتريات جديدة.')
-            ->emptyStateIcon('heroicon-o-inbox')
+            ->emptyStateIcon('heroicon-o-shopping-cart')
             ->striped();
     }
 }

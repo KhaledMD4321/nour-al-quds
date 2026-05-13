@@ -263,22 +263,28 @@ class ReceiptResource extends Resource
             ->columns([
                 TextColumn::make('receipt_number')
                     ->label('رقم الإيصال')
+                    ->fontFamily('mono')
+                    ->weight('bold')
                     ->searchable()
                     ->sortable()
-                    ->weight('bold'),
+                    ->copyable(),
 
                 TextColumn::make('receipt_date')
                     ->label('التاريخ')
-                    ->date('Y-m-d')
-                    ->sortable(),
+                    ->date('d/m/Y')
+                    ->sortable()
+                    ->color('gray'),
 
                 TextColumn::make('customer.name')
                     ->label('العميل')
+                    ->weight('semibold')
                     ->searchable()
-                    ->sortable(),
+                    ->sortable()
+                    ->limit(30),
 
                 TextColumn::make('invoice.reference_number')
                     ->label('رقم الفاتورة')
+                    ->fontFamily('mono')
                     ->default('—')
                     ->searchable(),
 
@@ -301,6 +307,8 @@ class ReceiptResource extends Resource
                 TextColumn::make('amount')
                     ->label('المبلغ')
                     ->money('EGP')
+                    ->weight('bold')
+                    ->color('success')
                     ->sortable()
                     ->alignEnd(),
 
@@ -336,9 +344,11 @@ class ReceiptResource extends Resource
                     ->visible(fn () => auth()->user()?->isSuperAdmin() || auth()->user()?->can('finance.receipt.print')),
             ])
             ->bulkActions([])
+            ->paginated([25, 50, 100])
             ->emptyStateHeading('لا توجد سندات قبض')
             ->emptyStateDescription('ابدأ بإضافة سند قبض جديد.')
-            ->emptyStateIcon('heroicon-o-inbox');
+            ->emptyStateIcon('heroicon-o-inbox')
+            ->striped();
     }
 
     // ── Pages ─────────────────────────────────────────────────────────────────────
