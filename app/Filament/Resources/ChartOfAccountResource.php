@@ -24,6 +24,9 @@ class ChartOfAccountResource extends Resource
     use HasModuleGuard;
     protected static string $module = 'accounting';
 
+    // Hidden from nav — replaced by ChartOfAccountsTree page
+    public static function shouldRegisterNavigation(): bool { return false; }
+
     protected static ?string $model = ChartOfAccount::class;
 
     protected static string|\UnitEnum|null $navigationGroup = 'المحاسبة';
