@@ -8,6 +8,7 @@ use App\Http\Controllers\QuotationPdfController;
 use App\Http\Controllers\QuickSaleReceiptController;
 use App\Http\Controllers\ReceiptPrintController;
 use App\Http\Controllers\SupplierStatementPrintController;
+use App\Services\PurchaseItemsImporter;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -38,4 +39,12 @@ Route::middleware(['auth'])->group(function () {
 
     Route::get('/statements/supplier', [SupplierStatementPrintController::class, 'show'])
         ->name('supplier-statement.print');
+
+    Route::get('/purchase-invoices/items-template', function () {
+        $csv = PurchaseItemsImporter::templateCsv();
+        return response($csv, 200, [
+            'Content-Type'        => 'text/csv; charset=UTF-8',
+            'Content-Disposition' => 'attachment; filename="purchase-items-template.csv"',
+        ]);
+    })->name('purchase-invoices.items-template');
 });
