@@ -3,20 +3,23 @@
     $logoPath    = \App\Models\SystemSetting::get('company.logo', '');
     $headerColor = \App\Models\SystemSetting::get('print.header_color', '#1e40af');
 
-    // اختصار الاسم للعرض في الـ Sidebar
-    // نأخذ الكلمتين الأخيرتين (عادةً "نور القدس")
-    $words      = explode(' ', trim($companyName));
-    $shortName  = count($words) >= 2
+    $words     = explode(' ', trim($companyName));
+    $shortName = count($words) >= 2
         ? implode(' ', array_slice($words, -2))
         : $companyName;
+
+    // Cache-busting: use file mtime so browser reloads after a new upload
+    $logoFullPath = $logoPath ? public_path('storage/' . $logoPath) : null;
+    $logoExists   = $logoFullPath && file_exists($logoFullPath);
+    $logoVer      = $logoExists ? filemtime($logoFullPath) : 0;
 @endphp
 
 <div style="display: flex; align-items: center; gap: 10px;
             direction: rtl; font-family: Cairo, sans-serif; padding: 2px 0;">
 
-    {{-- الأيقونة أو اللوجو --}}
-    @if($logoPath && file_exists(public_path('storage/' . $logoPath)))
-        <img src="{{ asset('storage/' . $logoPath) }}"
+    {{-- اللوجو أو أيقونة افتراضية --}}
+    @if($logoExists)
+        <img src="{{ asset('storage/' . $logoPath) }}?v={{ $logoVer }}"
              alt="{{ $companyName }}"
              style="height: 36px; width: auto; object-fit: contain; flex-shrink: 0;" />
     @else

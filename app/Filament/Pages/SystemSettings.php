@@ -103,6 +103,9 @@ class SystemSettings extends Page
         // مسح كامل للكاش
         SystemSetting::clearCache();
 
+        // مسح Blade/View cache عشان اللوجو يتحدث في الـ Sidebar فوراً
+        \Illuminate\Support\Facades\Artisan::call('view:clear');
+
         Notification::make()
             ->title('تم الحفظ')
             ->body('تم حفظ الإعدادات بنجاح.')
