@@ -8,10 +8,14 @@ use App\Models\Category;
 use App\Models\Company;
 use App\Models\LookupType;
 use App\Models\Product;
+use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteAction;
+use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Actions\ForceDeleteAction;
+use Filament\Actions\ForceDeleteBulkAction;
 use Filament\Actions\RestoreAction;
+use Filament\Actions\RestoreBulkAction;
 use Filament\Actions\ViewAction;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Select;
@@ -271,6 +275,15 @@ class ProductResource extends Resource
                 ForceDeleteAction::make()
                     ->label('حذف نهائي')
                     ->visible(fn (): bool => auth()->user()->hasRole('super_admin')),
+            ])
+            ->toolbarActions([
+                BulkActionGroup::make([
+                    DeleteBulkAction::make()->label('أرشفة المحدد'),
+                    RestoreBulkAction::make()->label('استعادة المحدد'),
+                    ForceDeleteBulkAction::make()
+                        ->label('حذف نهائي')
+                        ->visible(fn (): bool => auth()->user()?->isSuperAdmin() ?? false),
+                ]),
             ])
             ->defaultSort('name')
             ->paginated([25, 50, 100])

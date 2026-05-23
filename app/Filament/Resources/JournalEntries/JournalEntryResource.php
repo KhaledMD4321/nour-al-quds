@@ -9,6 +9,8 @@ use App\Filament\Resources\JournalEntries\RelationManagers\LinesRelationManager;
 use App\Models\JournalEntry;
 use App\Modules\Accounting\AccountingService;
 use Filament\Actions\Action;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\ViewAction;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Placeholder;
@@ -245,7 +247,14 @@ class JournalEntryResource extends Resource
                     }),
 
             ])
-            ->bulkActions([])
+            ->toolbarActions([
+                BulkActionGroup::make([
+                    DeleteBulkAction::make()
+                        ->label('حذف المحدد')
+                        ->requiresConfirmation()
+                        ->visible(fn (): bool => auth()->user()?->isSuperAdmin() ?? false),
+                ]),
+            ])
             ->emptyStateHeading('لا توجد قيود يومية')
             ->emptyStateDescription('ابدأ بإضافة قيد يومي جديد.')
             ->emptyStateIcon('heroicon-o-book-open')

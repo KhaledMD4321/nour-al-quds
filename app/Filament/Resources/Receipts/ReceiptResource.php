@@ -20,6 +20,8 @@ use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Components\Utilities\Set;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\ViewAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
@@ -343,7 +345,14 @@ class ReceiptResource extends Resource
                     ->openUrlInNewTab()
                     ->visible(fn () => auth()->user()?->isSuperAdmin() || auth()->user()?->can('finance.receipt.print')),
             ])
-            ->bulkActions([])
+            ->toolbarActions([
+                BulkActionGroup::make([
+                    DeleteBulkAction::make()
+                        ->label('حذف المحدد')
+                        ->requiresConfirmation()
+                        ->visible(fn (): bool => auth()->user()?->isSuperAdmin() ?? false),
+                ]),
+            ])
             ->paginated([25, 50, 100])
             ->emptyStateHeading('لا توجد سندات قبض')
             ->emptyStateDescription('ابدأ بإضافة سند قبض جديد.')

@@ -4,6 +4,8 @@ namespace App\Filament\Resources\Invoices\Tables;
 
 use App\Models\Invoice;
 use Filament\Actions\Action;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\ViewAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\Filter;
@@ -125,6 +127,14 @@ class InvoicesTable
                     ),
 
                 ViewAction::make()->label('تفاصيل'),
+            ])
+            ->toolbarActions([
+                BulkActionGroup::make([
+                    DeleteBulkAction::make()
+                        ->label('حذف المحدد')
+                        ->requiresConfirmation()
+                        ->visible(fn (): bool => auth()->user()?->isSuperAdmin() ?? false),
+                ]),
             ])
             ->defaultSort('id', 'desc')
             ->paginated([25, 50, 100])

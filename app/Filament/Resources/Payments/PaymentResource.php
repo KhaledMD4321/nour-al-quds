@@ -13,6 +13,8 @@ use App\Models\PurchaseInvoice;
 use App\Models\Supplier;
 use App\Models\Treasury;
 use Filament\Actions\Action;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\ViewAction;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Placeholder;
@@ -411,7 +413,14 @@ class PaymentResource extends Resource
                     ->openUrlInNewTab()
                     ->visible(fn () => auth()->user()?->isSuperAdmin() || auth()->user()?->can('finance.payment.print')),
             ])
-            ->bulkActions([])
+            ->toolbarActions([
+                BulkActionGroup::make([
+                    DeleteBulkAction::make()
+                        ->label('حذف المحدد')
+                        ->requiresConfirmation()
+                        ->visible(fn (): bool => auth()->user()?->isSuperAdmin() ?? false),
+                ]),
+            ])
             ->paginated([25, 50, 100])
             ->emptyStateHeading('لا توجد سندات صرف')
             ->emptyStateDescription('ابدأ بإضافة سند صرف جديد.')

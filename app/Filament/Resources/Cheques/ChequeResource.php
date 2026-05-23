@@ -12,6 +12,8 @@ use App\Models\Supplier;
 use App\Models\Treasury;
 use App\Modules\Finance\ChequeService;
 use Filament\Actions\Action;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\ViewAction;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
@@ -471,7 +473,14 @@ class ChequeResource extends Resource
                 ViewAction::make()->label('عرض'),
 
             ])
-            ->bulkActions([])
+            ->toolbarActions([
+                BulkActionGroup::make([
+                    DeleteBulkAction::make()
+                        ->label('حذف المحدد')
+                        ->requiresConfirmation()
+                        ->visible(fn (): bool => auth()->user()?->isSuperAdmin() ?? false),
+                ]),
+            ])
             ->paginated([25, 50, 100])
             ->emptyStateHeading('لا توجد شيكات')
             ->emptyStateDescription('ابدأ بإضافة شيك جديد.')
