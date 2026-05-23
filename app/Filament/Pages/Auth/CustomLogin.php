@@ -17,4 +17,13 @@ class CustomLogin extends Login
     {
         return null; // نعرض الـ heading داخل الـ blade بشكل مخصص
     }
+
+    /**
+     * إخفاء الـ brandLogo التلقائي من أعلى بطاقة Login
+     * (يُعرض اللوجو مرة واحدة فقط داخل الـ blade المخصص)
+     */
+    public function hasLogo(): bool
+    {
+        return false;
+    }
 }

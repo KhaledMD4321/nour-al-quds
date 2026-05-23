@@ -1,6 +1,4 @@
 <x-filament-panels::page.simple>
-
-    {{-- ══ لوجو + اسم الشركة ══ --}}
     @php
         $companyName  = \App\Models\SystemSetting::get('company.name', 'نور القدس');
         $logoPath     = \App\Models\SystemSetting::get('company.logo', '');
@@ -10,33 +8,42 @@
         $logoVer      = $logoExists ? filemtime($logoFullPath) : 0;
     @endphp
 
-    <div style="text-align: center; margin-bottom: 24px; direction: rtl; font-family: Cairo, sans-serif;">
+    {{-- ══ هيدر: لوجو + اسم الشركة ══ --}}
+    <div style="text-align: center; margin-bottom: 28px; direction: rtl; font-family: Cairo, sans-serif;">
 
-        {{-- اللوجو أو أيقونة افتراضية --}}
         @if($logoExists)
             <img src="{{ asset('storage/' . $logoPath) }}?v={{ $logoVer }}"
                  alt="{{ $companyName }}"
-                 style="height: 72px; width: auto; margin: 0 auto 12px; display: block; object-fit: contain;" />
+                 style="height: 80px; width: auto; margin: 0 auto 16px; display: block;
+                        object-fit: contain; border-radius: 12px;" />
         @else
+            {{-- أيقونة افتراضية لو مفيش لوجو مرفوع --}}
             <div style="width: 72px; height: 72px; border-radius: 18px;
                         background: {{ $headerColor }}; color: #fff;
                         display: flex; align-items: center; justify-content: center;
-                        font-size: 32px; margin: 0 auto 12px; box-shadow: 0 4px 14px {{ $headerColor }}55;">
+                        font-size: 32px; margin: 0 auto 16px;
+                        box-shadow: 0 4px 16px {{ $headerColor }}44;">
                 🏪
             </div>
         @endif
 
-        {{-- اسم الشركة --}}
-        <h1 style="font-size: 20px; font-weight: 800; color: #111827;
-                   margin: 0 0 4px; letter-spacing: -0.3px;">
+        <h1 style="font-size: 22px; font-weight: 800; color: {{ $headerColor }};
+                   margin: 0 0 6px; letter-spacing: -0.3px;">
             {{ $companyName }}
         </h1>
-        <p style="font-size: 13px; color: #6b7280; margin: 0;">
+        <p style="font-size: 13px; color: #9ca3af; margin: 0;">
             نظام إدارة الموارد المؤسسية
         </p>
     </div>
 
     {{-- ══ نموذج تسجيل الدخول ══ --}}
     {{ $this->content }}
+
+    {{-- ══ فوتر ══ --}}
+    <div style="text-align: center; margin-top: 20px;
+                font-size: 11px; color: #d1d5db;
+                font-family: Cairo, sans-serif;">
+        {{ $companyName }} &copy; {{ date('Y') }}
+    </div>
 
 </x-filament-panels::page.simple>
