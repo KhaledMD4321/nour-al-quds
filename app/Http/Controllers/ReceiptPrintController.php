@@ -3,16 +3,14 @@
 namespace App\Http\Controllers;
 
 use App\Models\Receipt;
-use Illuminate\Http\Request;
-use Illuminate\Http\Response;
+use App\Services\PdfService;
 
 class ReceiptPrintController extends Controller
 {
-    public function show(Receipt $receipt): Response|string
+    public function show(Receipt $receipt)
     {
         $user = auth()->user();
 
-        // تحقق من الصلاحية والوحدة
         if (! $user?->isSuperAdmin() && ! $user?->can('finance.receipt.print')) {
             abort(403);
         }
@@ -30,6 +28,10 @@ class ReceiptPrintController extends Controller
             'journalEntry',
         ]);
 
-        return view('print.receipt', compact('receipt'));
+        return PdfService::stream(
+            'print.receipt',
+            compact('receipt'),
+            "receipt-{$receipt->receipt_number}.pdf"
+        );
     }
 }

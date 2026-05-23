@@ -3,20 +3,18 @@
 namespace App\Http\Controllers;
 
 use App\Models\Payment;
-use Illuminate\Http\Response;
+use App\Services\PdfService;
 
 class PaymentPrintController extends Controller
 {
-    public function show(Payment $payment): Response|string
+    public function show(Payment $payment)
     {
         $user = auth()->user();
 
-        // تحقق من الصلاحية
         if (! $user?->isSuperAdmin() && ! $user?->can('finance.payment.print')) {
             abort(403);
         }
 
-        // تحقق من الوحدة
         if (! $user->isSuperAdmin() && $payment->business_unit_id !== $user->business_unit_id) {
             abort(403);
         }
@@ -31,6 +29,10 @@ class PaymentPrintController extends Controller
             'journalEntry',
         ]);
 
-        return view('print.payment', compact('payment'));
+        return PdfService::stream(
+            'print.payment',
+            compact('payment'),
+            "payment-{$payment->payment_number}.pdf"
+        );
     }
 }

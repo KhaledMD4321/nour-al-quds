@@ -4,14 +4,9 @@
     <meta charset="UTF-8">
     <title>كشف حساب مورد — {{ $supplier->name }}</title>
     <style>
-        * { font-family: 'DejaVu Sans', 'Arial', sans-serif; box-sizing: border-box; margin: 0; padding: 0; }
-        body { padding: 28px; font-size: 12px; color: #1a1a1a; direction: rtl; background: #fff; }
-        @media print {
-            body { padding: 8mm; }
-            .no-print { display: none !important; }
-            table { page-break-inside: auto; }
-            tr { page-break-inside: avoid; }
-        }
+        @page { size: A4; margin: 12mm 14mm 14mm 14mm; }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'xbriyaz', sans-serif; font-size: 12px; color: #1a1a1a; direction: rtl; background: #fff; }
 
         /* Header */
         .header { text-align: center; border-bottom: 3px solid #92400e; padding-bottom: 12px; margin-bottom: 16px; }
@@ -42,26 +37,13 @@
         th { padding: 8px 10px; text-align: right; font-weight: 600; color: #6b7280; border-bottom: 2px solid #e5e7eb; }
         th.num { text-align: left; }
         td { padding: 7px 10px; border-bottom: 1px solid #f3f4f6; }
-        td.num { text-align: left; font-family: monospace; }
+        td.num { text-align: left; }
         .opening-row { background: #f3f4f6; font-weight: 600; }
         tfoot { background: #111827; color: white; }
         tfoot td { padding: 10px; font-weight: bold; font-size: 12px; }
-
-        /* Print button */
-        .print-btn {
-            display: inline-block; background: #92400e; color: white;
-            padding: 8px 20px; border-radius: 6px; text-decoration: none;
-            font-size: 12px; font-weight: 600; margin-bottom: 14px; cursor: pointer; border: none;
-        }
-        .print-btn:hover { background: #7c2d12; }
     </style>
 </head>
 <body>
-
-    {{-- Print button --}}
-    <div class="no-print" style="text-align: left; margin-bottom: 14px;">
-        <button class="print-btn" onclick="window.print()">🖨️ طباعة</button>
-    </div>
 
     {{-- Header --}}
     <div class="header">
@@ -146,7 +128,7 @@
                 @php $running += $line->credit - $line->debit; @endphp
                 <tr>
                     <td style="white-space:nowrap;">{{ \Carbon\Carbon::parse($line->date)->format('d/m/Y') }}</td>
-                    <td style="font-family:monospace; font-size:10px; color:#4b5563;">{{ $line->reference }}</td>
+                    <td style="font-size:10px; color:#4b5563;">{{ $line->reference }}</td>
                     <td>{{ $line->description }}</td>
                     <td class="num" style="color:{{ $line->debit > 0 ? '#059669' : '#d1d5db' }}; font-weight:{{ $line->debit > 0 ? '600' : '400' }};">
                         {{ $line->debit > 0 ? number_format($line->debit, 2) : '—' }}

@@ -12,35 +12,15 @@
     @endphp
 
     <style>
-        * { font-family: 'DejaVu Sans', 'Arial', sans-serif; box-sizing: border-box; margin: 0; padding: 0; }
+        @page { size: A4; margin: 12mm 14mm 14mm 14mm; }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
 
         body {
-            padding: 28px 32px;
+            font-family: 'xbriyaz', sans-serif;
             font-size: 12px;
             color: #1a1a1a;
             direction: rtl;
             background: #fff;
-            max-width: 680px;
-            margin: 0 auto;
-        }
-
-        @media print {
-            body    { padding: 10mm 12mm; max-width: 100%; }
-            .no-print { display: none !important; }
-        }
-
-        /* ── زر الطباعة ── */
-        .print-btn {
-            display: block;
-            margin: 0 auto 20px;
-            padding: 9px 28px;
-            background: {{ $primaryColor }};
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-size: 13px;
-            cursor: pointer;
-            font-family: inherit;
         }
 
         /* ── الترويسة ── */
@@ -127,7 +107,7 @@
             white-space: nowrap;
         }
         .info-table td:last-child  { color: #111827; font-weight: 600; }
-        .info-ref { font-family: monospace; font-size: 13px; color: {{ $primaryColor }}; font-weight: 800; }
+        .info-ref { font-size: 13px; color: {{ $primaryColor }}; font-weight: 800; }
 
         /* ── بيانات الشيك ── */
         .cheque-box {
@@ -186,8 +166,6 @@
     </style>
 </head>
 <body>
-
-    <button class="print-btn no-print" onclick="window.print()">🖨️ طباعة</button>
 
     {{-- ══ الترويسة ══ --}}
     <div class="header">

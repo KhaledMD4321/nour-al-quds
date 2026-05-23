@@ -6,6 +6,7 @@ use App\Models\Payment;
 use App\Models\PurchaseInvoice;
 use App\Models\PurchaseReturn;
 use App\Models\Supplier;
+use App\Services\PdfService;
 use Illuminate\Http\Request;
 
 class SupplierStatementPrintController extends Controller
@@ -99,8 +100,10 @@ class SupplierStatementPrintController extends Controller
         // رصيد المورد: موجب = مستحق له (دائن)
         $closing = $opening + $totalCredit - $totalDebit;
 
-        return view('print.supplier-statement', compact(
-            'supplier', 'lines', 'opening', 'totalDebit', 'totalCredit', 'closing', 'from', 'to'
-        ));
+        return PdfService::stream(
+            'print.supplier-statement',
+            compact('supplier', 'lines', 'opening', 'totalDebit', 'totalCredit', 'closing', 'from', 'to'),
+            "statement-{$supplier->code}.pdf"
+        );
     }
 }

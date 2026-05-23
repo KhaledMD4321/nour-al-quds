@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Customer;
 use App\Models\Invoice;
 use App\Models\Receipt;
+use App\Services\PdfService;
 use Illuminate\Http\Request;
 
 class CustomerStatementPrintController extends Controller
@@ -102,8 +103,10 @@ class CustomerStatementPrintController extends Controller
         $totalCredit = $lines->sum('credit');
         $closing     = $opening + $totalDebit - $totalCredit;
 
-        return view('print.customer-statement', compact(
-            'customer', 'lines', 'opening', 'totalDebit', 'totalCredit', 'closing', 'from', 'to'
-        ));
+        return PdfService::stream(
+            'print.customer-statement',
+            compact('customer', 'lines', 'opening', 'totalDebit', 'totalCredit', 'closing', 'from', 'to'),
+            "statement-{$customer->code}.pdf"
+        );
     }
 }
