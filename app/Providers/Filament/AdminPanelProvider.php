@@ -11,6 +11,7 @@ use Filament\Navigation\NavigationGroup;
 use Filament\Pages\Dashboard;
 use Filament\Panel;
 use Filament\PanelProvider;
+use Filament\Enums\ThemeMode;
 use Filament\Support\Colors\Color;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
@@ -31,9 +32,12 @@ class AdminPanelProvider extends PanelProvider
             ->brandLogo(view('filament.components.brand-logo'))
             ->brandLogoHeight('44px')
             ->favicon(asset('favicon.ico'))
-            ->darkMode(false)
+            ->darkMode(true)
+            ->defaultThemeMode(ThemeMode::Light)
             ->globalSearchKeyBindings(['ctrl+k', 'ctrl+/'])
             ->globalSearchDebounce('300ms')
+            ->globalSearchPlaceholder('ابحث في النظام...')
+            ->unsavedChangesAlerts()
             ->colors([
                 'primary' => Color::Blue,
                 'success' => Color::Green,
