@@ -11,8 +11,10 @@ class QuotationPdfController extends Controller
     public function show(int $id)
     {
         $invoice = Invoice::with([
-            'items.product.company',
-            'customer',
+            'items' => fn ($q) => $q->with([
+                'product' => fn ($q) => $q->withTrashed()->with(['company']),
+            ]),
+            'customer'     => fn ($q) => $q->withTrashed(),
             'businessUnit',
             'warehouse',
             'createdBy',

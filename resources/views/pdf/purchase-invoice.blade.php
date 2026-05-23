@@ -199,17 +199,17 @@
         {{-- بيانات المورد --}}
         <div class="info-box">
             <div class="info-box-title">بيانات المورد</div>
-            <div class="info-row"><span class="info-val">{{ $invoice->supplier->name }}</span></div>
-            @if($invoice->supplier->code)
+            <div class="info-row"><span class="info-val">{{ $invoice->supplier?->name ?? '—' }}</span></div>
+            @if($invoice->supplier?->code)
                 <div class="info-row"><span class="info-label">كود: </span>{{ $invoice->supplier->code }}</div>
             @endif
-            @if($invoice->supplier->phone)
+            @if($invoice->supplier?->phone)
                 <div class="info-row"><span class="info-label">هاتف: </span>{{ $invoice->supplier->phone }}</div>
             @endif
-            @if($invoice->supplier->address)
+            @if($invoice->supplier?->address)
                 <div class="info-row"><span class="info-label">عنوان: </span>{{ $invoice->supplier->address }}</div>
             @endif
-            @if($invoice->supplier->tax_registration_number)
+            @if($invoice->supplier?->tax_registration_number)
                 <div class="info-row"><span class="info-label">ضريبي: </span>{{ $invoice->supplier->tax_registration_number }}</div>
             @endif
         </div>
@@ -235,8 +235,8 @@
                     {{ $invoice->status_label }}
                 </span>
             </div>
-            <div class="info-row"><span class="info-label">المخزن: </span>{{ $invoice->warehouse->name }}</div>
-            <div class="info-row"><span class="info-label">الوحدة التشغيلية: </span>{{ $invoice->businessUnit->name }}</div>
+            <div class="info-row"><span class="info-label">المخزن: </span>{{ $invoice->warehouse?->name ?? '—' }}</div>
+            <div class="info-row"><span class="info-label">الوحدة التشغيلية: </span>{{ $invoice->businessUnit?->name ?? '—' }}</div>
             @if($invoice->createdBy)
                 <div class="info-row"><span class="info-label">المحرّر: </span>{{ $invoice->createdBy->name }}</div>
             @endif
@@ -259,7 +259,7 @@
                 <tr>
                     <td class="c">{{ $i + 1 }}</td>
                     <td>
-                        <span style="font-weight: 600;">{{ $item->product->name }}</span>
+                        <span style="font-weight: 600;">{{ $item->product?->name ?? 'صنف محذوف' }}</span>
                     </td>
                     <td class="c">{{ number_format($item->quantity, 2) }}</td>
                     <td class="c">{{ number_format($item->unit_cost, 2) }}</td>

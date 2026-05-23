@@ -11,7 +11,9 @@ class QuickSaleReceiptController extends Controller
     public function show(int $id)
     {
         $sale = QuickSale::with([
-            'items.product',
+            'items' => fn ($q) => $q->with([
+                'product' => fn ($q) => $q->withTrashed(),
+            ]),
             'businessUnit',
             'warehouse',
             'createdBy',

@@ -13,8 +13,10 @@ class PurchaseInvoicePrintController extends Controller
         abort_unless(auth()->check(), 403);
 
         $purchaseInvoice->load([
-            'supplier',
-            'items.product',
+            'supplier'  => fn ($q) => $q->withTrashed(),
+            'items'     => fn ($q) => $q->with([
+                'product' => fn ($q) => $q->withTrashed(),
+            ]),
             'businessUnit',
             'warehouse',
             'createdBy',

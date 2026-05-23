@@ -110,17 +110,17 @@
             <div class="info-cell">التاريخ: {{ $sale->created_at->format('d/m/Y H:i') }}</div>
         </div>
         <div class="info-row">
-            <div class="info-cell">الوحدة: {{ $sale->businessUnit->name }}</div>
-            <div class="info-cell">المخزن: {{ $sale->warehouse->name }}</div>
+            <div class="info-cell">الوحدة: {{ $sale->businessUnit?->name ?? '—' }}</div>
+            <div class="info-cell">المخزن: {{ $sale->warehouse?->name ?? '—' }}</div>
         </div>
         @if($sale->customer_name)
             <div class="info-row">
                 <div class="info-cell">العميل: <strong>{{ $sale->customer_name }}</strong></div>
-                <div class="info-cell">الكاشير: {{ $sale->createdBy->name }}</div>
+                <div class="info-cell">الكاشير: {{ $sale->createdBy?->name ?? '—' }}</div>
             </div>
         @else
             <div class="info-row">
-                <div class="info-cell">الكاشير: {{ $sale->createdBy->name }}</div>
+                <div class="info-cell">الكاشير: {{ $sale->createdBy?->name ?? '—' }}</div>
                 <div class="info-cell"></div>
             </div>
         @endif
@@ -141,7 +141,7 @@
             @foreach($sale->items as $i => $item)
                 <tr>
                     <td style="text-align:center">{{ $i + 1 }}</td>
-                    <td>{{ $item->product->name }}</td>
+                    <td>{{ $item->product?->name ?? 'صنف محذوف' }}</td>
                     <td style="text-align:center">{{ number_format($item->quantity, 1) }}</td>
                     <td style="text-align:center">{{ number_format($item->unit_price, 2) }}</td>
                     <td style="text-align:center">{{ number_format($item->total, 2) }}</td>

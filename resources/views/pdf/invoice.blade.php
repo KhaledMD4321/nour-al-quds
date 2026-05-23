@@ -213,12 +213,12 @@
         {{-- بيانات العميل --}}
         <div class="info-box">
             <div class="info-box-title">بيانات العميل</div>
-            <div class="info-row"><span class="info-val">{{ $invoice->customer->name }}</span></div>
-            <div class="info-row"><span class="info-label">كود: </span>{{ $invoice->customer->code }}</div>
-            @if($invoice->customer->phone)
+            <div class="info-row"><span class="info-val">{{ $invoice->customer?->name ?? '—' }}</span></div>
+            <div class="info-row"><span class="info-label">كود: </span>{{ $invoice->customer?->code ?? '—' }}</div>
+            @if($invoice->customer?->phone)
                 <div class="info-row"><span class="info-label">هاتف: </span>{{ $invoice->customer->phone }}</div>
             @endif
-            @if($invoice->customer->address)
+            @if($invoice->customer?->address)
                 <div class="info-row"><span class="info-label">عنوان: </span>{{ $invoice->customer->address }}</div>
             @endif
         </div>
@@ -238,7 +238,7 @@
                 <span class="info-label">طريقة الدفع: </span>
                 {{ match($invoice->payment_type) { 'cash' => 'نقدي', 'credit' => 'آجل', 'cheque' => 'شيك', default => $invoice->payment_type } }}
             </div>
-            <div class="info-row"><span class="info-label">الوحدة التشغيلية: </span>{{ $invoice->businessUnit->name }}</div>
+            <div class="info-row"><span class="info-label">الوحدة التشغيلية: </span>{{ $invoice->businessUnit?->name ?? '—' }}</div>
             @if($invoice->createdBy)
                 <div class="info-row"><span class="info-label">المحرّر: </span>{{ $invoice->createdBy->name }}</div>
             @endif
@@ -267,8 +267,8 @@
                 <tr>
                     <td class="c">{{ $i + 1 }}</td>
                     <td>
-                        <span style="font-weight: 600;">{{ $item->product->name }}</span>
-                        @if($item->product->company)
+                        <span style="font-weight: 600;">{{ $item->product?->name ?? 'صنف محذوف' }}</span>
+                        @if($item->product?->company)
                             <span style="font-size: 9px; color: #9ca3af;"> ({{ $item->product->company->name }})</span>
                         @endif
                     </td>
