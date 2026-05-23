@@ -2,6 +2,7 @@
 
 namespace App\Filament\Pages;
 
+use App\Models\ChartOfAccount;
 use App\Models\Cheque;
 use App\Models\CustomFieldValue;
 use App\Models\Customer;
@@ -12,6 +13,9 @@ use App\Models\JournalEntryLine;
 use App\Models\LandedCost;
 use App\Models\OpeningBalance;
 use App\Models\Payment;
+use App\Models\PriceListItem;
+use App\Models\PriceListVersion;
+use App\Models\Product;
 use App\Models\PurchaseInvoice;
 use App\Models\PurchaseInvoiceItem;
 use App\Models\PurchaseReturn;
@@ -26,6 +30,7 @@ use App\Models\StockMovement;
 use App\Models\StockTransfer;
 use App\Models\StockTransferItem;
 use App\Models\Supplier;
+use App\Models\SystemSetting;
 use App\Models\Treasury;
 use App\Models\TreasuryTransaction;
 use App\Models\UnitTransfer;
@@ -47,10 +52,12 @@ class DataCleanupPage extends Page
     protected static ?string                 $navigationLabel = 'تنظيف البيانات';
     protected string                         $view            = 'filament.pages.data-cleanup';
 
-    public int    $inactive_months = 12;
-    public string $deleteTarget    = '';
-    public string $confirmText     = '';
-    public string $resetConfirm    = '';
+    public int    $inactive_months      = 12;
+    public string $deleteTarget         = '';
+    public string $confirmText          = '';
+    public string $resetConfirm         = '';
+    public string $masterDeleteTarget   = '';
+    public string $masterDeleteConfirm  = '';
 
     public static function canAccess(): bool
     {
@@ -217,6 +224,105 @@ class DataCleanupPage extends Page
     {
         TreasuryTransaction::query()->delete();
         Treasury::query()->update(['current_balance' => 0]);
+    }
+
+    // ── Master data deletion ──────────────────────────────────────────────────
+
+    public function getMasterDeleteTargets(): array
+    {
+        return [
+            'products'  => ['label' => 'الأصناف',       'count' => Product::withTrashed()->count(),       'confirm' => 'حذف الأصناف'],
+            'customers' => ['label' => 'العملاء',        'count' => Customer::withTrashed()->count(),      'confirm' => 'حذف العملاء'],
+            'suppliers' => ['label' => 'الموردين',       'count' => Supplier::withTrashed()->count(),      'confirm' => 'حذف الموردين'],
+            'accounts'  => ['label' => 'شجرة الحسابات', 'count' => ChartOfAccount::count(),               'confirm' => 'حذف الحسابات'],
+            'settings'  => ['label' => 'الإعدادات',     'count' => SystemSetting::count(),                'confirm' => 'حذف الإعدادات'],
+        ];
+    }
+
+    public function deleteMasterData(): void
+    {
+        if (! auth()->user()?->isSuperAdmin()) return;
+
+        $targets   = $this->getMasterDeleteTargets();
+        $targetKey = $this->masterDeleteTarget;
+
+        if (! isset($targets[$targetKey])) {
+            Notification::make()->danger()->title('اختر نوع البيانات أولاً')->send();
+            return;
+        }
+
+        $expected = $targets[$targetKey]['confirm'];
+        if ($this->masterDeleteConfirm !== $expected) {
+            Notification::make()->danger()
+                ->title("اكتب \"{$expected}\" بالضبط للمتابعة")
+                ->send();
+            return;
+        }
+
+        try {
+            DB::transaction(function () use ($targetKey) {
+                match ($targetKey) {
+                    'products'  => $this->purgeMasterProducts(),
+                    'customers' => $this->purgeMasterCustomers(),
+                    'suppliers' => $this->purgeMasterSuppliers(),
+                    'accounts'  => $this->purgeMasterAccounts(),
+                    'settings'  => SystemSetting::query()->delete(),
+                    default     => null,
+                };
+            });
+
+            $this->masterDeleteTarget  = '';
+            $this->masterDeleteConfirm = '';
+            Notification::make()->success()->title('تم الحذف بنجاح')->send();
+        } catch (\Exception $e) {
+            Notification::make()->danger()->title('خطأ أثناء الحذف')->body($e->getMessage())->send();
+        }
+    }
+
+    protected function purgeMasterProducts(): void
+    {
+        // حذف كل ما يرتبط بالأصناف بالترتيب
+        QuickSaleItem::query()->forceDelete();
+        InvoiceItem::query()->forceDelete();
+        PurchaseReturnItem::query()->forceDelete();
+        PurchaseInvoiceItem::query()->forceDelete();
+        StockAdjustmentItem::query()->forceDelete();
+        StockTransferItem::query()->forceDelete();
+        StockMovement::query()->forceDelete();
+        Stock::query()->forceDelete();
+        PriceListItem::query()->forceDelete();
+        Product::withTrashed()->forceDelete();
+    }
+
+    protected function purgeMasterCustomers(): void
+    {
+        // حذف المعاملات المرتبطة بالعملاء أولاً
+        InvoiceItem::query()->forceDelete();
+        Invoice::withTrashed()->forceDelete();
+        Receipt::withTrashed()->forceDelete();
+        OpeningBalance::query()->delete();
+        Customer::withTrashed()->forceDelete();
+    }
+
+    protected function purgeMasterSuppliers(): void
+    {
+        // حذف المعاملات المرتبطة بالموردين أولاً
+        PurchaseInvoiceItem::query()->forceDelete();
+        LandedCost::query()->forceDelete();
+        PurchaseReturnItem::query()->forceDelete();
+        PurchaseReturn::withTrashed()->forceDelete();
+        PurchaseInvoice::withTrashed()->forceDelete();
+        Payment::withTrashed()->forceDelete();
+        Supplier::withTrashed()->forceDelete();
+    }
+
+    protected function purgeMasterAccounts(): void
+    {
+        JournalEntryLine::query()->forceDelete();
+        JournalEntry::withTrashed()->forceDelete();
+        // حذف شجرة الحسابات من الأوراق للجذر
+        ChartOfAccount::whereNotNull('parent_id')->delete();
+        ChartOfAccount::query()->delete();
     }
 
     // ── Full system reset ─────────────────────────────────────────────────────

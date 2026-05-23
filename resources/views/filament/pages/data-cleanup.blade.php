@@ -154,7 +154,7 @@
         {{-- ── فاصل ── --}}
         <div style="height:1px; background:#fca5a5; margin:24px 0;"></div>
 
-        {{-- ── إعادة تعيين كامل ── --}}
+        {{-- ── إعادة تعيين كامل (المعاملات فقط) ── --}}
         <div style="font-size:13px; font-weight:700; color:#991b1b; margin-bottom:6px;">
             💣 إعادة تعيين النظام بالكامل
         </div>
@@ -174,6 +174,71 @@
                 💣 إعادة تعيين كامل
             </button>
         </div>
+
+        {{-- ═══════════════════════════════════════════════
+             حذف البيانات الأساسية (nuclear options)
+        ════════════════════════════════════════════════ --}}
+        <div style="height:1px; background:#fca5a5; margin:28px 0;"></div>
+
+        <div style="font-size:15px; font-weight:800; color:#7f1d1d; margin-bottom:6px;">
+            🔥 حذف البيانات الأساسية
+        </div>
+        <div style="font-size:11.5px; color:#6b7280; margin-bottom:16px; line-height:1.7;
+                    background:#fff7f7; border:1px solid #fca5a5; border-radius:8px;
+                    padding:10px 14px;">
+            <strong style="color:#991b1b;">تحذير:</strong>
+            هذه العمليات تحذف البيانات الأساسية للنظام نهائياً — لا يمكن التراجع.<br>
+            يُنصح بتشغيل <em>إعادة تعيين النظام</em> أولاً قبل حذف أي بيانات أساسية لتجنب أخطاء الـ Foreign Keys.
+        </div>
+
+        {{-- بطاقات الاختيار --}}
+        <div style="display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr));
+                    gap:8px; margin-bottom:16px;">
+            @foreach($this->getMasterDeleteTargets() as $key => $target)
+                <button wire:click="$set('masterDeleteTarget','{{ $key }}')"
+                    style="display:flex; justify-content:space-between; align-items:center;
+                           padding:10px 14px; border-radius:8px; cursor:pointer; text-align:right;
+                           border:1.5px solid {{ $masterDeleteTarget === $key ? '#991b1b' : '#e5e7eb' }};
+                           background:{{ $masterDeleteTarget === $key ? '#fee2e2' : 'white' }};
+                           transition:all .15s;">
+                    <span style="font-size:12px; font-weight:600; color:#374151;">{{ $target['label'] }}</span>
+                    <span style="background:#7f1d1d; color:white; padding:2px 9px;
+                                 border-radius:999px; font-size:11px; font-weight:700; margin-right:8px;">
+                        {{ number_format($target['count']) }}
+                    </span>
+                </button>
+            @endforeach
+        </div>
+
+        @if($masterDeleteTarget)
+            @php $masterTargets = $this->getMasterDeleteTargets(); $mTarget = $masterTargets[$masterDeleteTarget]; @endphp
+        <div style="background:white; border:1.5px solid #991b1b; border-radius:8px;
+                    padding:16px; margin-bottom:12px;">
+            <div style="font-size:12px; color:#7f1d1d; margin-bottom:10px; font-weight:600; line-height:1.6;">
+                ⚠️ سيتم حذف <strong style="font-size:14px;">{{ $mTarget['label'] }}</strong> نهائياً مع كل البيانات المرتبطة بها.<br>
+                اكتب <strong style="background:#fee2e2; padding:2px 8px; border-radius:4px; font-family:monospace;">{{ $mTarget['confirm'] }}</strong> بالضبط للمتابعة:
+            </div>
+            <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+                <input type="text" wire:model.live="masterDeleteConfirm"
+                       placeholder='اكتب كلمة التأكيد هنا'
+                       style="flex:1; min-width:200px; padding:9px 12px;
+                              border:2px solid #991b1b; border-radius:6px;
+                              font-size:13px; font-family:Cairo,sans-serif;" />
+                <button wire:click="deleteMasterData"
+                    style="background:#7f1d1d; color:white; padding:9px 22px;
+                           border:none; border-radius:6px; font-size:13px;
+                           font-weight:800; cursor:pointer; white-space:nowrap;">
+                    🔥 حذف {{ $mTarget['label'] }}
+                </button>
+                <button wire:click="$set('masterDeleteTarget','')"
+                    style="background:#f3f4f6; color:#6b7280; padding:9px 14px;
+                           border:none; border-radius:6px; font-size:12px; cursor:pointer;">
+                    إلغاء
+                </button>
+            </div>
+        </div>
+        @endif
+
     </div>
     @endif
 
