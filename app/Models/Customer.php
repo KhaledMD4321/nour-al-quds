@@ -81,8 +81,10 @@ class Customer extends Model
         return $this->hasMany(Receipt::class);
     }
 
-    // TODO: uncomment when Cheque model exists (Phase 5.4)
-    // public function cheques(): HasMany   { return $this->hasMany(Cheque::class); }
+    public function cheques(): HasMany
+    {
+        return $this->hasMany(Cheque::class);
+    }
 
     // ─── Scopes ────────────────────────────────────────────────────────────────
 

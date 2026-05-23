@@ -68,11 +68,10 @@ class ChartOfAccount extends Model
         return $this->belongsTo(BusinessUnit::class);
     }
 
-    // TODO: uncomment when JournalEntryLine model is created
-    // public function journalEntryLines(): HasMany
-    // {
-    //     return $this->hasMany(JournalEntryLine::class, 'account_id');
-    // }
+    public function journalEntryLines(): HasMany
+    {
+        return $this->hasMany(JournalEntryLine::class, 'account_id');
+    }
 
     // ─── Helpers ───────────────────────────────────────────────────────────────
 
