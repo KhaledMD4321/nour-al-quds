@@ -11,6 +11,7 @@
         "laravel/framework": "^11.0",
         "laravel/tinker": "^2.9",
         "maatwebsite/excel": "^3.1",
+        "mpdf/mpdf": "^8.3",
         "spatie/laravel-backup": "^9.3",
         "spatie/laravel-permission": "^6.25"
     },

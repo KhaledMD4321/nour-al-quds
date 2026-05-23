@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\CompanySetting;
 use App\Models\QuickSale;
-use Barryvdh\DomPDF\Facade\Pdf;
+use App\Services\PdfService;
 
 class QuickSaleReceiptController extends Controller
 {
@@ -19,9 +19,11 @@ class QuickSaleReceiptController extends Controller
 
         $company = CompanySetting::first();
 
-        $pdf = Pdf::loadView('pdf.quick-sale-receipt', compact('sale', 'company'))
-            ->setPaper([0, 0, 419.53, 595.28], 'portrait'); // A5
-
-        return $pdf->stream('receipt-' . $sale->reference_number . '.pdf');
+        // A5 للإيصال السريع
+        return PdfService::streamA5(
+            'pdf.quick-sale-receipt',
+            compact('sale', 'company'),
+            'receipt-' . $sale->reference_number . '.pdf'
+        );
     }
 }

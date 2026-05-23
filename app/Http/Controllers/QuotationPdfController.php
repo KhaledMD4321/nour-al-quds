@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\CompanySetting;
 use App\Models\Invoice;
-use Barryvdh\DomPDF\Facade\Pdf;
+use App\Services\PdfService;
 
 class QuotationPdfController extends Controller
 {
@@ -20,9 +20,10 @@ class QuotationPdfController extends Controller
 
         $company = CompanySetting::first();
 
-        $pdf = Pdf::loadView('pdf.invoice', compact('invoice', 'company'))
-            ->setPaper('A4', 'portrait');
-
-        return $pdf->stream('quotation-' . $invoice->reference_number . '.pdf');
+        return PdfService::stream(
+            'pdf.invoice',
+            compact('invoice', 'company'),
+            'quotation-' . $invoice->reference_number . '.pdf'
+        );
     }
 }

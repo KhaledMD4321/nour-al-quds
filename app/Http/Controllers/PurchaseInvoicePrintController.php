@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\CompanySetting;
 use App\Models\PurchaseInvoice;
-use Barryvdh\DomPDF\Facade\Pdf;
+use App\Services\PdfService;
 
 class PurchaseInvoicePrintController extends Controller
 {
@@ -22,11 +22,10 @@ class PurchaseInvoicePrintController extends Controller
 
         $company = CompanySetting::first();
 
-        $pdf = Pdf::loadView('pdf.purchase-invoice', [
-            'invoice' => $purchaseInvoice,
-            'company' => $company,
-        ])->setPaper('A4', 'portrait');
-
-        return $pdf->stream("فاتورة-شراء-{$purchaseInvoice->reference_number}.pdf");
+        return PdfService::stream(
+            'pdf.purchase-invoice',
+            ['invoice' => $purchaseInvoice, 'company' => $company],
+            "purchase-invoice-{$purchaseInvoice->reference_number}.pdf"
+        );
     }
 }
