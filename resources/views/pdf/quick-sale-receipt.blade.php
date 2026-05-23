@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <style>
         * {
-            font-family: 'DejaVu Sans', 'Arial', sans-serif;
+            font-family: 'amiri', 'DejaVu Sans', sans-serif;
             box-sizing: border-box;
             margin: 0;
             padding: 0;

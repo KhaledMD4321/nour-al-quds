@@ -22,7 +22,7 @@
         @page { size: A4; margin: 12mm 14mm 14mm 14mm; }
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
-            font-family: 'DejaVu Sans', 'Arial', sans-serif;
+            font-family: 'amiri', 'DejaVu Sans', sans-serif;
             direction: rtl;
             color: #1f2937;
             font-size: 11.5px;

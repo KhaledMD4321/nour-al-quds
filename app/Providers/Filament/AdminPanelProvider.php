@@ -36,7 +36,6 @@ class AdminPanelProvider extends PanelProvider
             ->defaultThemeMode(ThemeMode::Light)
             ->globalSearchKeyBindings(['ctrl+k', 'ctrl+/'])
             ->globalSearchDebounce('300ms')
-            ->globalSearchPlaceholder('ابحث في النظام...')
             ->unsavedChangesAlerts()
             ->colors([
                 'primary' => Color::Blue,
