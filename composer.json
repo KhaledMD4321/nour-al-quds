@@ -5,11 +5,9 @@
     "keywords": ["laravel", "framework"],
     "license": "MIT",
     "require": {
-        "php": "^8.2",
-        "barryvdh/laravel-dompdf": "^3.1",
+        "php": "^8.4",
         "filament/filament": "^5.5",
         "laravel/framework": "^11.0",
-        "laravel/tinker": "^2.9",
         "maatwebsite/excel": "^3.1",
         "mpdf/mpdf": "^8.3",
         "spatie/laravel-backup": "^9.3",
@@ -19,6 +17,7 @@
         "fakerphp/faker": "^1.23",
         "laravel/pint": "^1.13",
         "laravel/sail": "^1.26",
+        "laravel/tinker": "^2.9",
         "mockery/mockery": "^1.6",
         "nunomaduro/collision": "^8.0",
         "phpunit/phpunit": "^10.5",
@@ -50,9 +49,14 @@
         ],
         "post-create-project-cmd": [
             "@php artisan key:generate --ansi",
-            "@php -r \"file_exists('database/database.sqlite') || touch('database/database.sqlite');\"",
             "@php artisan migrate --ansi"
-        ]
+        ],
+        "test": [
+            "@php artisan config:clear --ansi",
+            "@php artisan test"
+        ],
+        "lint": "pint --test",
+        "format": "pint"
     },
     "extra": {
         "branch-alias": {
@@ -70,8 +74,8 @@
             "pestphp/pest-plugin": true,
             "php-http/discovery": true
         },
-        "audit": {
-            "block-insecure": false
+        "platform": {
+            "php": "8.4.0"
         }
     },
     "minimum-stability": "stable",
