@@ -5,9 +5,12 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class QuickSale extends Model
 {
+    use SoftDeletes;
+
     protected $fillable = [
         'reference_number',
         'business_unit_id',
@@ -28,10 +31,11 @@ class QuickSale extends Model
 
     public static function generateReference(): string
     {
-        $last = static::orderByRaw("CAST(SUBSTRING(reference_number FROM 4) AS INTEGER) DESC")
+        $last = static::orderByRaw('CAST(SUBSTRING(reference_number FROM 4) AS INTEGER) DESC')
             ->value('reference_number');
         $num = $last ? ((int) substr($last, 3)) + 1 : 1;
-        return 'QS-' . str_pad($num, 5, '0', STR_PAD_LEFT);
+
+        return 'QS-'.str_pad($num, 5, '0', STR_PAD_LEFT);
     }
 
     // ── Relations ────────────────────────────────────────────────────────────

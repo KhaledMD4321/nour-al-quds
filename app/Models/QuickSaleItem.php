@@ -4,9 +4,12 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class QuickSaleItem extends Model
 {
+    use SoftDeletes;
+
     protected $fillable = [
         'quick_sale_id',
         'product_id',
@@ -16,9 +19,9 @@ class QuickSaleItem extends Model
     ];
 
     protected $casts = [
-        'quantity'   => 'decimal:3',
+        'quantity' => 'decimal:3',
         'unit_price' => 'decimal:4',
-        'total'      => 'decimal:2',
+        'total' => 'decimal:2',
     ];
 
     public function quickSale(): BelongsTo

@@ -4,12 +4,11 @@ namespace App\Modules\DataManagement;
 
 use App\Models\FiscalPeriod;
 use App\Models\Invoice;
+use App\Models\JournalEntry;
+use App\Models\Payment;
 use App\Models\PurchaseInvoice;
 use App\Models\Receipt;
-use App\Models\Payment;
-use App\Models\JournalEntry;
 use App\Models\Stock;
-use App\Models\StockMovement;
 use App\Models\Treasury;
 use App\Models\TreasuryTransaction;
 use Carbon\Carbon;
@@ -19,47 +18,51 @@ use Illuminate\Support\Facades\Log;
 class PeriodRollbackService
 {
     /**
-     * قفل فترة مالية
+     * قفل فترة مالية (atomic — تمنع race conditions)
      */
     public function lockPeriod(int $periodId, int $userId): FiscalPeriod
     {
-        $period = FiscalPeriod::findOrFail($periodId);
+        return DB::transaction(function () use ($periodId, $userId) {
+            $period = FiscalPeriod::lockForUpdate()->findOrFail($periodId);
 
-        if ($period->is_locked) {
-            throw new \RuntimeException('الفترة مقفولة مسبقاً');
-        }
+            if ($period->is_locked) {
+                throw new \RuntimeException('الفترة مقفولة مسبقاً');
+            }
 
-        $period->update([
-            'is_locked' => true,
-            'locked_by' => $userId,
-            'locked_at' => now(),
-        ]);
+            $period->update([
+                'is_locked' => true,
+                'locked_by' => $userId,
+                'locked_at' => now(),
+            ]);
 
-        Log::info('Fiscal period locked', ['period_id' => $periodId, 'user_id' => $userId]);
+            Log::info('Fiscal period locked', ['period_id' => $periodId, 'user_id' => $userId]);
 
-        return $period->refresh();
+            return $period->refresh();
+        });
     }
 
     /**
-     * فتح فترة مالية مقفولة
+     * فتح فترة مالية مقفولة (atomic — تمنع race conditions)
      */
     public function unlockPeriod(int $periodId, int $userId): FiscalPeriod
     {
-        $period = FiscalPeriod::findOrFail($periodId);
+        return DB::transaction(function () use ($periodId, $userId) {
+            $period = FiscalPeriod::lockForUpdate()->findOrFail($periodId);
 
-        if (! $period->is_locked) {
-            throw new \RuntimeException('الفترة ليست مقفولة');
-        }
+            if (! $period->is_locked) {
+                throw new \RuntimeException('الفترة ليست مقفولة');
+            }
 
-        $period->update([
-            'is_locked' => false,
-            'locked_by' => null,
-            'locked_at' => null,
-        ]);
+            $period->update([
+                'is_locked' => false,
+                'locked_by' => null,
+                'locked_at' => null,
+            ]);
 
-        Log::info('Fiscal period unlocked', ['period_id' => $periodId, 'user_id' => $userId]);
+            Log::info('Fiscal period unlocked', ['period_id' => $periodId, 'user_id' => $userId]);
 
-        return $period->refresh();
+            return $period->refresh();
+        });
     }
 
     /**
@@ -68,14 +71,14 @@ class PeriodRollbackService
     public function previewRollback(string $fromDate, string $toDate): array
     {
         $from = Carbon::parse($fromDate)->startOfDay();
-        $to   = Carbon::parse($toDate)->endOfDay();
+        $to = Carbon::parse($toDate)->endOfDay();
 
         return [
-            'invoices'  => Invoice::whereBetween('invoice_date', [$from, $to])->count(),
+            'invoices' => Invoice::whereBetween('invoice_date', [$from, $to])->count(),
             'purchases' => PurchaseInvoice::whereBetween('invoice_date', [$from, $to])->count(),
-            'receipts'  => Receipt::whereBetween('receipt_date', [$from, $to])->count(),
-            'payments'  => Payment::whereBetween('payment_date', [$from, $to])->count(),
-            'entries'   => JournalEntry::whereBetween('entry_date', [$from, $to])->count(),
+            'receipts' => Receipt::whereBetween('receipt_date', [$from, $to])->count(),
+            'payments' => Payment::whereBetween('payment_date', [$from, $to])->count(),
+            'entries' => JournalEntry::whereBetween('entry_date', [$from, $to])->count(),
         ];
     }
 
@@ -86,17 +89,17 @@ class PeriodRollbackService
     public function rollback(string $fromDate, string $toDate, int $userId): array
     {
         $from = Carbon::parse($fromDate)->startOfDay();
-        $to   = Carbon::parse($toDate)->endOfDay();
+        $to = Carbon::parse($toDate)->endOfDay();
 
         $deleted = [
-            'invoices'  => 0,
+            'invoices' => 0,
             'purchases' => 0,
-            'receipts'  => 0,
-            'payments'  => 0,
-            'entries'   => 0,
+            'receipts' => 0,
+            'payments' => 0,
+            'entries' => 0,
         ];
 
-        DB::transaction(function () use ($from, $to, $userId, &$deleted) {
+        DB::transaction(function () use ($from, $to, &$deleted) {
 
             // ── 1. فواتير المبيعات (soft delete) ──
             $invoices = Invoice::whereBetween('invoice_date', [$from, $to])->get();
@@ -142,8 +145,8 @@ class PeriodRollbackService
         });
 
         Log::warning('Period rollback executed', [
-            'from'    => $fromDate,
-            'to'      => $toDate,
+            'from' => $fromDate,
+            'to' => $toDate,
             'user_id' => $userId,
             'deleted' => $deleted,
         ]);
@@ -189,40 +192,44 @@ class PeriodRollbackService
     private function reverseTreasuryIn(int $treasuryId, float $amount, string $refType, int $refId): void
     {
         $treasury = Treasury::lockForUpdate()->find($treasuryId);
-        if (!$treasury) return;
+        if (! $treasury) {
+            return;
+        }
 
         $newBalance = $treasury->current_balance - $amount;
         $treasury->update(['current_balance' => $newBalance]);
 
         TreasuryTransaction::create([
-            'treasury_id'    => $treasuryId,
-            'type'           => 'out',
-            'amount'         => $amount,
-            'balance_after'  => $newBalance,
-            'reference_type' => 'rollback_' . $refType,
-            'reference_id'   => $refId,
-            'description'    => 'عكس ' . $refType . ' #' . $refId . ' — Rollback',
-            'created_by'     => auth()->id(),
+            'treasury_id' => $treasuryId,
+            'type' => 'out',
+            'amount' => $amount,
+            'balance_after' => $newBalance,
+            'reference_type' => 'rollback_'.$refType,
+            'reference_id' => $refId,
+            'description' => 'عكس '.$refType.' #'.$refId.' — Rollback',
+            'created_by' => auth()->id(),
         ]);
     }
 
     private function reverseTreasuryOut(int $treasuryId, float $amount, string $refType, int $refId): void
     {
         $treasury = Treasury::lockForUpdate()->find($treasuryId);
-        if (!$treasury) return;
+        if (! $treasury) {
+            return;
+        }
 
         $newBalance = $treasury->current_balance + $amount;
         $treasury->update(['current_balance' => $newBalance]);
 
         TreasuryTransaction::create([
-            'treasury_id'    => $treasuryId,
-            'type'           => 'in',
-            'amount'         => $amount,
-            'balance_after'  => $newBalance,
-            'reference_type' => 'rollback_' . $refType,
-            'reference_id'   => $refId,
-            'description'    => 'عكس ' . $refType . ' #' . $refId . ' — Rollback',
-            'created_by'     => auth()->id(),
+            'treasury_id' => $treasuryId,
+            'type' => 'in',
+            'amount' => $amount,
+            'balance_after' => $newBalance,
+            'reference_type' => 'rollback_'.$refType,
+            'reference_id' => $refId,
+            'description' => 'عكس '.$refType.' #'.$refId.' — Rollback',
+            'created_by' => auth()->id(),
         ]);
     }
 }
