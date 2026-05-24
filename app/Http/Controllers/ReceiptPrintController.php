@@ -28,10 +28,16 @@ class ReceiptPrintController extends Controller
             'journalEntry',
         ]);
 
-        return PdfService::stream(
-            'print.receipt',
-            compact('receipt'),
-            "receipt-{$receipt->receipt_number}.pdf"
-        );
+        // ?pdf=1 → تنزيل PDF مباشرة
+        if (request()->boolean('pdf')) {
+            return PdfService::stream(
+                'pdf.receipt',
+                compact('receipt'),
+                "receipt-{$receipt->receipt_number}.pdf"
+            );
+        }
+
+        // الافتراضي: معاينة HTML
+        return view('print.receipt', compact('receipt'));
     }
 }

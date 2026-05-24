@@ -14,7 +14,7 @@ class InvoicePdfController extends Controller
             'items' => fn ($q) => $q->with([
                 'product' => fn ($q) => $q->withTrashed()->with(['company']),
             ]),
-            'customer'     => fn ($q) => $q->withTrashed(),
+            'customer' => fn ($q) => $q->withTrashed(),
             'businessUnit',
             'warehouse',
             'createdBy',
@@ -22,10 +22,16 @@ class InvoicePdfController extends Controller
 
         $company = CompanySetting::first();
 
-        return PdfService::stream(
-            'pdf.invoice',
-            compact('invoice', 'company'),
-            'invoice-' . $invoice->reference_number . '.pdf'
-        );
+        // ?pdf=1 → تنزيل PDF مباشرة
+        if (request()->boolean('pdf')) {
+            return PdfService::stream(
+                'pdf.invoice',
+                compact('invoice', 'company'),
+                'invoice-'.$invoice->reference_number.'.pdf'
+            );
+        }
+
+        // الافتراضي: معاينة HTML في المتصفح مع شريط الطباعة
+        return view('print.invoice', compact('invoice', 'company'));
     }
 }

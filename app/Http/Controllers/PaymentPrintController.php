@@ -29,10 +29,16 @@ class PaymentPrintController extends Controller
             'journalEntry',
         ]);
 
-        return PdfService::stream(
-            'print.payment',
-            compact('payment'),
-            "payment-{$payment->payment_number}.pdf"
-        );
+        // ?pdf=1 → تنزيل PDF مباشرة
+        if (request()->boolean('pdf')) {
+            return PdfService::stream(
+                'pdf.payment',
+                compact('payment'),
+                "payment-{$payment->payment_number}.pdf"
+            );
+        }
+
+        // الافتراضي: معاينة HTML
+        return view('print.payment', compact('payment'));
     }
 }

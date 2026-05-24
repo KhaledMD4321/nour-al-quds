@@ -21,11 +21,16 @@ class QuickSaleReceiptController extends Controller
 
         $company = CompanySetting::first();
 
-        // A5 للإيصال السريع
-        return PdfService::streamA5(
-            'pdf.quick-sale-receipt',
-            compact('sale', 'company'),
-            'receipt-' . $sale->reference_number . '.pdf'
-        );
+        // ?pdf=1 → تنزيل PDF (A5)
+        if (request()->boolean('pdf')) {
+            return PdfService::streamA5(
+                'pdf.quick-sale-receipt',
+                compact('sale', 'company'),
+                'receipt-'.$sale->reference_number.'.pdf'
+            );
+        }
+
+        // الافتراضي: معاينة HTML
+        return view('print.quick-sale-receipt', compact('sale', 'company'));
     }
 }

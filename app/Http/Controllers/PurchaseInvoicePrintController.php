@@ -13,8 +13,8 @@ class PurchaseInvoicePrintController extends Controller
         abort_unless(auth()->check(), 403);
 
         $purchaseInvoice->load([
-            'supplier'  => fn ($q) => $q->withTrashed(),
-            'items'     => fn ($q) => $q->with([
+            'supplier' => fn ($q) => $q->withTrashed(),
+            'items' => fn ($q) => $q->with([
                 'product' => fn ($q) => $q->withTrashed(),
             ]),
             'businessUnit',
@@ -23,11 +23,18 @@ class PurchaseInvoicePrintController extends Controller
         ]);
 
         $company = CompanySetting::first();
+        $invoice = $purchaseInvoice;   // alias for view variable consistency
 
-        return PdfService::stream(
-            'pdf.purchase-invoice',
-            ['invoice' => $purchaseInvoice, 'company' => $company],
-            "purchase-invoice-{$purchaseInvoice->reference_number}.pdf"
-        );
+        // ?pdf=1 → تنزيل PDF مباشرة
+        if (request()->boolean('pdf')) {
+            return PdfService::stream(
+                'pdf.purchase-invoice',
+                ['invoice' => $invoice, 'company' => $company],
+                "purchase-invoice-{$purchaseInvoice->reference_number}.pdf"
+            );
+        }
+
+        // الافتراضي: معاينة HTML
+        return view('print.purchase-invoice', compact('invoice', 'company'));
     }
 }

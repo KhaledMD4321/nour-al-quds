@@ -1,171 +1,116 @@
-<!DOCTYPE html>
-<html dir="rtl" lang="ar">
-<head>
-    <meta charset="UTF-8">
-    <title>سند صرف — {{ $payment->payment_number }}</title>
+@extends('layouts.print-preview')
 
-    @php
-        $company      = \App\Models\CompanySetting::first();
-        $primaryColor = '#dc2626';
-        $isSupplier   = $payment->category === 'supplier_payment';
-        $isExpense    = !$isSupplier;
-    @endphp
+@php
+    $company      = \App\Models\CompanySetting::first();
+    $primaryColor = '#dc2626';
+    $isSupplier   = $payment->category === 'supplier_payment';
+    $isExpense    = !$isSupplier;
+    $docLabel     = 'سند صرف — ' . $payment->payment_number;
+@endphp
 
-    <style>
-        @page { size: A4; margin: 12mm 14mm 14mm 14mm; }
-        * { box-sizing: border-box; margin: 0; padding: 0; }
+@section('title', $docLabel)
+@section('toolbar-title', $docLabel . ($isSupplier && $payment->supplier ? ' | ' . $payment->supplier->name : ''))
 
-        body {
-            font-family: 'xbriyaz', sans-serif;
-            font-size: 12px;
-            color: #1a1a1a;
-            direction: rtl;
-            background: #fff;
-        }
+@section('styles')
+<style>
+    body { font-size: 12px; color: #1a1a1a; }
 
-        /* ── الترويسة ── */
-        .header {
-            display: table;
-            width: 100%;
-            border-bottom: 3px solid {{ $primaryColor }};
-            padding-bottom: 12px;
-            margin-bottom: 14px;
-        }
-        .header-right { display: table-cell; vertical-align: top; width: 65%; }
-        .header-left  { display: table-cell; vertical-align: top; text-align: left; width: 35%; }
-        .company-name { font-size: 18px; font-weight: bold; color: {{ $primaryColor }}; margin-bottom: 3px; }
-        .company-sub  { font-size: 10px; color: #6b7280; line-height: 1.7; }
-        .logo         { max-height: 60px; max-width: 130px; }
+    /* ── الترويسة ── */
+    .header {
+        display: table; width: 100%;
+        border-bottom: 3px solid {{ $primaryColor }};
+        padding-bottom: 12px; margin-bottom: 14px;
+    }
+    .header-right { display: table-cell; vertical-align: top; width: 65%; }
+    .header-left  { display: table-cell; vertical-align: top; text-align: left; width: 35%; }
+    .company-name { font-size: 18px; font-weight: 800; color: {{ $primaryColor }}; margin-bottom: 3px; }
+    .company-sub  { font-size: 10px; color: #6b7280; line-height: 1.7; }
+    .logo         { max-height: 60px; max-width: 130px; }
 
-        /* ── شريط عنوان السند ── */
-        .doc-title-bar {
-            text-align: center;
-            background: {{ $primaryColor }};
-            color: white;
-            padding: 7px 12px;
-            border-radius: 6px;
-            font-size: 16px;
-            font-weight: bold;
-            margin-bottom: 14px;
-            letter-spacing: 0.5px;
-        }
+    /* ── شريط عنوان السند ── */
+    .doc-title-bar {
+        text-align: center;
+        background: {{ $primaryColor }}; color: white;
+        padding: 7px 12px; border-radius: 6px;
+        font-size: 16px; font-weight: 800;
+        margin-bottom: 14px;
+    }
 
-        /* ── صندوق المبلغ ── */
-        .amount-box {
-            text-align: center;
-            background: linear-gradient(135deg, {{ $primaryColor }}, #ef4444);
-            color: white;
-            border-radius: 10px;
-            padding: 18px 20px;
-            margin-bottom: 14px;
-        }
-        .amount-label    { font-size: 11px; opacity: 0.85; margin-bottom: 5px; }
-        .amount-value    { font-size: 34px; font-weight: 800; line-height: 1.1; }
-        .amount-currency { font-size: 15px; opacity: 0.75; margin-right: 4px; }
-        .method-badge {
-            display: inline-block;
-            padding: 3px 14px;
-            border-radius: 999px;
-            font-size: 11px;
-            font-weight: 600;
-            margin-top: 6px;
-            background: rgba(255,255,255,0.25);
-            color: white;
-        }
-        .category-badge {
-            display: inline-block;
-            padding: 3px 12px;
-            border-radius: 999px;
-            font-size: 10px;
-            font-weight: 600;
-            background: rgba(255,255,255,0.2);
-            color: white;
-            margin-top: 4px;
-        }
+    /* ── صندوق المبلغ ── */
+    .amount-box {
+        text-align: center;
+        background: linear-gradient(135deg, {{ $primaryColor }}, #ef4444);
+        color: white; border-radius: 10px;
+        padding: 18px 20px; margin-bottom: 14px;
+    }
+    .amount-label    { font-size: 11px; opacity: .85; margin-bottom: 5px; }
+    .amount-value    { font-size: 34px; font-weight: 800; line-height: 1.1; }
+    .amount-currency { font-size: 15px; opacity: .75; margin-right: 4px; }
+    .method-badge {
+        display: inline-block; padding: 3px 14px;
+        border-radius: 999px; font-size: 11px; font-weight: 600;
+        margin-top: 6px; background: rgba(255,255,255,0.25); color: white;
+    }
+    .category-badge {
+        display: inline-block; padding: 3px 12px;
+        border-radius: 999px; font-size: 10px; font-weight: 600;
+        background: rgba(255,255,255,0.2); color: white; margin-top: 4px;
+    }
 
-        /* ── جدول البيانات ── */
-        .info-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 14px;
-            border: 1px solid #e5e7eb;
-            border-radius: 6px;
-            overflow: hidden;
-        }
-        .info-table tr:nth-child(even) { background: #fff5f5; }
-        .info-table td {
-            padding: 7px 12px;
-            font-size: 11.5px;
-            border-bottom: 1px solid #f3f4f6;
-            vertical-align: top;
-        }
-        .info-table td:first-child {
-            color: #6b7280;
-            width: 38%;
-            font-size: 10.5px;
-            font-weight: 600;
-            white-space: nowrap;
-        }
-        .info-table td:last-child  { color: #111827; font-weight: 600; }
-        .info-ref { font-size: 13px; color: {{ $primaryColor }}; font-weight: 800; }
+    /* ── جدول البيانات ── */
+    .info-table {
+        width: 100%; border-collapse: collapse;
+        margin-bottom: 14px; border: 1px solid #e5e7eb;
+        border-radius: 6px; overflow: hidden;
+    }
+    .info-table tr:nth-child(even) { background: #fff5f5; }
+    .info-table td {
+        padding: 7px 12px; font-size: 11.5px;
+        border-bottom: 1px solid #f3f4f6; vertical-align: top;
+    }
+    .info-table td:first-child {
+        color: #6b7280; width: 38%;
+        font-size: 10.5px; font-weight: 600; white-space: nowrap;
+    }
+    .info-table td:last-child { color: #111827; font-weight: 600; }
+    .info-ref { font-size: 13px; color: {{ $primaryColor }}; font-weight: 800; }
 
-        /* ── بيانات الشيك ── */
-        .cheque-box {
-            border: 1px solid #fde68a;
-            background: #fffbeb;
-            border-radius: 8px;
-            padding: 12px 16px;
-            margin-bottom: 14px;
-        }
-        .cheque-title { font-weight: 700; color: #92400e; margin-bottom: 8px; font-size: 12px; }
-        .cheque-grid  {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 6px;
-        }
-        .cheque-item-label { font-size: 10px; color: #92400e; }
-        .cheque-item-value { font-size: 12px; font-weight: 700; color: #78350f; margin-top: 2px; }
+    /* ── بيانات الشيك ── */
+    .cheque-box {
+        border: 1px solid #fde68a; background: #fffbeb;
+        border-radius: 8px; padding: 12px 16px; margin-bottom: 14px;
+    }
+    .cheque-title { font-weight: 700; color: #92400e; margin-bottom: 8px; font-size: 12px; }
+    .cheque-grid  { display: table; width: 100%; }
+    .cheque-item  { display: table-cell; width: 33%; padding: 0 4px; }
+    .cheque-item-label { font-size: 10px; color: #92400e; }
+    .cheque-item-value { font-size: 12px; font-weight: 700; color: #78350f; margin-top: 2px; }
 
-        /* ── ملاحظات ── */
-        .notes-box {
-            border: 1px solid #fecaca;
-            background: #fff5f5;
-            border-radius: 6px;
-            padding: 10px 14px;
-            margin-bottom: 14px;
-            font-size: 11px;
-            color: #374151;
-        }
-        .notes-title { font-size: 10px; font-weight: 700; color: #9ca3af; margin-bottom: 3px; }
+    /* ── ملاحظات ── */
+    .notes-box {
+        border: 1px solid #fecaca; background: #fff5f5;
+        border-radius: 6px; padding: 10px 14px;
+        margin-bottom: 14px; font-size: 11px; color: #374151;
+    }
+    .notes-title { font-size: 10px; font-weight: 700; color: #9ca3af; margin-bottom: 3px; }
 
-        /* ── التوقيعات ── */
-        .sig-wrap { display: table; width: 100%; margin-top: 28px; margin-bottom: 16px; }
-        .sig-cell {
-            display: table-cell;
-            width: 50%;
-            text-align: center;
-            padding: 0 18px;
-        }
-        .sig-line {
-            border-top: 1px solid #374151;
-            padding-top: 5px;
-            font-size: 11px;
-            font-weight: 600;
-            margin-top: 32px;
-        }
+    /* ── التوقيعات ── */
+    .sig-wrap { display: table; width: 100%; margin-top: 28px; margin-bottom: 16px; }
+    .sig-cell { display: table-cell; width: 50%; text-align: center; padding: 0 18px; }
+    .sig-line {
+        border-top: 1px solid #374151; padding-top: 5px;
+        font-size: 11px; font-weight: 600; margin-top: 32px;
+    }
 
-        /* ── التذييل ── */
-        .footer {
-            text-align: center;
-            font-size: 10px;
-            color: #9ca3af;
-            border-top: 1px solid #e5e7eb;
-            padding-top: 8px;
-            margin-top: 8px;
-        }
-    </style>
-</head>
-<body>
+    /* ── التذييل ── */
+    .doc-footer {
+        text-align: center; font-size: 10px; color: #9ca3af;
+        border-top: 1px solid #e5e7eb; padding-top: 8px; margin-top: 8px;
+    }
+</style>
+@endsection
+
+@section('content')
 
     {{-- ══ الترويسة ══ --}}
     <div class="header">
@@ -179,7 +124,7 @@
         </div>
         <div class="header-left">
             @if($company?->logo)
-                <img src="{{ public_path('storage/' . $company->logo) }}" class="logo" alt="">
+                <img src="{{ asset('storage/' . $company->logo) }}" class="logo" alt="">
             @endif
         </div>
     </div>
@@ -218,14 +163,13 @@
             <td>{{ $payment->payment_date?->format('d/m/Y') }}</td>
         </tr>
 
-        {{-- المورد (لو دفع مورد) --}}
         @if($isSupplier && $payment->supplier)
         <tr>
             <td>المورد</td>
             <td>
                 {{ $payment->supplier->name }}
                 @if($payment->supplier->code)
-                    <span style="color: #9ca3af; font-size: 10px; font-weight: 400;">
+                    <span style="color:#9ca3af; font-size:10px; font-weight:400;">
                         ({{ $payment->supplier->code }})
                     </span>
                 @endif
@@ -239,7 +183,6 @@
         @endif
         @endif
 
-        {{-- تصنيف المصروف (لو مصروف تشغيلي) --}}
         @if($isExpense)
         <tr>
             <td>تصنيف المصروف</td>
@@ -253,7 +196,6 @@
         @endif
         @endif
 
-        {{-- فاتورة الشراء --}}
         @if($payment->purchaseInvoice)
         <tr>
             <td>فاتورة الشراء</td>
@@ -261,7 +203,7 @@
         </tr>
         <tr>
             <td>المتبقي على الفاتورة</td>
-            <td style="{{ $payment->purchaseInvoice->remaining_amount > 0 ? 'color: #dc2626;' : 'color: #16a34a;' }}">
+            <td style="{{ $payment->purchaseInvoice->remaining_amount > 0 ? 'color:#dc2626;' : 'color:#16a34a;' }}">
                 {{ number_format($payment->purchaseInvoice->remaining_amount, 2) }} ج.م
             </td>
         </tr>
@@ -302,15 +244,15 @@
         <div class="cheque-box">
             <div class="cheque-title">📋 بيانات الشيك</div>
             <div class="cheque-grid">
-                <div>
+                <div class="cheque-item">
                     <div class="cheque-item-label">رقم الشيك</div>
                     <div class="cheque-item-value">{{ $payment->cheque_details['cheque_number'] ?? '—' }}</div>
                 </div>
-                <div>
+                <div class="cheque-item">
                     <div class="cheque-item-label">اسم البنك</div>
                     <div class="cheque-item-value">{{ $payment->cheque_details['bank_name'] ?? '—' }}</div>
                 </div>
-                <div>
+                <div class="cheque-item">
                     <div class="cheque-item-label">تاريخ الاستحقاق</div>
                     <div class="cheque-item-value">{{ $payment->cheque_details['due_date'] ?? '—' }}</div>
                 </div>
@@ -337,12 +279,11 @@
     </div>
 
     {{-- ══ التذييل ══ --}}
-    <div class="footer">
+    <div class="doc-footer">
         {{ $company?->name ?? \App\Models\SystemSetting::get('company.name', 'نور القدس') }}
         @if($company?->phone) | هاتف: {{ $company->phone }}@endif
         | {{ $payment->payment_number }}
         — {{ $payment->payment_date?->format('d/m/Y') }}
     </div>
 
-</body>
-</html>
+@endsection
