@@ -1,66 +1,141 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+<div align="center">
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+# 🏪 نور القدس ERP
 
-## About Laravel
+**نظام تخطيط موارد المؤسسات لتوزيع وبيع الأدوات الصحية والسباكة**
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+_An Arabic-first ERP for sanitary-ware & plumbing distribution_
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+[![CI](https://github.com/KhaledMD4321/nour-al-quds/actions/workflows/ci.yml/badge.svg)](https://github.com/KhaledMD4321/nour-al-quds/actions/workflows/ci.yml)
+&nbsp;
+![PHP](https://img.shields.io/badge/PHP-8.4-777BB4?logo=php&logoColor=white)
+![Laravel](https://img.shields.io/badge/Laravel-11-FF2D20?logo=laravel&logoColor=white)
+![Filament](https://img.shields.io/badge/Filament-5-F59E0B)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-4169E1?logo=postgresql&logoColor=white)
+![Tests](https://img.shields.io/badge/tests-22%20passing-success)
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+</div>
 
-## Learning Laravel
+---
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+<div dir="rtl">
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+## 📖 نظرة عامة
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+نظام ERP متكامل مبني خصيصاً لشركة **نور القدس** لإدارة توزيع وبيع الأدوات الصحية والسباكة في مصر، مع **فصل مالي كامل** بين وحدتين تشغيليتين تحت إدارة واحدة:
 
-## Laravel Sponsors
+- 🏬 **المعرض** — بيع تجزئة
+- 🏭 **مخزن التوزيع** — بيع جملة
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+الواجهة بالكامل **عربية (RTL)**، والطباعة A4 عربية عبر mPDF.
 
-### Premium Partners
+</div>
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[WebReinvent](https://webreinvent.com/)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Jump24](https://jump24.co.uk)**
-- **[Redberry](https://redberry.international/laravel/)**
-- **[Active Logic](https://activelogic.com)**
-- **[byte5](https://byte5.de)**
-- **[OP.GG](https://op.gg)**
+## ✨ المميزات (Features)
 
-## Contributing
+<div dir="rtl">
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+- 🧾 **المبيعات** — فواتير، مرتجعات، عروض أسعار، بيع سريع، خصم ثلاثي متتابع، حدّ ائتمان
+- 🛒 **المشتريات** — فواتير شراء، مرتجعات، استيراد البنود من Excel
+- 📦 **المخزون** — أرصدة لحظية، حركات مخزون، تنبيهات نقص المخزون
+- 💰 **الخزينة والمالية** — سندات قبض/صرف، شيكات مؤجلة، خزائن وبنوك
+- 📒 **المحاسبة** — قيود يومية أوتوماتيكية متوازنة، شجرة حسابات، دفتر أستاذ، ميزان مراجعة
+- 🧮 **كشوف الحساب** — عملاء وموردين عبر `LedgerService` (مصدر حساب موحّد واحد)
+- 📊 **التقارير** — أعمار الديون، الأرباح والخسائر، المخزون، المبيعات، التدفق النقدي
+- 🖨️ **الطباعة المزدوجة** — معاينة في المتصفح + تنزيل PDF عربي (A4)
+- 🔐 **الصلاحيات** — أدوار ومستخدمون عبر Spatie Permission
+- ⚙️ **الإعدادات** — إعدادات النظام وتفعيل/تعطيل الوحدات
 
-## Code of Conduct
+</div>
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+## 🛠️ التقنيات (Tech Stack)
 
-## Security Vulnerabilities
+| الطبقة | التقنية |
+|--------|---------|
+| Backend | Laravel 11 · PHP 8.4 |
+| Admin Panel | Filament 5 (Livewire 3) |
+| Database | PostgreSQL 16 |
+| Auth / RBAC | Spatie Laravel Permission |
+| PDF | mPDF (Arabic RTL — `xbriyaz`) |
+| Excel | Maatwebsite/Excel |
+| Backup | spatie/laravel-backup |
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+## 🏗️ المعمارية (Architecture)
 
-## License
+<div dir="rtl">
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+- **منطق الأعمال في Services فقط** (`app/Modules/*`) — الـ Resources واجهة فقط
+- كل عملية مالية داخل `DB::transaction()` مع `lockForUpdate()` على المخزون والخزينة
+- **Soft Deletes** على كل الجداول التجارية (أرشفة لا حذف)
+- كل معاملة تولّد **قيد يومي متوازن** (مدين = دائن)
+- الفصل المالي بين الوحدتين قرار معماري
+
+</div>
+
+```
+app/Modules/         ← منطق الأعمال (★ القلب)
+├── Sales/  Purchases/  Inventory/  Catalog/
+├── Finance/  Accounting/  Reports/  DataManagement/
+app/Filament/        ← الواجهة (Resources · Pages · Widgets)
+app/Models/          ← Eloquent Models
+```
+
+## 🚀 التشغيل محلياً (Local Setup)
+
+```bash
+git clone https://github.com/KhaledMD4321/nour-al-quds.git
+cd nour-al-quds
+
+composer install
+cp .env.example .env
+php artisan key:generate
+# عدّل إعدادات قاعدة البيانات (DB_*) في .env ثم:
+
+php artisan migrate
+php artisan db:seed --class=SystemSettingSeeder
+php artisan db:seed --class=ModuleSeeder
+php artisan app:prepare-storage
+php artisan storage:link
+
+php artisan serve
+```
+
+> ℹ️ يتطلب **PHP 8.4+** و **PostgreSQL 16+**.
+
+## 🧪 الاختبارات (Testing)
+
+```bash
+composer test      # تشغيل مجموعة اختبارات PHPUnit
+composer lint      # فحص التنسيق (Pint)
+composer format    # إصلاح التنسيق تلقائياً (Pint)
+```
+
+> الـ CI على GitHub Actions يشغّل الاختبارات + فحص التنسيق + فحص ثغرات التبعيات على كل رفع.
+
+## 📦 النشر (Deployment)
+
+قائمة النشر الكاملة في [`CLAUDE.md`](CLAUDE.md). باختصار على السيرفر (PHP 8.4):
+
+```bash
+composer install --no-dev --optimize-autoloader
+php artisan migrate --force
+php artisan app:prepare-storage
+php artisan config:cache && php artisan route:cache && php artisan view:cache
+```
+
+## 🔒 الأمان (Security)
+
+- جلسة 30 دقيقة · حد محاولات الدخول (Rate limiting) · نسخ احتياطي يومي
+- فحص ثغرات التبعيات تلقائياً عبر `composer audit` ضمن الـ CI
+
+## 📄 الترخيص (License)
+
+برمجية خاصة (Proprietary) — جميع الحقوق محفوظة لشركة **نور القدس**.
+
+---
+
+<div align="center">
+
+صُنع بعناية لإدارة أعمال نور القدس 🇪🇬
+
+</div>
