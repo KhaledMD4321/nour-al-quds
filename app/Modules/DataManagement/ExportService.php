@@ -2,25 +2,19 @@
 
 namespace App\Modules\DataManagement;
 
-use App\Models\BusinessUnit;
+use App\Models\Cheque;
 use App\Models\Customer;
-use App\Models\Supplier;
-use App\Models\Product;
 use App\Models\Invoice;
+use App\Models\Payment;
+use App\Models\Product;
 use App\Models\PurchaseInvoice;
 use App\Models\Receipt;
-use App\Models\Payment;
-use App\Models\Cheque;
 use App\Models\Stock;
-use App\Models\TreasuryTransaction;
+use App\Models\Supplier;
 use App\Modules\Reports\ReportService;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
 use Maatwebsite\Excel\Facades\Excel;
-use Maatwebsite\Excel\Concerns\FromCollection;
-use Maatwebsite\Excel\Concerns\WithHeadings;
-use Maatwebsite\Excel\Concerns\WithMapping;
-use Maatwebsite\Excel\Concerns\ShouldAutoSize;
 
 class ExportService
 {
@@ -28,29 +22,47 @@ class ExportService
 
     /**
      * تصدير بيانات إلى Excel
-     * @return string  path to temp file
+     *
+     * @return string المسار الكامل للملف المؤقت
+     *
+     * @throws \RuntimeException عند فشل التصدير
      */
     public function exportToExcel(string $dataType, array $filters = []): string
     {
-        $data     = $this->getData($dataType, $filters);
-        $headers  = $this->getHeaders($dataType);
-        $fileName = 'export_' . $dataType . '_' . now()->format('Ymd_His') . '.xlsx';
-        $path     = 'exports/' . $fileName;
+        $data = $this->getData($dataType, $filters);
+        $headers = $this->getHeaders($dataType);
+        $fileName = 'export_'.$dataType.'_'.now()->format('Ymd_His').'.xlsx';
+        $path = 'exports/'.$fileName;
 
-        Excel::store(
-            new GenericExport($data, $headers),
-            $path,
-            'local'
-        );
+        // التأكد من وجود مجلد التصدير
+        $exportsDir = storage_path('app/exports');
+        if (! is_dir($exportsDir)) {
+            mkdir($exportsDir, 0755, true);
+        }
+
+        try {
+            Excel::store(
+                new GenericExport($data, $headers),
+                $path,
+                'local'
+            );
+        } catch (\Throwable $e) {
+            Log::error('Export failed', [
+                'type' => $dataType,
+                'user_id' => auth()->id(),
+                'exception' => $e->getMessage(),
+            ]);
+            throw new \RuntimeException('فشل تصدير البيانات: '.$e->getMessage(), 0, $e);
+        }
 
         Log::info('Data exported', [
-            'type'    => $dataType,
-            'rows'    => $data->count(),
+            'type' => $dataType,
+            'rows' => $data->count(),
             'user_id' => auth()->id(),
-            'path'    => $path,
+            'path' => $path,
         ]);
 
-        return storage_path('app/' . $path);
+        return storage_path('app/'.$path);
     }
 
     /**
@@ -60,39 +72,39 @@ class ExportService
     {
         $buId = $filters['business_unit_id'] ?? null;
         $from = $filters['from_date'] ?? null;
-        $to   = $filters['to_date']   ?? null;
+        $to = $filters['to_date'] ?? null;
 
-        return match($dataType) {
+        return match ($dataType) {
             'customers' => $this->exportCustomers($buId),
             'suppliers' => $this->exportSuppliers(),
-            'products'  => $this->exportProducts(),
-            'stock'     => $this->exportStock($buId),
-            'invoices'  => $this->exportInvoices($from, $to, $buId),
+            'products' => $this->exportProducts(),
+            'stock' => $this->exportStock($buId),
+            'invoices' => $this->exportInvoices($from, $to, $buId),
             'purchases' => $this->exportPurchases($from, $to, $buId),
-            'receipts'  => $this->exportReceipts($from, $to, $buId),
-            'payments'  => $this->exportPayments($from, $to, $buId),
-            'cheques'   => $this->exportCheques($filters['direction'] ?? null),
+            'receipts' => $this->exportReceipts($from, $to, $buId),
+            'payments' => $this->exportPayments($from, $to, $buId),
+            'cheques' => $this->exportCheques($filters['direction'] ?? null),
             'aging_customers' => $this->reports->customerAging($buId, $to)->map(fn ($r) => collect($r)->toArray()),
             'aging_suppliers' => $this->reports->supplierAging($buId, $to)->map(fn ($r) => collect($r)->toArray()),
-            default     => collect(),
+            default => collect(),
         };
     }
 
     public function getHeaders(string $dataType): array
     {
-        return match($dataType) {
-            'customers'       => ['الكود', 'الاسم', 'التليفون', 'العنوان', 'النوع', 'حد الائتمان', 'الرصيد الافتتاحي'],
-            'suppliers'       => ['الكود', 'الاسم', 'التليفون', 'العنوان', 'الرصيد الافتتاحي'],
-            'products'        => ['الكود', 'الاسم', 'الاسم بالإنجليزي', 'المصنّع', 'وحدة القياس', 'الحد الأدنى'],
-            'stock'           => ['المخزن', 'كود الصنف', 'الصنف', 'الكمية', 'متوسط التكلفة', 'القيمة الإجمالية'],
-            'invoices'        => ['رقم الفاتورة', 'تاريخ الفاتورة', 'العميل', 'الإجمالي', 'المحصّل', 'المتبقي', 'الحالة'],
-            'purchases'       => ['رقم الفاتورة', 'تاريخ الفاتورة', 'المورد', 'الإجمالي', 'المسدّد', 'المستحق', 'الحالة'],
-            'receipts'        => ['رقم السند', 'التاريخ', 'العميل', 'المبلغ', 'طريقة الدفع', 'الخزينة'],
-            'payments'        => ['رقم السند', 'التاريخ', 'المورد', 'المبلغ', 'طريقة الدفع', 'التصنيف'],
-            'cheques'         => ['رقم الشيك', 'البنك', 'المبلغ', 'تاريخ الإصدار', 'تاريخ الاستحقاق', 'الاتجاه', 'الحالة'],
+        return match ($dataType) {
+            'customers' => ['الكود', 'الاسم', 'التليفون', 'العنوان', 'النوع', 'حد الائتمان', 'الرصيد الافتتاحي'],
+            'suppliers' => ['الكود', 'الاسم', 'التليفون', 'العنوان', 'الرصيد الافتتاحي'],
+            'products' => ['الكود', 'الاسم', 'الاسم بالإنجليزي', 'المصنّع', 'وحدة القياس', 'الحد الأدنى'],
+            'stock' => ['المخزن', 'كود الصنف', 'الصنف', 'الكمية', 'متوسط التكلفة', 'القيمة الإجمالية'],
+            'invoices' => ['رقم الفاتورة', 'تاريخ الفاتورة', 'العميل', 'الإجمالي', 'المحصّل', 'المتبقي', 'الحالة'],
+            'purchases' => ['رقم الفاتورة', 'تاريخ الفاتورة', 'المورد', 'الإجمالي', 'المسدّد', 'المستحق', 'الحالة'],
+            'receipts' => ['رقم السند', 'التاريخ', 'العميل', 'المبلغ', 'طريقة الدفع', 'الخزينة'],
+            'payments' => ['رقم السند', 'التاريخ', 'المورد', 'المبلغ', 'طريقة الدفع', 'التصنيف'],
+            'cheques' => ['رقم الشيك', 'البنك', 'المبلغ', 'تاريخ الإصدار', 'تاريخ الاستحقاق', 'الاتجاه', 'الحالة'],
             'aging_customers' => ['الكود', 'العميل', 'جاري', '1-30 يوم', '31-60 يوم', '61-90 يوم', '+90 يوم', 'الإجمالي'],
             'aging_suppliers' => ['الكود', 'المورد', 'جاري', '1-30 يوم', '31-60 يوم', '61-90 يوم', '+90 يوم', 'الإجمالي'],
-            default           => [],
+            default => [],
         };
     }
 
@@ -101,7 +113,9 @@ class ExportService
     private function exportCustomers(?int $buId): Collection
     {
         $q = Customer::orderBy('code');
-        if ($buId) $q->where('business_unit_id', $buId);
+        if ($buId) {
+            $q->where('business_unit_id', $buId);
+        }
 
         return $q->get()->map(fn ($c) => [
             $c->code, $c->name, $c->phone, $c->address,
@@ -126,7 +140,9 @@ class ExportService
     private function exportStock(?int $buId): Collection
     {
         $q = Stock::with(['product', 'warehouse'])->where('quantity', '>', 0);
-        if ($buId) $q->whereHas('warehouse', fn ($wq) => $wq->where('business_unit_id', $buId));
+        if ($buId) {
+            $q->whereHas('warehouse', fn ($wq) => $wq->where('business_unit_id', $buId));
+        }
 
         return $q->get()->map(fn ($s) => [
             $s->warehouse->name, $s->product->code, $s->product->name,
@@ -137,9 +153,15 @@ class ExportService
     private function exportInvoices(?string $from, ?string $to, ?int $buId): Collection
     {
         $q = Invoice::with('customer')->where('type', 'sale');
-        if ($from) $q->whereDate('invoice_date', '>=', $from);
-        if ($to)   $q->whereDate('invoice_date', '<=', $to);
-        if ($buId) $q->where('business_unit_id', $buId);
+        if ($from) {
+            $q->whereDate('invoice_date', '>=', $from);
+        }
+        if ($to) {
+            $q->whereDate('invoice_date', '<=', $to);
+        }
+        if ($buId) {
+            $q->where('business_unit_id', $buId);
+        }
 
         return $q->orderBy('invoice_date')->get()->map(fn ($i) => [
             $i->reference_number, $i->invoice_date->format('Y-m-d'),
@@ -151,9 +173,15 @@ class ExportService
     private function exportPurchases(?string $from, ?string $to, ?int $buId): Collection
     {
         $q = PurchaseInvoice::with('supplier');
-        if ($from) $q->whereDate('invoice_date', '>=', $from);
-        if ($to)   $q->whereDate('invoice_date', '<=', $to);
-        if ($buId) $q->where('business_unit_id', $buId);
+        if ($from) {
+            $q->whereDate('invoice_date', '>=', $from);
+        }
+        if ($to) {
+            $q->whereDate('invoice_date', '<=', $to);
+        }
+        if ($buId) {
+            $q->where('business_unit_id', $buId);
+        }
 
         return $q->orderBy('invoice_date')->get()->map(fn ($i) => [
             $i->invoice_number, $i->invoice_date->format('Y-m-d'),
@@ -165,9 +193,15 @@ class ExportService
     private function exportReceipts(?string $from, ?string $to, ?int $buId): Collection
     {
         $q = Receipt::with(['customer', 'treasury']);
-        if ($from) $q->whereDate('receipt_date', '>=', $from);
-        if ($to)   $q->whereDate('receipt_date', '<=', $to);
-        if ($buId) $q->where('business_unit_id', $buId);
+        if ($from) {
+            $q->whereDate('receipt_date', '>=', $from);
+        }
+        if ($to) {
+            $q->whereDate('receipt_date', '<=', $to);
+        }
+        if ($buId) {
+            $q->where('business_unit_id', $buId);
+        }
 
         return $q->orderBy('receipt_date')->get()->map(fn ($r) => [
             $r->receipt_number, $r->receipt_date->format('Y-m-d'),
@@ -178,9 +212,15 @@ class ExportService
     private function exportPayments(?string $from, ?string $to, ?int $buId): Collection
     {
         $q = Payment::with(['supplier', 'treasury']);
-        if ($from) $q->whereDate('payment_date', '>=', $from);
-        if ($to)   $q->whereDate('payment_date', '<=', $to);
-        if ($buId) $q->where('business_unit_id', $buId);
+        if ($from) {
+            $q->whereDate('payment_date', '>=', $from);
+        }
+        if ($to) {
+            $q->whereDate('payment_date', '<=', $to);
+        }
+        if ($buId) {
+            $q->where('business_unit_id', $buId);
+        }
 
         return $q->orderBy('payment_date')->get()->map(fn ($p) => [
             $p->payment_number, $p->payment_date->format('Y-m-d'),
@@ -191,7 +231,9 @@ class ExportService
     private function exportCheques(?string $direction): Collection
     {
         $q = Cheque::orderBy('due_date');
-        if ($direction) $q->where('direction', $direction);
+        if ($direction) {
+            $q->where('direction', $direction);
+        }
 
         return $q->get()->map(fn ($c) => [
             $c->cheque_number, $c->bank_name, $c->amount,
@@ -199,25 +241,5 @@ class ExportService
             $c->direction === 'incoming' ? 'وارد' : 'صادر',
             $c->status_label,
         ]);
-    }
-}
-
-// ── Inline Excel Export class ──────────────────────────────────────────────────
-
-class GenericExport implements FromCollection, WithHeadings, ShouldAutoSize
-{
-    public function __construct(
-        private Collection $data,
-        private array      $headers
-    ) {}
-
-    public function collection(): Collection
-    {
-        return $this->data;
-    }
-
-    public function headings(): array
-    {
-        return $this->headers;
     }
 }

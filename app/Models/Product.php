@@ -10,17 +10,22 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Product extends Model
 {
-    use SoftDeletes, HasCustomFields;
+    use HasCustomFields, SoftDeletes;
 
-    protected function getCustomFieldEntityType(): string { return 'product'; }
+    protected function getCustomFieldEntityType(): string
+    {
+        return 'product';
+    }
 
     protected $fillable = [
         'code',
         'name',
+        'name_en',
         'company_id',
         'category_id',
         'unit_of_measure',
         'list_price',
+        'min_stock_level',
         'image',
         'is_active',
         'notes',
@@ -28,7 +33,8 @@ class Product extends Model
 
     protected $casts = [
         'list_price' => 'decimal:2',
-        'is_active'  => 'boolean',
+        'min_stock_level' => 'decimal:3',
+        'is_active' => 'boolean',
     ];
 
     // ─── Auto-code generation ──────────────────────────────────────────────────
@@ -46,12 +52,12 @@ class Product extends Model
     {
         $last = static::withTrashed()
             ->whereRaw("code ~ '^PRD-[0-9]+$'")
-            ->orderByRaw("CAST(SUBSTRING(code FROM 5) AS INTEGER) DESC")
+            ->orderByRaw('CAST(SUBSTRING(code FROM 5) AS INTEGER) DESC')
             ->value('code');
 
         $next = $last ? (int) substr($last, 4) + 1 : 1;
 
-        return 'PRD-' . str_pad($next, 5, '0', STR_PAD_LEFT);
+        return 'PRD-'.str_pad($next, 5, '0', STR_PAD_LEFT);
     }
 
     // ─── Relations ─────────────────────────────────────────────────────────────
@@ -138,16 +144,16 @@ class Product extends Model
      */
     public function getCurrentPrice(): ?float
     {
-        if (!$this->company_id) {
+        if (! $this->company_id) {
             return null;
         }
 
         $activeVersion = PriceListVersion::where('company_id', $this->company_id)
-                                         ->where('status', 'active')
-                                         ->latest('effective_date')
-                                         ->first();
+            ->where('status', 'active')
+            ->latest('effective_date')
+            ->first();
 
-        if (!$activeVersion) {
+        if (! $activeVersion) {
             return null;
         }
 
