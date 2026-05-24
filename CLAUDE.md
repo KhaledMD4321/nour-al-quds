@@ -13,14 +13,14 @@
 
 ## Tech Stack
 
-- **Backend:** Laravel 11 + PHP 8.3
+- **Backend:** Laravel 11 + PHP 8.4 (الحد الأدنى — بسبب مكوّنات Symfony 8 في Filament 5)
 - **Admin Panel:** Filament 5 (مش 3 — تأكد من الـ namespace)
 - **Database:** PostgreSQL 16
 - **Auth & RBAC:** Spatie Laravel Permission
-- **PDF:** barryvdh/laravel-dompdf
+- **PDF:** mpdf/mpdf 8.x (Arabic RTL native — `xbriyaz` built-in font)
 - **Excel:** Maatwebsite/Excel
 - **Realtime:** Livewire 3 (included with Filament)
-- **Font:** Cairo (Google Fonts) — Arabic RTL
+- **Font:** Cairo (Google Fonts — browser/UI) + xbriyaz (mPDF built-in — PDF only)
 - **Backup:** spatie/laravel-backup (يومياً 02:00)
 
 ## Architecture Rules — إلزامية
@@ -136,6 +136,26 @@ routes/
 ├── web.php         ← print routes
 └── console.php     ← scheduled backup (02:00 + 03:00)
 
+resources/views/
+├── layouts/
+│   └── print-preview.blade.php   ← toolbar + A4 wrapper + @media print (★ مشترك)
+├── print/                         ← browser HTML (Cairo font, يمتد print-preview)
+│   ├── invoice.blade.php
+│   ├── purchase-invoice.blade.php
+│   ├── quick-sale-receipt.blade.php
+│   ├── receipt.blade.php
+│   ├── payment.blade.php
+│   ├── customer-statement.blade.php
+│   └── supplier-statement.blade.php
+└── pdf/                           ← mPDF standalone (xbriyaz font, لا يمتد layout)
+    ├── invoice.blade.php
+    ├── purchase-invoice.blade.php
+    ├── quick-sale-receipt.blade.php
+    ├── receipt.blade.php
+    ├── payment.blade.php
+    ├── customer-statement.blade.php
+    └── supplier-statement.blade.php
+
 docs/               ← المواصفات التفصيلية
 ```
 
@@ -198,7 +218,10 @@ docs/               ← المواصفات التفصيلية
 - **الشيكات المؤجلة:** تمر بحساب "تحت التحصيل" (1130) أولاً.
 - **تحويلات المعرض/المخزن:** فاتورة بيع من المخزن + فاتورة شراء للمعرض.
 - **البحث بالاسم الجزئي:** لا باركود. المستخدم بيكتب جزء من اسم المنتج.
-- **الطباعة:** A4 فقط. عربي RTL. font: DejaVu Sans في PDF.
+- **الطباعة:** A4 فقط. عربي RTL. نظام ثنائي: browser preview (`print/`) + PDF مباشر (`pdf/`).
+  - Browser views: `resources/views/print/` — يستخدم Cairo font + toolbar — `?pdf=0` أو بدون param
+  - PDF views: `resources/views/pdf/` — يستخدم `xbriyaz` font (mPDF built-in) — `?pdf=1`
+  - المتحكمات كلها dual-mode: `if (request()->boolean('pdf')) → PdfService::stream() else → view()`
 - **البيع السريع (Quick Sale):** معاملة بدون فاتورة رسمية — إيصال بسيط فقط.
 - **فترات مالية:** الفترة المقفولة ترفض أي معاملة جديدة.
 - **أي "حذف" = soft delete + أرشفة.** لا يوجد حذف فعلي من قاعدة البيانات.
@@ -215,7 +238,7 @@ docs/               ← المواصفات التفصيلية
 
 - **الواجهة بالكامل عربي مصري** — labels, messages, notifications
 - **RTL** من أول يوم — `->defaultDirection('rtl')` في Filament
-- **Font:** Cairo من Google Fonts (للواجهة) + DejaVu Sans (للـ PDF)
+- **Font:** Cairo من Google Fonts (للواجهة + browser print) + xbriyaz (mPDF built-in — PDF فقط)
 - أسماء المتغيرات والكود بالإنجليزي، النصوص الظاهرة للمستخدم بالعربي
 - **BadgeColumn محذوف** — استخدم `TextColumn::make('x')->badge()`
 
@@ -232,6 +255,10 @@ docs/               ← المواصفات التفصيلية
 9. **Module check** — `Module::isActive('sales')` — الـ Resources بتستخدم `HasModuleGuard` trait
 10. **Livewire method reset()** محجوز — استخدم `discardChanges()` أو أي اسم آخر
 11. **RoleManager** — لا تعدّل صلاحيات `super_admin` من الكود أبداً
+12. **Print controllers** دايماً dual-mode: `?pdf=1` → `PdfService::stream('pdf.X', ...)`, else → `view('print.X', ...)`
+    - لو أضفت document جديد: اعمل view في **الاتنين** `print/` و `pdf/` — مش واحدة بس
+13. **`pdf/` views** مستقلة تماماً (بدون @extends) — font: xbriyaz — logo: `public_path('storage/...')`
+14. **`print/` views** تـ extends `layouts.print-preview` — font: Cairo — logo: `asset('storage/...')`
 
 ## Phases Summary
 
@@ -250,3 +277,110 @@ docs/               ← المواصفات التفصيلية
 | 8B-4 | RoleManager page: Spatie permissions grouped by category | 028b056 |
 | 8B-5 | Frontend polish: brandName, NavigationGroups, empty states x28 | 1d8b7da |
 | 8B-6 | Module toggle: modules table + Model + HasModuleGuard trait x23 | 5a46130 |
+| 9A | Browser Print Preview: dual-mode controllers + print/pdf view split | — |
+| 9B | Production Cleanup: mPDF migration, SoftDeletes, security hardening | — |
+
+## Print System Architecture
+
+### نظام الطباعة الثنائي
+
+كل document type عنده **مسار مزدوج** في نفس الـ controller:
+
+```
+URL بدون ?pdf=1  →  view('print.XXX', ...)   →  browser preview + print dialog
+URL + ?pdf=1     →  PdfService::stream(...)   →  mPDF → تنزيل PDF مباشرة
+```
+
+**المجلدات:**
+```
+resources/views/
+├── layouts/
+│   └── print-preview.blade.php   ← layout مشترك لكل browser views
+│                                    (toolbar + A4 wrapper + @media print CSS)
+├── print/                         ← browser HTML views (Cairo font, asset())
+│   ├── invoice.blade.php
+│   ├── purchase-invoice.blade.php
+│   ├── quick-sale-receipt.blade.php
+│   ├── receipt.blade.php
+│   ├── payment.blade.php
+│   ├── customer-statement.blade.php
+│   └── supplier-statement.blade.php
+└── pdf/                           ← mPDF standalone views (xbriyaz, public_path())
+    ├── invoice.blade.php
+    ├── purchase-invoice.blade.php
+    ├── quick-sale-receipt.blade.php
+    ├── receipt.blade.php
+    ├── payment.blade.php
+    ├── customer-statement.blade.php
+    └── supplier-statement.blade.php
+```
+
+**قواعد ثابتة للـ views:**
+- `print/` → `font-family: Cairo, sans-serif` + `asset('storage/...')` للـ logo
+- `pdf/` → `font-family: 'xbriyaz', sans-serif` + `public_path('storage/...')` للـ logo
+- `pdf/` لا تـ extend أي layout — standalone HTML فقط مع `@page { size: A4; }`
+
+**PDF download button** في الـ toolbar يبني URL تلقائياً:
+```javascript
+var url = new URL(window.location.href);
+url.searchParams.set('pdf', '1');           // يحتفظ بكل params الموجودة
+document.getElementById('btn-pdf-dl').href = url.toString();
+```
+
+## Deployment Checklist
+
+### أول نشر على السيرفر
+
+```bash
+# 1. Clone + install
+git clone <repo> /var/www/nour-al-quds
+cd /var/www/nour-al-quds
+composer install --no-dev --optimize-autoloader
+
+# 2. Environment
+cp .env.example .env
+php artisan key:generate
+# ← عدّل DB_*, APP_URL, BACKUP_ARCHIVE_PASSWORD في .env
+
+# 3. Database
+php artisan migrate --force
+php artisan db:seed --class=SystemSettingSeeder --force
+php artisan db:seed --class=ModuleSeeder --force
+
+# 4. Storage
+php artisan app:prepare-storage   ← ينشئ mpdf-temp, exports, fonts
+php artisan storage:link
+
+# 5. Optimize
+php artisan config:cache
+php artisan route:cache
+php artisan view:cache
+
+# 6. Permissions
+chown -R www-data:www-data storage bootstrap/cache
+```
+
+### بعد كل نشر (update)
+
+```bash
+composer install --no-dev --optimize-autoloader
+php artisan migrate --force
+php artisan config:cache && php artisan route:cache && php artisan view:cache
+php artisan app:prepare-storage   ← للتأكد من وجود المجلدات
+```
+
+### Cron (Scheduler)
+
+```
+* * * * * cd /var/www/nour-al-quds && php artisan schedule:run >> /dev/null 2>&1
+```
+
+### متطلبات السيرفر
+
+| المتطلب | الإصدار | ملاحظة |
+|---------|---------|--------|
+| PHP | 8.4+ | Extensions: pgsql, mbstring, gd, zip, intl — لازم 8.4 بسبب Symfony 8 |
+| PostgreSQL | 16+ | — |
+| Composer | 2.x | — |
+| mPDF | 8.x (via composer) | `storage/app/mpdf-temp` writable |
+| Storage | — | `storage/` + `bootstrap/cache/` writable |
