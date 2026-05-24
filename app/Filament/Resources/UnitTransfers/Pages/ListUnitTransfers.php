@@ -8,8 +8,9 @@ use Filament\Resources\Pages\ListRecords;
 
 class ListUnitTransfers extends ListRecords
 {
-    protected static string  $resource = UnitTransferResource::class;
-    protected static ?string $title    = 'التحويلات الداخلية بين الوحدات';
+    protected static string $resource = UnitTransferResource::class;
+
+    protected static ?string $title = 'التحويلات الداخلية بين الوحدات';
 
     protected function getHeaderActions(): array
     {

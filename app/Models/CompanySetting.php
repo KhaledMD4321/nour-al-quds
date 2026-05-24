@@ -25,7 +25,7 @@ class CompanySetting extends Model
         return static::firstOrCreate(
             ['id' => 1],
             [
-                'name'             => 'شركة نور القدس للأدوات الصحية والسباكة',
+                'name' => 'شركة نور القدس للأدوات الصحية والسباكة',
                 'default_currency' => 'EGP',
             ]
         );

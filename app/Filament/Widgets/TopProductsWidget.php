@@ -8,12 +8,14 @@ use Illuminate\Support\Facades\DB;
 class TopProductsWidget extends Widget
 {
     protected static ?int $sort = 6;
+
     protected int|string|array $columnSpan = 'full';
+
     protected string $view = 'filament.widgets.top-products';
 
     public function getProducts(): array
     {
-        $user   = auth()->user();
+        $user = auth()->user();
         $unitId = ($user && ! $user->isSuperAdmin() && $user->business_unit_id)
             ? $user->business_unit_id : null;
 

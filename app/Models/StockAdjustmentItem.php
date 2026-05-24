@@ -18,8 +18,8 @@ class StockAdjustmentItem extends Model
 
     protected $casts = [
         'expected_quantity' => 'decimal:3',
-        'actual_quantity'   => 'decimal:3',
-        'difference'        => 'decimal:3',
+        'actual_quantity' => 'decimal:3',
+        'difference' => 'decimal:3',
     ];
 
     // ── Accessors ───────────────────────────────────────────────────────────
@@ -30,17 +30,22 @@ class StockAdjustmentItem extends Model
     public function getDirectionAttribute(): string
     {
         $diff = (float) $this->difference;
-        if ($diff > 0) return 'surplus';
-        if ($diff < 0) return 'shortage';
+        if ($diff > 0) {
+            return 'surplus';
+        }
+        if ($diff < 0) {
+            return 'shortage';
+        }
+
         return 'match';
     }
 
     public function getDirectionLabelAttribute(): string
     {
         return match ($this->direction) {
-            'surplus'  => 'زيادة',
+            'surplus' => 'زيادة',
             'shortage' => 'نقص',
-            'match'    => 'مطابق',
+            'match' => 'مطابق',
         };
     }
 

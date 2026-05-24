@@ -2,12 +2,13 @@
 
 namespace App\Filament\Resources;
 
+use App\Filament\Concerns\HasModuleGuard;
 use App\Filament\Resources\ProductResource\Pages;
-use App\Services\CustomFieldRenderer;
 use App\Models\Category;
 use App\Models\Company;
 use App\Models\LookupType;
 use App\Models\Product;
+use App\Services\CustomFieldRenderer;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
@@ -22,7 +23,6 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
-use Filament\Resources\GlobalSearch\GlobalSearchResult;
 use Filament\Resources\Resource;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
@@ -33,12 +33,12 @@ use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Table;
-use App\Filament\Concerns\HasModuleGuard;
 use Illuminate\Database\Eloquent\Model;
 
 class ProductResource extends Resource
 {
     use HasModuleGuard;
+
     protected static string $module = 'catalog';
 
     protected static ?string $model = Product::class;
@@ -62,6 +62,7 @@ class ProductResource extends Resource
     public static function canAccess(): bool
     {
         $user = auth()->user();
+
         return $user->hasRole('super_admin')
             || $user->hasRole('showroom_manager')
             || $user->hasRole('distribution_manager');
@@ -77,9 +78,9 @@ class ProductResource extends Resource
     public static function getGlobalSearchResultDetails(Model $record): array
     {
         return [
-            'كود'       => $record->code,
-            'المصنّع'   => $record->company?->name ?? '—',
-            'التصنيف'   => $record->category?->name ?? '—',
+            'كود' => $record->code,
+            'المصنّع' => $record->company?->name ?? '—',
+            'التصنيف' => $record->category?->name ?? '—',
         ];
     }
 
@@ -164,7 +165,10 @@ class ProductResource extends Resource
             ...array_filter([
                 (function () {
                     $components = CustomFieldRenderer::formComponents('product');
-                    if (empty($components)) return null;
+                    if (empty($components)) {
+                        return null;
+                    }
+
                     return Section::make('بيانات إضافية')
                         ->schema($components)
                         ->columns(2)
@@ -213,8 +217,7 @@ class ProductResource extends Resource
 
                 TextColumn::make('unit_of_measure')
                     ->label('الوحدة')
-                    ->formatStateUsing(fn (?string $state): string =>
-                        LookupType::getLabel('unit_of_measure', $state) ?? ($state ?? '—')
+                    ->formatStateUsing(fn (?string $state): string => LookupType::getLabel('unit_of_measure', $state) ?? ($state ?? '—')
                     )
                     ->sortable(),
 
@@ -298,10 +301,10 @@ class ProductResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index'  => Pages\ListProducts::route('/'),
+            'index' => Pages\ListProducts::route('/'),
             'create' => Pages\CreateProduct::route('/create'),
-            'view'   => Pages\ViewProduct::route('/{record}'),
-            'edit'   => Pages\EditProduct::route('/{record}/edit'),
+            'view' => Pages\ViewProduct::route('/{record}'),
+            'edit' => Pages\EditProduct::route('/{record}/edit'),
         ];
     }
 }

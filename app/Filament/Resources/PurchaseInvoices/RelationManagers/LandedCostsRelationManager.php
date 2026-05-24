@@ -3,7 +3,6 @@
 namespace App\Filament\Resources\PurchaseInvoices\RelationManagers;
 
 use App\Models\LookupType;
-use App\Models\PurchaseInvoice;
 use App\Modules\Purchases\PurchaseService;
 use Filament\Actions\CreateAction;
 use Filament\Actions\DeleteAction;
@@ -18,6 +17,7 @@ use Filament\Tables\Table;
 class LandedCostsRelationManager extends RelationManager
 {
     protected static string $relationship = 'landedCosts';
+
     protected static ?string $title = 'المصاريف الإضافية (Landed Costs)';
 
     // ── Form ───────────────────────────────────────────────────────────────────
@@ -56,8 +56,7 @@ class LandedCostsRelationManager extends RelationManager
 
                 TextColumn::make('cost_type')
                     ->label('النوع')
-                    ->formatStateUsing(fn (string $state): string =>
-                        LookupType::getLabel('landed_cost_type', $state) ?? $state
+                    ->formatStateUsing(fn (string $state): string => LookupType::getLabel('landed_cost_type', $state) ?? $state
                     )
                     ->badge()
                     ->color('info'),

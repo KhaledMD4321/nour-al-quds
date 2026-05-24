@@ -10,12 +10,13 @@ use Filament\Widgets\StatsOverviewWidget\Stat;
 class SalesStatsWidget extends StatsOverviewWidget
 {
     protected static ?int $sort = 1;
+
     protected int|string|array $columnSpan = 'full';
 
     protected function getStats(): array
     {
-        $user   = auth()->user();
-        $unitId = ($user && !$user->isSuperAdmin() && $user->business_unit_id)
+        $user = auth()->user();
+        $unitId = ($user && ! $user->isSuperAdmin() && $user->business_unit_id)
             ? $user->business_unit_id : null;
 
         // مبيعات اليوم (فواتير + بيع سريع)
@@ -61,12 +62,12 @@ class SalesStatsWidget extends StatsOverviewWidget
             ->count();
 
         return [
-            Stat::make('مبيعات اليوم', number_format($todaySales, 2) . ' ج.م')
-                ->description($todayCount . ' فاتورة')
+            Stat::make('مبيعات اليوم', number_format($todaySales, 2).' ج.م')
+                ->description($todayCount.' فاتورة')
                 ->color('success')
                 ->icon('heroicon-o-banknotes'),
 
-            Stat::make('مبيعات الشهر', number_format($monthSales, 2) . ' ج.م')
+            Stat::make('مبيعات الشهر', number_format($monthSales, 2).' ج.م')
                 ->description(today()->translatedFormat('F Y'))
                 ->color('info')
                 ->icon('heroicon-o-chart-bar'),

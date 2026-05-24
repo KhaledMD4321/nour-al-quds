@@ -21,6 +21,6 @@ class ReportPermissionsSeeder extends Seeder
             Permission::firstOrCreate(['name' => $name, 'guard_name' => 'web']);
         }
 
-        $this->command->info('Report permissions seeded (' . count($permissions) . ')');
+        $this->command->info('Report permissions seeded ('.count($permissions).')');
     }
 }

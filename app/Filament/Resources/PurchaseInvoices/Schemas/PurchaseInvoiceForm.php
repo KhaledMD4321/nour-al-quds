@@ -54,9 +54,9 @@ class PurchaseInvoiceForm
                     Select::make('status')
                         ->label('الحالة')
                         ->options([
-                            'draft'     => 'مسودة',
+                            'draft' => 'مسودة',
                             'confirmed' => 'مؤكدة',
-                            'paid'      => 'مدفوعة',
+                            'paid' => 'مدفوعة',
                         ])
                         ->default('draft')
                         ->disabled()

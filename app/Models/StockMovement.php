@@ -10,7 +10,6 @@ class StockMovement extends Model
     /**
      * ★ لا softDeletes — سجل أبدي لا يُحذف
      */
-
     protected $fillable = [
         'warehouse_id',
         'product_id',
@@ -25,8 +24,8 @@ class StockMovement extends Model
     ];
 
     protected $casts = [
-        'quantity'      => 'decimal:3',
-        'unit_cost'     => 'decimal:4',
+        'quantity' => 'decimal:3',
+        'unit_cost' => 'decimal:4',
         'balance_after' => 'decimal:3',
     ];
 
@@ -69,14 +68,14 @@ class StockMovement extends Model
     public function getTypeLabelAttribute(): string
     {
         return match ($this->type) {
-            'in'               => 'دخول',
-            'out'              => 'خروج',
-            'transfer_in'      => 'تحويل وارد',
-            'transfer_out'     => 'تحويل صادر',
-            'adjustment_plus'  => 'تسوية بالزيادة',
+            'in' => 'دخول',
+            'out' => 'خروج',
+            'transfer_in' => 'تحويل وارد',
+            'transfer_out' => 'تحويل صادر',
+            'adjustment_plus' => 'تسوية بالزيادة',
             'adjustment_minus' => 'تسوية بالنقص',
-            'opening'          => 'رصيد افتتاحي',
-            default            => $this->type,
+            'opening' => 'رصيد افتتاحي',
+            default => $this->type,
         };
     }
 }

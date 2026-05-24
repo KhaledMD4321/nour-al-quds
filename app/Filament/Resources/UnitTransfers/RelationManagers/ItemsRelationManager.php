@@ -20,8 +20,9 @@ use Filament\Tables\Table;
 
 class ItemsRelationManager extends RelationManager
 {
-    protected static string  $relationship = 'items';
-    protected static ?string $title        = 'بنود التحويل';
+    protected static string $relationship = 'items';
+
+    protected static ?string $title = 'بنود التحويل';
 
     // ── للقراءة فقط إذا كان التحويل مؤكداً ──────────────────────────────────────
 
@@ -29,6 +30,7 @@ class ItemsRelationManager extends RelationManager
     {
         /** @var UnitTransfer $transfer */
         $transfer = $this->getOwnerRecord();
+
         return $transfer->isConfirmed();
     }
 
@@ -43,14 +45,15 @@ class ItemsRelationManager extends RelationManager
                 ->required()
                 ->searchable()
                 ->live()
-                ->options(fn (): array =>
-                    Product::where('is_active', true)
-                        ->orderBy('name')
-                        ->pluck('name', 'id')
-                        ->toArray()
+                ->options(fn (): array => Product::where('is_active', true)
+                    ->orderBy('name')
+                    ->pluck('name', 'id')
+                    ->toArray()
                 )
                 ->afterStateUpdated(function ($state, callable $get, callable $set): void {
-                    if (! $state) return;
+                    if (! $state) {
+                        return;
+                    }
 
                     /** @var UnitTransfer $transfer */
                     $transfer = $this->getOwnerRecord();
@@ -79,6 +82,7 @@ class ItemsRelationManager extends RelationManager
                 ->label('الكمية المتاحة في المصدر')
                 ->content(function (callable $get): string {
                     $qty = $get('_available_qty');
+
                     return $qty !== null ? number_format((float) $qty, 3) : '—';
                 }),
 
@@ -165,6 +169,7 @@ class ItemsRelationManager extends RelationManager
             2
         );
         unset($data['_available_qty']);
+
         return $data;
     }
 
@@ -175,6 +180,7 @@ class ItemsRelationManager extends RelationManager
             2
         );
         unset($data['_available_qty']);
+
         return $data;
     }
 
@@ -194,7 +200,9 @@ class ItemsRelationManager extends RelationManager
 
     private function getAvgCost(int $productId, ?int $warehouseId): float
     {
-        if (! $warehouseId) return 0.0;
+        if (! $warehouseId) {
+            return 0.0;
+        }
 
         return (float) (Stock::where('warehouse_id', $warehouseId)
             ->where('product_id', $productId)
@@ -208,7 +216,9 @@ class ItemsRelationManager extends RelationManager
             ->orderByDesc('effective_date')
             ->first();
 
-        if (! $activeVersion) return 0.0;
+        if (! $activeVersion) {
+            return 0.0;
+        }
 
         return (float) ($activeVersion->items()
             ->where('product_id', $productId)

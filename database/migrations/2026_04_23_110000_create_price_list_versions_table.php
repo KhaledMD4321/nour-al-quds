@@ -15,12 +15,12 @@ return new class extends Migration
             $table->integer('version_number');                      // رقم الإصدار: 1, 2, 3…
             $table->date('effective_date');                         // تاريخ سريان اللستة
             $table->enum('status', ['active', 'archived'])          // ★ enum — مرتبط بسلوك الكود
-                  ->default('active');
+                ->default('active');
             $table->text('notes')->nullable();
             $table->foreignId('created_by')
-                  ->nullable()
-                  ->constrained('users')
-                  ->nullOnDelete();
+                ->nullable()
+                ->constrained('users')
+                ->nullOnDelete();
             $table->timestamps();
 
             // إصدار واحد لكل رقم لكل مصنّع

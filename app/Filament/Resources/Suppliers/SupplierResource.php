@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Suppliers;
 
+use App\Filament\Concerns\HasModuleGuard;
 use App\Filament\Resources\Suppliers\Pages\CreateSupplier;
 use App\Filament\Resources\Suppliers\Pages\EditSupplier;
 use App\Filament\Resources\Suppliers\Pages\ListSuppliers;
@@ -12,7 +13,6 @@ use App\Models\Supplier;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Tables\Table;
-use App\Filament\Concerns\HasModuleGuard;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
@@ -20,23 +20,31 @@ use Illuminate\Database\Eloquent\SoftDeletingScope;
 class SupplierResource extends Resource
 {
     use HasModuleGuard;
+
     protected static string $module = 'customers';
 
     protected static ?string $model = Supplier::class;
 
-    protected static string|\BackedEnum|null $navigationIcon  = 'heroicon-o-truck';
-    protected static string|\UnitEnum|null   $navigationGroup = 'العملاء والموردين';
-    protected static ?int                    $navigationSort   = 2;
-    protected static ?string                 $navigationLabel  = 'الموردين';
-    protected static ?string                 $modelLabel       = 'مورد';
-    protected static ?string                 $pluralModelLabel = 'الموردين';
-    protected static ?string                 $recordTitleAttribute = 'name';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-truck';
+
+    protected static string|\UnitEnum|null $navigationGroup = 'العملاء والموردين';
+
+    protected static ?int $navigationSort = 2;
+
+    protected static ?string $navigationLabel = 'الموردين';
+
+    protected static ?string $modelLabel = 'مورد';
+
+    protected static ?string $pluralModelLabel = 'الموردين';
+
+    protected static ?string $recordTitleAttribute = 'name';
 
     // ─── Access ────────────────────────────────────────────────────────────────
 
     public static function canAccess(): bool
     {
         $user = auth()->user();
+
         return $user->hasRole('super_admin')
             || $user->hasRole('showroom_manager')
             || $user->hasRole('distribution_manager');
@@ -52,7 +60,7 @@ class SupplierResource extends Resource
     public static function getGlobalSearchResultDetails(Model $record): array
     {
         return [
-            'المصنّع'   => $record->company?->name ?? 'غير محدد',
+            'المصنّع' => $record->company?->name ?? 'غير محدد',
             'التليفون' => $record->phone ?? '—',
         ];
     }
@@ -74,10 +82,10 @@ class SupplierResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index'  => ListSuppliers::route('/'),
+            'index' => ListSuppliers::route('/'),
             'create' => CreateSupplier::route('/create'),
-            'view'   => ViewSupplier::route('/{record}'),
-            'edit'   => EditSupplier::route('/{record}/edit'),
+            'view' => ViewSupplier::route('/{record}'),
+            'edit' => EditSupplier::route('/{record}/edit'),
         ];
     }
 

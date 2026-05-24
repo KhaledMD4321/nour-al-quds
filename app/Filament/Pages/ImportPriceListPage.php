@@ -2,6 +2,7 @@
 
 namespace App\Filament\Pages;
 
+use App\Filament\Resources\PriceListVersionResource;
 use App\Models\Company;
 use App\Modules\Catalog\PriceListService;
 use Filament\Forms\Components\FileUpload;
@@ -14,12 +15,17 @@ use Illuminate\Support\Facades\Storage;
 
 class ImportPriceListPage extends Page
 {
-    protected static ?string $title                                 = 'رفع قائمة أسعار';
-    protected static string|\BackedEnum|null $navigationIcon       = 'heroicon-o-arrow-up-tray';
-    protected static string|\UnitEnum|null   $navigationGroup      = 'الشركات والأصناف';
-    protected static ?int                    $navigationSort        = 5;
-    protected static ?string                 $navigationLabel       = 'رفع لستة أسعار';
-    protected string                         $view                  = 'filament.pages.import-price-list';
+    protected static ?string $title = 'رفع قائمة أسعار';
+
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-arrow-up-tray';
+
+    protected static string|\UnitEnum|null $navigationGroup = 'الشركات والأصناف';
+
+    protected static ?int $navigationSort = 5;
+
+    protected static ?string $navigationLabel = 'رفع لستة أسعار';
+
+    protected string $view = 'filament.pages.import-price-list';
 
     // ─── Form state ────────────────────────────────────────────────────────────
 
@@ -31,15 +37,18 @@ class ImportPriceListPage extends Page
 
     // ─── Preview state ─────────────────────────────────────────────────────────
 
-    public bool    $showPreview    = false;
-    public array   $preview        = [];
-    public ?string $tempFilePath   = null;
+    public bool $showPreview = false;
+
+    public array $preview = [];
+
+    public ?string $tempFilePath = null;
 
     // ─── Access ────────────────────────────────────────────────────────────────
 
     public static function canAccess(): bool
     {
         $user = auth()->user();
+
         return $user->hasRole('super_admin')
             || $user->hasRole('showroom_manager')
             || $user->hasRole('distribution_manager');
@@ -99,26 +108,28 @@ class ImportPriceListPage extends Page
                 ->title('ارفع ملف Excel أو CSV')
                 ->danger()
                 ->send();
+
             return;
         }
 
         // Resolve absolute path — FileUpload stores relative to disk root
         $relativePath = is_array($uploadedPath) ? array_values($uploadedPath)[0] : $uploadedPath;
-        $filePath     = Storage::disk('local')->path($relativePath);
+        $filePath = Storage::disk('local')->path($relativePath);
 
         if (! file_exists($filePath)) {
             Notification::make()
                 ->title('الملف مش موجود — حاول ترفع الملف تاني')
                 ->danger()
                 ->send();
+
             return;
         }
 
         try {
-            $service             = app(PriceListService::class);
-            $this->preview       = $service->previewImport($filePath, (int) $state['company_id']);
-            $this->tempFilePath  = $filePath;
-            $this->showPreview   = true;
+            $service = app(PriceListService::class);
+            $this->preview = $service->previewImport($filePath, (int) $state['company_id']);
+            $this->tempFilePath = $filePath;
+            $this->showPreview = true;
 
         } catch (\Exception $e) {
             Notification::make()
@@ -138,12 +149,13 @@ class ImportPriceListPage extends Page
                 ->danger()
                 ->send();
             $this->cancelImport();
+
             return;
         }
 
         try {
             $service = app(PriceListService::class);
-            $result  = $service->confirmImport(
+            $result = $service->confirmImport(
                 $this->tempFilePath,
                 (int) $this->data['company_id'],
                 auth()->id(),
@@ -160,7 +172,7 @@ class ImportPriceListPage extends Page
             $this->data = ['company_id' => null, 'excel_file' => null];
 
             $this->redirect(
-                \App\Filament\Resources\PriceListVersionResource::getUrl('index')
+                PriceListVersionResource::getUrl('index')
             );
 
         } catch (\Exception $e) {

@@ -4,6 +4,8 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\TaxRateResource\Pages;
 use App\Models\TaxRate;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\EditAction;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Resources\Resource;
@@ -13,8 +15,6 @@ use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\ToggleColumn;
 use Filament\Tables\Table;
-use Filament\Actions\EditAction;
-use Filament\Actions\DeleteAction;
 
 class TaxRateResource extends Resource
 {
@@ -116,9 +116,9 @@ class TaxRateResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index'  => Pages\ListTaxRates::route('/'),
+            'index' => Pages\ListTaxRates::route('/'),
             'create' => Pages\CreateTaxRate::route('/create'),
-            'edit'   => Pages\EditTaxRate::route('/{record}/edit'),
+            'edit' => Pages\EditTaxRate::route('/{record}/edit'),
         ];
     }
 }

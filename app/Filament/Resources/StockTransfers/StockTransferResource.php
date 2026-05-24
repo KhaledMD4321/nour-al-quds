@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\StockTransfers;
 
+use App\Filament\Concerns\HasModuleGuard;
 use App\Filament\Resources\StockTransfers\Pages\CreateStockTransfer;
 use App\Filament\Resources\StockTransfers\Pages\EditStockTransfer;
 use App\Filament\Resources\StockTransfers\Pages\ListStockTransfers;
@@ -11,22 +12,27 @@ use App\Filament\Resources\StockTransfers\Tables\StockTransfersTable;
 use App\Models\StockTransfer;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
-use App\Filament\Concerns\HasModuleGuard;
 use Filament\Tables\Table;
 
 class StockTransferResource extends Resource
 {
     use HasModuleGuard;
+
     protected static string $module = 'inventory';
 
     protected static ?string $model = StockTransfer::class;
 
-    protected static string|\BackedEnum|null $navigationIcon  = 'heroicon-o-arrows-right-left';
-    protected static string|\UnitEnum|null   $navigationGroup = 'المخزون';
-    protected static ?int                    $navigationSort  = 1;
-    protected static ?string                 $navigationLabel  = 'تحويلات المخزون';
-    protected static ?string                 $modelLabel       = 'تحويل مخزون';
-    protected static ?string                 $pluralModelLabel = 'تحويلات المخزون';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-arrows-right-left';
+
+    protected static string|\UnitEnum|null $navigationGroup = 'المخزون';
+
+    protected static ?int $navigationSort = 1;
+
+    protected static ?string $navigationLabel = 'تحويلات المخزون';
+
+    protected static ?string $modelLabel = 'تحويل مخزون';
+
+    protected static ?string $pluralModelLabel = 'تحويلات المخزون';
 
     public static function form(Schema $schema): Schema
     {
@@ -48,9 +54,9 @@ class StockTransferResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index'  => ListStockTransfers::route('/'),
+            'index' => ListStockTransfers::route('/'),
             'create' => CreateStockTransfer::route('/create'),
-            'edit'   => EditStockTransfer::route('/{record}/edit'),
+            'edit' => EditStockTransfer::route('/{record}/edit'),
         ];
     }
 }

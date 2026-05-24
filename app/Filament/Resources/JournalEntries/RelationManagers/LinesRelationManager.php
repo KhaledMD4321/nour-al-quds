@@ -2,7 +2,6 @@
 
 namespace App\Filament\Resources\JournalEntries\RelationManagers;
 
-use App\Models\BusinessUnit;
 use App\Models\ChartOfAccount;
 use App\Models\JournalEntry;
 use App\Modules\Accounting\AccountingService;
@@ -16,8 +15,9 @@ use Filament\Tables\Table;
 
 class LinesRelationManager extends RelationManager
 {
-    protected static string  $relationship = 'lines';
-    protected static ?string $title        = 'سطور القيد';
+    protected static string $relationship = 'lines';
+
+    protected static ?string $title = 'سطور القيد';
 
     /**
      * القراءة فقط إذا كان القيد أوتوماتيكياً (لا يسمح بإضافة سطور)
@@ -26,6 +26,7 @@ class LinesRelationManager extends RelationManager
     {
         /** @var JournalEntry $entry */
         $entry = $this->getOwnerRecord();
+
         return ! $entry->is_manual;
     }
 
@@ -38,7 +39,7 @@ class LinesRelationManager extends RelationManager
                 ->options(fn () => ChartOfAccount::where('is_active', true)
                     ->orderBy('code')
                     ->get()
-                    ->mapWithKeys(fn ($a) => [$a->id => $a->code . ' — ' . $a->name])
+                    ->mapWithKeys(fn ($a) => [$a->id => $a->code.' — '.$a->name])
                     ->toArray()
                 )
                 ->required()
@@ -103,6 +104,7 @@ class LinesRelationManager extends RelationManager
                         $entry = $this->getOwnerRecord();
                         $data['business_unit_id'] = $entry->lines()->value('business_unit_id')
                             ?? auth()->user()?->business_unit_id;
+
                         return $data;
                     })
                     ->after(function () {

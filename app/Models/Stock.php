@@ -23,8 +23,8 @@ class Stock extends Model
     ];
 
     protected $casts = [
-        'quantity'     => 'decimal:3',
-        'avg_cost'     => 'decimal:4',
+        'quantity' => 'decimal:3',
+        'avg_cost' => 'decimal:4',
         'last_updated' => 'datetime',
     ];
 
@@ -53,7 +53,7 @@ class Stock extends Model
     {
         return $query->whereHas('product', function ($q) {
             $q->whereColumn('stock.quantity', '<', 'products.min_stock_level')
-              ->where('products.min_stock_level', '>', 0);
+                ->where('products.min_stock_level', '>', 0);
         });
     }
 

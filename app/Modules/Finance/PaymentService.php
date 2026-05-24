@@ -22,8 +22,8 @@ class PaymentService
     /**
      * إنشاء سند صرف كامل
      *
-     * @throws InvalidArgumentException  بيانات غير صحيحة
-     * @throws RuntimeException          رصيد غير كافٍ أو فاتورة مدفوعة
+     * @throws InvalidArgumentException بيانات غير صحيحة
+     * @throws RuntimeException رصيد غير كافٍ أو فاتورة مدفوعة
      */
     public function create(array $data, int $createdBy): Payment
     {
@@ -51,31 +51,31 @@ class PaymentService
 
             // 1. إنشاء سند الصرف
             $payment = Payment::create([
-                'payment_number'      => Payment::generateReference(),
-                'treasury_id'         => $data['treasury_id'] ?? null,
-                'supplier_id'         => $data['supplier_id'] ?? null,
+                'payment_number' => Payment::generateReference(),
+                'treasury_id' => $data['treasury_id'] ?? null,
+                'supplier_id' => $data['supplier_id'] ?? null,
                 'purchase_invoice_id' => $data['purchase_invoice_id'] ?? null,
-                'business_unit_id'    => $data['business_unit_id'],
-                'amount'              => $data['amount'],
-                'category'            => $data['category'],
-                'payment_method'      => $data['payment_method'],
-                'payment_date'        => $data['payment_date'],
-                'cheque_details'      => $data['cheque_details'] ?? null,
-                'bank_reference'      => $data['bank_reference'] ?? null,
-                'expense_account_id'  => $data['expense_account_id'] ?? null,
-                'notes'               => $data['notes'] ?? null,
-                'created_by'          => $createdBy,
+                'business_unit_id' => $data['business_unit_id'],
+                'amount' => $data['amount'],
+                'category' => $data['category'],
+                'payment_method' => $data['payment_method'],
+                'payment_date' => $data['payment_date'],
+                'cheque_details' => $data['cheque_details'] ?? null,
+                'bank_reference' => $data['bank_reference'] ?? null,
+                'expense_account_id' => $data['expense_account_id'] ?? null,
+                'notes' => $data['notes'] ?? null,
+                'created_by' => $createdBy,
             ]);
 
             // 2. خصم من الخزينة (كاش أو تحويل بنكي فقط — الشيك لا يخصم)
             if (in_array($data['payment_method'], ['cash', 'bank_transfer'])) {
                 $this->treasuryService->deductFunds(
-                    treasuryId:      $data['treasury_id'],
-                    amount:          (float) $data['amount'],
-                    description:     $this->buildTreasuryDescription($payment),
-                    referenceType:   Payment::class,
-                    referenceId:     $payment->id,
-                    createdBy:       $createdBy,
+                    treasuryId: $data['treasury_id'],
+                    amount: (float) $data['amount'],
+                    description: $this->buildTreasuryDescription($payment),
+                    referenceType: Payment::class,
+                    referenceId: $payment->id,
+                    createdBy: $createdBy,
                     transactionDate: $data['payment_date'],
                 );
             }
@@ -173,46 +173,46 @@ class PaymentService
      */
     private function buildJournalEntry(Payment $payment): JournalEntry
     {
-        $debit  = $this->resolveDebitAccount($payment);
+        $debit = $this->resolveDebitAccount($payment);
         $credit = $this->resolveCreditAccount($payment);
 
         $entry = JournalEntry::create([
             'entry_number' => JournalEntry::generateEntryNumber(),
-            'entry_date'   => $payment->payment_date,
-            'description'  => $this->buildEntryDescription($payment),
-            'source_type'  => Payment::class,
-            'source_id'    => $payment->id,
-            'is_manual'    => false,
-            'is_posted'    => true,
-            'total_debit'  => $payment->amount,
+            'entry_date' => $payment->payment_date,
+            'description' => $this->buildEntryDescription($payment),
+            'source_type' => Payment::class,
+            'source_id' => $payment->id,
+            'is_manual' => false,
+            'is_posted' => true,
+            'total_debit' => $payment->amount,
             'total_credit' => $payment->amount,
-            'created_by'   => $payment->created_by,
+            'created_by' => $payment->created_by,
         ]);
 
         JournalEntryLine::insert([
             [
                 'journal_entry_id' => $entry->id,
-                'account_id'       => $debit->id,
+                'account_id' => $debit->id,
                 'business_unit_id' => $payment->business_unit_id,
-                'debit'            => $payment->amount,
-                'credit'           => 0,
-                'description'      => $payment->isSupplierPayment()
-                    ? 'دفع مورد - ' . $payment->payment_number
-                    : ($payment->category_label . ' - ' . $payment->payment_number),
-                'created_at'       => now(),
+                'debit' => $payment->amount,
+                'credit' => 0,
+                'description' => $payment->isSupplierPayment()
+                    ? 'دفع مورد - '.$payment->payment_number
+                    : ($payment->category_label.' - '.$payment->payment_number),
+                'created_at' => now(),
             ],
             [
                 'journal_entry_id' => $entry->id,
-                'account_id'       => $credit->id,
+                'account_id' => $credit->id,
                 'business_unit_id' => $payment->business_unit_id,
-                'debit'            => 0,
-                'credit'           => $payment->amount,
-                'description'      => match ($payment->payment_method) {
-                    'cash'          => 'صرف كاش - ' . $payment->payment_number,
-                    'bank_transfer' => 'تحويل بنكي - ' . $payment->payment_number,
-                    'cheque'        => 'شيك صادر #' . ($payment->cheque_details['cheque_number'] ?? '') . ' - ' . $payment->payment_number,
+                'debit' => 0,
+                'credit' => $payment->amount,
+                'description' => match ($payment->payment_method) {
+                    'cash' => 'صرف كاش - '.$payment->payment_number,
+                    'bank_transfer' => 'تحويل بنكي - '.$payment->payment_number,
+                    'cheque' => 'شيك صادر #'.($payment->cheque_details['cheque_number'] ?? '').' - '.$payment->payment_number,
                 },
-                'created_at'       => now(),
+                'created_at' => now(),
             ],
         ]);
 
@@ -224,10 +224,11 @@ class PaymentService
         if ($payment->isSupplierPayment()) {
             $unit = BusinessUnit::findOrFail($payment->business_unit_id);
             $code = match ($unit->type) {
-                'showroom'     => '2111',
+                'showroom' => '2111',
                 'distribution' => '2112',
-                default        => '2111',
+                default => '2111',
             };
+
             return ChartOfAccount::where('code', $code)->firstOrFail();
         }
 
@@ -256,21 +257,21 @@ class PaymentService
 
     private function buildTreasuryDescription(Payment $payment): string
     {
-        $base = 'سند صرف ' . $payment->payment_number;
+        $base = 'سند صرف '.$payment->payment_number;
 
         if ($payment->supplier_id) {
-            return $base . ' — ' . ($payment->supplier->name ?? '');
+            return $base.' — '.($payment->supplier->name ?? '');
         }
 
-        return $base . ' — ' . $payment->category_label;
+        return $base.' — '.$payment->category_label;
     }
 
     private function buildEntryDescription(Payment $payment): string
     {
         if ($payment->isSupplierPayment()) {
-            return 'قيد سند صرف ' . $payment->payment_number . ' — دفع لمورد ' . ($payment->supplier->name ?? '');
+            return 'قيد سند صرف '.$payment->payment_number.' — دفع لمورد '.($payment->supplier->name ?? '');
         }
 
-        return 'قيد سند صرف ' . $payment->payment_number . ' — ' . $payment->category_label;
+        return 'قيد سند صرف '.$payment->payment_number.' — '.$payment->category_label;
     }
 }

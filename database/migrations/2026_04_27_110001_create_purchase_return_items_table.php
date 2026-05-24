@@ -12,14 +12,14 @@ return new class extends Migration
             $table->id();
 
             $table->foreignId('purchase_return_id')
-                  ->constrained('purchase_returns')
-                  ->cascadeOnDelete();
+                ->constrained('purchase_returns')
+                ->cascadeOnDelete();
 
             $table->foreignId('product_id')->constrained('products');
 
-            $table->decimal('quantity',  15, 3);
+            $table->decimal('quantity', 15, 3);
             $table->decimal('unit_cost', 15, 4);
-            $table->decimal('total',     15, 2);
+            $table->decimal('total', 15, 2);
 
             $table->timestamps();
         });

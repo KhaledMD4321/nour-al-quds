@@ -7,10 +7,13 @@ use Filament\Pages\Page;
 
 class SaleReturn extends Page
 {
-    protected static string|\BackedEnum|null $navigationIcon  = 'heroicon-o-arrow-uturn-right';
-    protected static string|\UnitEnum|null   $navigationGroup = 'المبيعات';
-    protected static ?string                 $navigationLabel = 'مرتجع مبيعات';
-    protected static ?string                 $title           = 'إنشاء مرتجع مبيعات';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-arrow-uturn-right';
+
+    protected static string|\UnitEnum|null $navigationGroup = 'المبيعات';
+
+    protected static ?string $navigationLabel = 'مرتجع مبيعات';
+
+    protected static ?string $title = 'إنشاء مرتجع مبيعات';
 
     // لا يظهر في القائمة الجانبية — يُفتح من زرار المرتجع في الفاتورة
     protected static bool $shouldRegisterNavigation = false;

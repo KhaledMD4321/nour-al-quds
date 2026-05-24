@@ -4,6 +4,7 @@ namespace App\Filament\Resources\StockAdjustments\Pages;
 
 use App\Filament\Resources\StockAdjustments\StockAdjustmentResource;
 use Filament\Actions\DeleteAction;
+use Filament\Notifications\Notification;
 use Filament\Resources\Pages\EditRecord;
 
 class EditStockAdjustment extends EditRecord
@@ -36,7 +37,7 @@ class EditStockAdjustment extends EditRecord
         parent::authorizeAccess();
 
         if ($this->getRecord()->isConfirmed()) {
-            \Filament\Notifications\Notification::make()
+            Notification::make()
                 ->title('التسوية مؤكدة — لا يمكن تعديل البنود')
                 ->warning()
                 ->send();

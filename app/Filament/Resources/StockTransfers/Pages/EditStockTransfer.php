@@ -4,6 +4,7 @@ namespace App\Filament\Resources\StockTransfers\Pages;
 
 use App\Filament\Resources\StockTransfers\StockTransferResource;
 use Filament\Actions\DeleteAction;
+use Filament\Notifications\Notification;
 use Filament\Resources\Pages\EditRecord;
 
 class EditStockTransfer extends EditRecord
@@ -36,7 +37,7 @@ class EditStockTransfer extends EditRecord
         parent::authorizeAccess();
 
         if ($this->getRecord()->isConfirmed()) {
-            \Filament\Notifications\Notification::make()
+            Notification::make()
                 ->title('التحويل مؤكد — لا يمكن تعديل البنود')
                 ->warning()
                 ->send();

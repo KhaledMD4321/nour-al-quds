@@ -2,32 +2,42 @@
 
 namespace App\Filament\Pages;
 
-use App\Models\ChartOfAccount;
 use App\Models\BusinessUnit;
+use App\Models\ChartOfAccount;
 use App\Models\JournalEntryLine;
-use Filament\Pages\Page;
 use Filament\Notifications\Notification;
+use Filament\Pages\Page;
 
 class ChartOfAccountsTree extends Page
 {
-    protected static string|\BackedEnum|null $navigationIcon  = 'heroicon-o-rectangle-stack';
-    protected static string|\UnitEnum|null  $navigationGroup = 'المحاسبة';
-    protected static ?int                   $navigationSort  = 1;
-    protected static ?string                $title           = 'شجرة الحسابات';
-    protected static ?string                $navigationLabel = 'شجرة الحسابات';
-    protected string         $view            = 'filament.pages.chart-of-accounts-tree';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-rectangle-stack';
 
-    public bool    $showAll    = true;
+    protected static string|\UnitEnum|null $navigationGroup = 'المحاسبة';
+
+    protected static ?int $navigationSort = 1;
+
+    protected static ?string $title = 'شجرة الحسابات';
+
+    protected static ?string $navigationLabel = 'شجرة الحسابات';
+
+    protected string $view = 'filament.pages.chart-of-accounts-tree';
+
+    public bool $showAll = true;
+
     public ?string $filterType = null;
-    public ?int    $editingId  = null;
-    public array   $editData   = [];
-    public array   $newAccount = [
-        'code'             => '',
-        'name'             => '',
-        'type'             => 'asset',
-        'parent_id'        => null,
+
+    public ?int $editingId = null;
+
+    public array $editData = [];
+
+    public array $newAccount = [
+        'code' => '',
+        'name' => '',
+        'type' => 'asset',
+        'parent_id' => null,
         'business_unit_id' => null,
     ];
+
     public bool $showAddForm = false;
 
     public static function canAccess(): bool
@@ -60,45 +70,45 @@ class ChartOfAccountsTree extends Page
         $movementCount = JournalEntryLine::where('account_id', $account->id)->count();
 
         return [
-            'id'             => $account->id,
-            'code'           => $account->code,
-            'name'           => $account->name,
-            'type'           => $account->type,
-            'level'          => $account->level ?? 1,
-            'business_unit'  => $account->businessUnit?->name ?? 'عام',
-            'has_movements'  => $movementCount > 0,
+            'id' => $account->id,
+            'code' => $account->code,
+            'name' => $account->name,
+            'type' => $account->type,
+            'level' => $account->level ?? 1,
+            'business_unit' => $account->businessUnit?->name ?? 'عام',
+            'has_movements' => $movementCount > 0,
             'movement_count' => $movementCount,
-            'children'       => $children,
+            'children' => $children,
         ];
     }
 
     public function getAccountTypes(): array
     {
         return [
-            'asset'     => ['label' => 'أصول',        'color' => '#2563eb', 'bg' => '#dbeafe'],
+            'asset' => ['label' => 'أصول',        'color' => '#2563eb', 'bg' => '#dbeafe'],
             'liability' => ['label' => 'خصوم',        'color' => '#d97706', 'bg' => '#fef3c7'],
-            'equity'    => ['label' => 'حقوق ملكية',  'color' => '#7c3aed', 'bg' => '#ede9fe'],
-            'revenue'   => ['label' => 'إيرادات',     'color' => '#059669', 'bg' => '#dcfce7'],
-            'expense'   => ['label' => 'مصروفات',     'color' => '#dc2626', 'bg' => '#fef2f2'],
+            'equity' => ['label' => 'حقوق ملكية',  'color' => '#7c3aed', 'bg' => '#ede9fe'],
+            'revenue' => ['label' => 'إيرادات',     'color' => '#059669', 'bg' => '#dcfce7'],
+            'expense' => ['label' => 'مصروفات',     'color' => '#dc2626', 'bg' => '#fef2f2'],
         ];
     }
 
     public function startEdit(int $id): void
     {
-        $account        = ChartOfAccount::findOrFail($id);
+        $account = ChartOfAccount::findOrFail($id);
         $this->editingId = $id;
-        $this->editData  = [
-            'name'             => $account->name,
-            'type'             => $account->type,
+        $this->editData = [
+            'name' => $account->name,
+            'type' => $account->type,
             'business_unit_id' => $account->business_unit_id,
-            'is_active'        => $account->is_active,
+            'is_active' => $account->is_active,
         ];
     }
 
     public function cancelEdit(): void
     {
         $this->editingId = null;
-        $this->editData  = [];
+        $this->editData = [];
     }
 
     public function saveEdit(): void
@@ -106,14 +116,14 @@ class ChartOfAccountsTree extends Page
         $account = ChartOfAccount::findOrFail($this->editingId);
         $account->update($this->editData);
         $this->editingId = null;
-        $this->editData  = [];
+        $this->editData = [];
         Notification::make()->success()->title('تم تحديث الحساب')->send();
     }
 
     public function toggleAddForm(?int $parentId = null): void
     {
-        $this->showAddForm                 = ! $this->showAddForm;
-        $this->newAccount['parent_id']     = $parentId;
+        $this->showAddForm = ! $this->showAddForm;
+        $this->newAccount['parent_id'] = $parentId;
 
         if ($parentId) {
             // حساب فرعي — يقترح الكود بناءً على آخر ابن
@@ -125,7 +135,7 @@ class ChartOfAccountsTree extends Page
                     ->first();
                 $this->newAccount['code'] = $lastChild
                     ? (string) ((int) $lastChild->code + 1)
-                    : $parent->code . '1';
+                    : $parent->code.'1';
             }
         } else {
             // حساب رئيسي — يقترح الرقم التالي (1000, 2000, 3000, ...)
@@ -133,8 +143,8 @@ class ChartOfAccountsTree extends Page
                 ->orderByDesc('code')
                 ->first();
             if ($lastParent) {
-                $lastCode  = (int) $lastParent->code;
-                $step      = 1000;
+                $lastCode = (int) $lastParent->code;
+                $step = 1000;
                 $suggested = (int) (ceil(($lastCode + 1) / $step) * $step);
                 $this->newAccount['code'] = (string) $suggested;
             } else {
@@ -148,11 +158,13 @@ class ChartOfAccountsTree extends Page
     {
         if (empty($this->newAccount['code']) || empty($this->newAccount['name'])) {
             Notification::make()->danger()->title('الكود والاسم مطلوبين')->send();
+
             return;
         }
 
         if (ChartOfAccount::where('code', $this->newAccount['code'])->exists()) {
             Notification::make()->danger()->title('الكود موجود بالفعل')->send();
+
             return;
         }
 
@@ -161,21 +173,21 @@ class ChartOfAccountsTree extends Page
             : null;
 
         ChartOfAccount::create([
-            'code'             => $this->newAccount['code'],
-            'name'             => $this->newAccount['name'],
-            'type'             => $this->newAccount['type'],
-            'parent_id'        => $this->newAccount['parent_id'],
+            'code' => $this->newAccount['code'],
+            'name' => $this->newAccount['name'],
+            'type' => $this->newAccount['type'],
+            'parent_id' => $this->newAccount['parent_id'],
             'business_unit_id' => $this->newAccount['business_unit_id'] ?: null,
-            'level'            => $parent ? ($parent->level + 1) : 1,
-            'is_active'        => true,
+            'level' => $parent ? ($parent->level + 1) : 1,
+            'is_active' => true,
         ]);
 
         $this->showAddForm = false;
-        $this->newAccount  = [
-            'code'             => '',
-            'name'             => '',
-            'type'             => 'asset',
-            'parent_id'        => null,
+        $this->newAccount = [
+            'code' => '',
+            'name' => '',
+            'type' => 'asset',
+            'parent_id' => null,
             'business_unit_id' => null,
         ];
 
@@ -192,6 +204,7 @@ class ChartOfAccountsTree extends Page
                 ->title('لا يمكن أرشفة هذا الحساب')
                 ->body("عليه {$movements} حركة محاسبية. أرشف الحركات أولاً.")
                 ->send();
+
             return;
         }
 
@@ -201,6 +214,7 @@ class ChartOfAccountsTree extends Page
                 ->title('لا يمكن أرشفة هذا الحساب')
                 ->body("تحته {$children} حساب فرعي نشط.")
                 ->send();
+
             return;
         }
 

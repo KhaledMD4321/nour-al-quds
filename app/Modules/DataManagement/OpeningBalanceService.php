@@ -8,6 +8,7 @@ use App\Models\Product;
 use App\Models\Stock;
 use App\Models\StockMovement;
 use App\Models\Supplier;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Facades\Excel;
 
@@ -23,16 +24,16 @@ class OpeningBalanceService
             Customer::where('id', $customerId)->update(['opening_balance' => $amount]);
 
             OpeningBalance::where('type', 'customer')
-                          ->where('reference_id', $customerId)
-                          ->delete();
+                ->where('reference_id', $customerId)
+                ->delete();
 
             return OpeningBalance::create([
-                'type'         => 'customer',
+                'type' => 'customer',
                 'reference_id' => $customerId,
-                'debit'        => $amount,
-                'credit'       => 0,
+                'debit' => $amount,
+                'credit' => 0,
                 'balance_date' => $date,
-                'created_by'   => $createdBy,
+                'created_by' => $createdBy,
             ]);
         });
     }
@@ -47,16 +48,16 @@ class OpeningBalanceService
             Supplier::where('id', $supplierId)->update(['opening_balance' => $amount]);
 
             OpeningBalance::where('type', 'supplier')
-                          ->where('reference_id', $supplierId)
-                          ->delete();
+                ->where('reference_id', $supplierId)
+                ->delete();
 
             return OpeningBalance::create([
-                'type'         => 'supplier',
+                'type' => 'supplier',
                 'reference_id' => $supplierId,
-                'debit'        => 0,
-                'credit'       => $amount,
+                'debit' => 0,
+                'credit' => $amount,
                 'balance_date' => $date,
-                'created_by'   => $createdBy,
+                'created_by' => $createdBy,
             ]);
         });
     }
@@ -77,18 +78,18 @@ class OpeningBalanceService
 
             // حذف أي رصيد افتتاحي سابق لنفس الصنف في نفس المخزن
             $existing = OpeningBalance::where('type', 'stock')
-                                      ->where('reference_id', $warehouseId)
-                                      ->where('product_id', $productId)
-                                      ->first();
+                ->where('reference_id', $warehouseId)
+                ->where('product_id', $productId)
+                ->first();
 
             if ($existing) {
                 Stock::where('warehouse_id', $warehouseId)
-                     ->where('product_id', $productId)
-                     ->update(['quantity' => 0, 'avg_cost' => 0]);
+                    ->where('product_id', $productId)
+                    ->update(['quantity' => 0, 'avg_cost' => 0]);
 
                 StockMovement::where('reference_type', OpeningBalance::class)
-                             ->where('reference_id', $existing->id)
-                             ->delete();
+                    ->where('reference_id', $existing->id)
+                    ->delete();
 
                 $existing->delete();
             }
@@ -103,29 +104,29 @@ class OpeningBalanceService
 
             // تسجيل في opening_balances
             $ob = OpeningBalance::create([
-                'type'         => 'stock',
+                'type' => 'stock',
                 'reference_id' => $warehouseId,
-                'product_id'   => $productId,
-                'debit'        => $totalValue,
-                'credit'       => 0,
-                'quantity'     => $quantity,
-                'unit_cost'    => $unitCost,
+                'product_id' => $productId,
+                'debit' => $totalValue,
+                'credit' => 0,
+                'quantity' => $quantity,
+                'unit_cost' => $unitCost,
                 'balance_date' => $date,
-                'created_by'   => $createdBy,
+                'created_by' => $createdBy,
             ]);
 
             // تسجيل حركة مخزون (opening)
             StockMovement::create([
-                'warehouse_id'   => $warehouseId,
-                'product_id'     => $productId,
-                'type'           => 'opening',
-                'quantity'       => $quantity,
-                'unit_cost'      => $unitCost,
-                'balance_after'  => $quantity,
+                'warehouse_id' => $warehouseId,
+                'product_id' => $productId,
+                'type' => 'opening',
+                'quantity' => $quantity,
+                'unit_cost' => $unitCost,
+                'balance_after' => $quantity,
                 'reference_type' => OpeningBalance::class,
-                'reference_id'   => $ob->id,
-                'notes'          => 'رصيد افتتاحي',
-                'created_by'     => $createdBy,
+                'reference_id' => $ob->id,
+                'notes' => 'رصيد افتتاحي',
+                'created_by' => $createdBy,
             ]);
 
             return $ob;
@@ -141,7 +142,7 @@ class OpeningBalanceService
      * C: تكلفة الوحدة (مطلوب)
      */
     public function importStockFromExcel(
-        \Illuminate\Http\UploadedFile $file,
+        UploadedFile $file,
         int $warehouseId,
         string $date,
         ?int $createdBy = null
@@ -149,31 +150,33 @@ class OpeningBalanceService
         $allRows = Excel::toArray([], $file)[0] ?? [];
         $rows = collect($allRows)
             ->slice(1)
-            ->filter(fn ($row) => !empty(array_filter($row, fn ($cell) => $cell !== null && $cell !== '')))
+            ->filter(fn ($row) => ! empty(array_filter($row, fn ($cell) => $cell !== null && $cell !== '')))
             ->values();
 
         $results = ['added' => 0, 'skipped' => 0, 'errors' => []];
 
         DB::transaction(function () use ($rows, $warehouseId, $date, $createdBy, &$results) {
             foreach ($rows as $index => $row) {
-                $rowNumber  = $index + 2;
+                $rowNumber = $index + 2;
                 $codeOrName = trim((string) ($row[0] ?? ''));
-                $quantity   = (float) ($row[1] ?? 0);
-                $unitCost   = (float) ($row[2] ?? 0);
+                $quantity = (float) ($row[1] ?? 0);
+                $unitCost = (float) ($row[2] ?? 0);
 
                 if (empty($codeOrName) || $quantity <= 0 || $unitCost <= 0) {
                     $results['errors'][] = "الصف {$rowNumber}: بيانات ناقصة أو غير صالحة";
                     $results['skipped']++;
+
                     continue;
                 }
 
                 $product = Product::where('code', $codeOrName)
-                                  ->orWhere('name', $codeOrName)
-                                  ->first();
+                    ->orWhere('name', $codeOrName)
+                    ->first();
 
-                if (!$product) {
+                if (! $product) {
                     $results['errors'][] = "الصف {$rowNumber}: الصنف '{$codeOrName}' مش موجود";
                     $results['skipped']++;
+
                     continue;
                 }
 

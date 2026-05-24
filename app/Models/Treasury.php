@@ -25,7 +25,7 @@ class Treasury extends Model
 
     protected $casts = [
         'current_balance' => 'decimal:2',
-        'is_active'       => 'boolean',
+        'is_active' => 'boolean',
     ];
 
     // ─── Relations ─────────────────────────────────────────────────────────────
@@ -61,7 +61,7 @@ class Treasury extends Model
 
     public function getDisplayLabelAttribute(): string
     {
-        return $this->name . ' (' . ($this->businessUnit?->name ?? '—') . ')';
+        return $this->name.' ('.($this->businessUnit?->name ?? '—').')';
     }
 
     public function getTypeLabelAttribute(): string

@@ -16,12 +16,12 @@ return new class extends Migration
             $table->string('name', 100);
             $table->enum('type', ['cash', 'bank']);
             $table->foreignId('business_unit_id')
-                  ->constrained('business_units')
-                  ->restrictOnDelete();
+                ->constrained('business_units')
+                ->restrictOnDelete();
             $table->decimal('current_balance', 15, 2)->default(0);
             $table->foreignId('account_id')
-                  ->constrained('chart_of_accounts')
-                  ->restrictOnDelete();
+                ->constrained('chart_of_accounts')
+                ->restrictOnDelete();
             $table->boolean('is_active')->default(true);
             $table->text('notes')->nullable();
             $table->timestamps();

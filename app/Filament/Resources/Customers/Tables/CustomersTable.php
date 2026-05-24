@@ -18,7 +18,6 @@ use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Table;
-use Filament\Forms\Components\Select as FormSelect;
 
 class CustomersTable
 {
@@ -50,17 +49,16 @@ class CustomersTable
 
                 TextColumn::make('type')
                     ->label('النوع')
-                    ->formatStateUsing(fn (?string $state): string =>
-                        LookupType::getLabel('customer_type', $state) ?? ($state ?? '—')
+                    ->formatStateUsing(fn (?string $state): string => LookupType::getLabel('customer_type', $state) ?? ($state ?? '—')
                     )
                     ->badge()
                     ->color(fn (string $state): string => match ($state) {
                         'individual' => 'info',
-                        'company'    => 'primary',
-                        'trader'     => 'success',
+                        'company' => 'primary',
+                        'trader' => 'success',
                         'contractor' => 'warning',
                         'government' => 'danger',
-                        default      => 'gray',
+                        default => 'gray',
                     }),
 
                 TextColumn::make('businessUnit.name')
@@ -76,11 +74,10 @@ class CustomersTable
 
                 TextColumn::make('effective_discount_percent')
                     ->label('خصم فعلي')
-                    ->getStateUsing(fn ($record): string => $record->effective_discount_percent . '%')
-                    ->sortable(query: fn ($query, string $direction) =>
-                        $query->orderByRaw(
-                            "(1 - (1-default_discount_1/100) * (1-default_discount_2/100) * (1-default_discount_3/100)) {$direction}"
-                        )
+                    ->getStateUsing(fn ($record): string => $record->effective_discount_percent.'%')
+                    ->sortable(query: fn ($query, string $direction) => $query->orderByRaw(
+                        "(1 - (1-default_discount_1/100) * (1-default_discount_2/100) * (1-default_discount_3/100)) {$direction}"
+                    )
                     )
                     ->toggleable(),
 

@@ -11,29 +11,41 @@ use Filament\Schemas\Schema;
 
 class ProfitLossReport extends Page
 {
-    protected static string|\BackedEnum|null $navigationIcon  = 'heroicon-o-chart-bar';
-    protected static string|\UnitEnum|null   $navigationGroup = 'التقارير';
-    protected static ?int                    $navigationSort  = 21;
-    protected static ?string                 $title           = 'الأرباح والخسائر';
-    protected static ?string                 $navigationLabel = 'الأرباح والخسائر';
-    protected string                         $view            = 'filament.pages.profit-loss-report';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-chart-bar';
 
-    public ?string $from_date        = null;
-    public ?string $to_date          = null;
-    public ?int    $business_unit_id = null;
+    protected static string|\UnitEnum|null $navigationGroup = 'التقارير';
+
+    protected static ?int $navigationSort = 21;
+
+    protected static ?string $title = 'الأرباح والخسائر';
+
+    protected static ?string $navigationLabel = 'الأرباح والخسائر';
+
+    protected string $view = 'filament.pages.profit-loss-report';
+
+    public ?string $from_date = null;
+
+    public ?string $to_date = null;
+
+    public ?int $business_unit_id = null;
 
     public static function canAccess(): bool
     {
         $user = auth()->user();
-        if (! $user) return false;
-        if ($user->isSuperAdmin()) return true;
+        if (! $user) {
+            return false;
+        }
+        if ($user->isSuperAdmin()) {
+            return true;
+        }
+
         return $user->can('reports.pl.view');
     }
 
     public function mount(): void
     {
         $this->from_date = today()->startOfYear()->toDateString();
-        $this->to_date   = today()->toDateString();
+        $this->to_date = today()->toDateString();
 
         if (! auth()->user()?->isSuperAdmin()) {
             $this->business_unit_id = auth()->user()?->business_unit_id;
@@ -66,7 +78,7 @@ class ProfitLossReport extends Page
         return app(ReportService::class)->profitLoss(
             $this->business_unit_id ?: null,
             $this->from_date ?? today()->startOfYear()->toDateString(),
-            $this->to_date   ?? today()->toDateString()
+            $this->to_date ?? today()->toDateString()
         );
     }
 
@@ -79,7 +91,7 @@ class ProfitLossReport extends Page
 
         return app(ReportService::class)->profitLossConsolidated(
             $this->from_date ?? today()->startOfYear()->toDateString(),
-            $this->to_date   ?? today()->toDateString()
+            $this->to_date ?? today()->toDateString()
         );
     }
 }

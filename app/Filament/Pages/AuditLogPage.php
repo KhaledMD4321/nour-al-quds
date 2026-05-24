@@ -8,12 +8,17 @@ use Illuminate\Support\Facades\DB;
 
 class AuditLogPage extends Page
 {
-    protected static string|\BackedEnum|null $navigationIcon  = 'heroicon-o-shield-check';
-    protected static string|\UnitEnum|null   $navigationGroup = 'الإدارة';
-    protected static ?int                    $navigationSort  = 99;
-    protected static ?string                 $title           = 'سجل العمليات';
-    protected static ?string                 $navigationLabel = 'سجل العمليات';
-    protected string                         $view            = 'filament.pages.audit-log';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-shield-check';
+
+    protected static string|\UnitEnum|null $navigationGroup = 'الإدارة';
+
+    protected static ?int $navigationSort = 99;
+
+    protected static ?string $title = 'سجل العمليات';
+
+    protected static ?string $navigationLabel = 'سجل العمليات';
+
+    protected string $view = 'filament.pages.audit-log';
 
     public static function canAccess(): bool
     {
@@ -85,7 +90,7 @@ class AuditLogPage extends Page
                 'cheques.cheque_number         AS reference',
                 'cheques.amount',
                 'users.name                   AS user_name',
-                DB::raw("cheques.bank_name     AS notes")
+                DB::raw('cheques.bank_name     AS notes')
             )
             ->orderByDesc('cheques.created_at')
             ->limit(20)
@@ -102,7 +107,7 @@ class AuditLogPage extends Page
                 'invoices.reference_number     AS reference',
                 'invoices.total_amount         AS amount',
                 'users.name                   AS user_name',
-                DB::raw("invoices.status       AS notes")
+                DB::raw('invoices.status       AS notes')
             )
             ->orderByDesc('invoices.created_at')
             ->limit(20)

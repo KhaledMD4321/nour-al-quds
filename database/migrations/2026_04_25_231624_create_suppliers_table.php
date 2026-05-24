@@ -16,9 +16,9 @@ return new class extends Migration
             $table->string('phone_2')->nullable();
             $table->text('address')->nullable();
             $table->foreignId('company_id')
-                  ->nullable()
-                  ->constrained()
-                  ->nullOnDelete();
+                ->nullable()
+                ->constrained()
+                ->nullOnDelete();
             $table->string('tax_registration_number')->nullable();
             $table->decimal('opening_balance', 15, 2)->default(0);
             $table->text('notes')->nullable();

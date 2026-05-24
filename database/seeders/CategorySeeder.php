@@ -11,10 +11,10 @@ class CategorySeeder extends Seeder
     {
         // ── Root categories ────────────────────────────────────────────────────
         $sanitaryWare = Category::create(['name' => 'أدوات صحية',      'sort_order' => 1]);
-        $plumbing     = Category::create(['name' => 'سباكة',            'sort_order' => 2]);
-        $mixers       = Category::create(['name' => 'خلاطات',           'sort_order' => 3]);
+        $plumbing = Category::create(['name' => 'سباكة',            'sort_order' => 2]);
+        $mixers = Category::create(['name' => 'خلاطات',           'sort_order' => 3]);
         $waterHeaters = Category::create(['name' => 'سخانات',           'sort_order' => 4]);
-        $accessories  = Category::create(['name' => 'إكسسوارات حمامات', 'sort_order' => 5]);
+        $accessories = Category::create(['name' => 'إكسسوارات حمامات', 'sort_order' => 5]);
 
         // ── أدوات صحية — children ─────────────────────────────────────────────
         Category::create(['name' => 'أحواض',               'parent_id' => $sanitaryWare->id, 'sort_order' => 1]);

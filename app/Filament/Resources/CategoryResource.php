@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources;
 
+use App\Filament\Concerns\HasModuleGuard;
 use App\Filament\Resources\CategoryResource\Pages;
 use App\Models\Category;
 use Filament\Actions\DeleteAction;
@@ -21,12 +22,12 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Filters\TrashedFilter;
-use App\Filament\Concerns\HasModuleGuard;
 use Filament\Tables\Table;
 
 class CategoryResource extends Resource
 {
     use HasModuleGuard;
+
     protected static string $module = 'catalog';
 
     protected static ?string $model = Category::class;
@@ -50,6 +51,7 @@ class CategoryResource extends Resource
     public static function canAccess(): bool
     {
         $user = auth()->user();
+
         return $user->hasRole('super_admin')
             || $user->hasRole('showroom_manager')
             || $user->hasRole('distribution_manager');
@@ -200,10 +202,10 @@ class CategoryResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index'  => Pages\ListCategories::route('/'),
+            'index' => Pages\ListCategories::route('/'),
             'create' => Pages\CreateCategory::route('/create'),
-            'view'   => Pages\ViewCategory::route('/{record}'),
-            'edit'   => Pages\EditCategory::route('/{record}/edit'),
+            'view' => Pages\ViewCategory::route('/{record}'),
+            'edit' => Pages\EditCategory::route('/{record}/edit'),
         ];
     }
 }

@@ -11,13 +11,15 @@ use Illuminate\Database\Eloquent\Builder;
 class DueChequesWidget extends TableWidget
 {
     protected static ?int $sort = 4;
+
     protected int|string|array $columnSpan = 'full';
+
     protected static ?string $heading = 'شيكات مستحقة خلال 7 أيام';
 
     public function table(Table $table): Table
     {
-        $user   = auth()->user();
-        $unitId = ($user && !$user->isSuperAdmin() && $user->business_unit_id)
+        $user = auth()->user();
+        $unitId = ($user && ! $user->isSuperAdmin() && $user->business_unit_id)
             ? $user->business_unit_id : null;
 
         return $table
@@ -60,9 +62,9 @@ class DueChequesWidget extends TableWidget
                     ->label('الحالة')
                     ->badge()
                     ->formatStateUsing(fn ($state) => match ($state) {
-                        'pending'   => 'قيد الانتظار',
+                        'pending' => 'قيد الانتظار',
                         'deposited' => 'مودع بالبنك',
-                        default     => $state,
+                        default => $state,
                     })
                     ->color(fn ($state) => $state === 'deposited' ? 'info' : 'gray'),
             ])

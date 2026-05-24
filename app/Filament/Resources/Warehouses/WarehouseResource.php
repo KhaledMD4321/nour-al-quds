@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Warehouses;
 
+use App\Filament\Concerns\HasModuleGuard;
 use App\Filament\Resources\Warehouses\Pages\CreateWarehouse;
 use App\Filament\Resources\Warehouses\Pages\EditWarehouse;
 use App\Filament\Resources\Warehouses\Pages\ListWarehouses;
@@ -13,30 +14,37 @@ use App\Models\Warehouse;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Tables\Table;
-use App\Filament\Concerns\HasModuleGuard;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class WarehouseResource extends Resource
 {
     use HasModuleGuard;
+
     protected static string $module = 'inventory';
 
     protected static ?string $model = Warehouse::class;
 
-    protected static string|\BackedEnum|null $navigationIcon  = 'heroicon-o-building-storefront';
-    protected static string|\UnitEnum|null   $navigationGroup = 'المخزون';
-    protected static ?int                    $navigationSort   = 1;
-    protected static ?string                 $navigationLabel  = 'المخازن';
-    protected static ?string                 $modelLabel       = 'مخزن';
-    protected static ?string                 $pluralModelLabel = 'المخازن';
-    protected static ?string                 $recordTitleAttribute = 'name';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-building-storefront';
+
+    protected static string|\UnitEnum|null $navigationGroup = 'المخزون';
+
+    protected static ?int $navigationSort = 1;
+
+    protected static ?string $navigationLabel = 'المخازن';
+
+    protected static ?string $modelLabel = 'مخزن';
+
+    protected static ?string $pluralModelLabel = 'المخازن';
+
+    protected static ?string $recordTitleAttribute = 'name';
 
     // ─── Access ────────────────────────────────────────────────────────────────
 
     public static function canAccess(): bool
     {
         $user = auth()->user();
+
         return $user->hasRole('super_admin')
             || $user->hasRole('showroom_manager')
             || $user->hasRole('distribution_manager')
@@ -69,10 +77,10 @@ class WarehouseResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index'  => ListWarehouses::route('/'),
+            'index' => ListWarehouses::route('/'),
             'create' => CreateWarehouse::route('/create'),
-            'view'   => ViewWarehouse::route('/{record}'),
-            'edit'   => EditWarehouse::route('/{record}/edit'),
+            'view' => ViewWarehouse::route('/{record}'),
+            'edit' => EditWarehouse::route('/{record}/edit'),
         ];
     }
 

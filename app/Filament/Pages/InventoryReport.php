@@ -10,36 +10,53 @@ use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
 use Filament\Pages\Page;
 use Filament\Schemas\Schema;
+use Illuminate\Support\Collection;
 
 class InventoryReport extends Page
 {
-    protected static string|\BackedEnum|null $navigationIcon  = 'heroicon-o-archive-box';
-    protected static string|\UnitEnum|null   $navigationGroup = 'التقارير';
-    protected static ?int                    $navigationSort  = 22;
-    protected static ?string                 $title           = 'تقارير المخزون';
-    protected static ?string                 $navigationLabel = 'تقارير المخزون';
-    protected string                         $view            = 'filament.pages.inventory-report';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-archive-box';
 
-    public string  $report_type      = 'balance';   // balance | slow | movement
-    public ?int    $warehouse_id     = null;
-    public ?int    $business_unit_id = null;
-    public ?int    $product_id       = null;
-    public ?string $from_date        = null;
-    public ?string $to_date          = null;
-    public int     $slow_days        = 90;
+    protected static string|\UnitEnum|null $navigationGroup = 'التقارير';
+
+    protected static ?int $navigationSort = 22;
+
+    protected static ?string $title = 'تقارير المخزون';
+
+    protected static ?string $navigationLabel = 'تقارير المخزون';
+
+    protected string $view = 'filament.pages.inventory-report';
+
+    public string $report_type = 'balance';   // balance | slow | movement
+
+    public ?int $warehouse_id = null;
+
+    public ?int $business_unit_id = null;
+
+    public ?int $product_id = null;
+
+    public ?string $from_date = null;
+
+    public ?string $to_date = null;
+
+    public int $slow_days = 90;
 
     public static function canAccess(): bool
     {
         $user = auth()->user();
-        if (! $user) return false;
-        if ($user->isSuperAdmin()) return true;
+        if (! $user) {
+            return false;
+        }
+        if ($user->isSuperAdmin()) {
+            return true;
+        }
+
         return $user->can('reports.inventory.view');
     }
 
     public function mount(): void
     {
         $this->from_date = today()->startOfMonth()->toDateString();
-        $this->to_date   = today()->toDateString();
+        $this->to_date = today()->toDateString();
 
         if (! auth()->user()?->isSuperAdmin()) {
             $this->business_unit_id = auth()->user()?->business_unit_id;
@@ -52,8 +69,8 @@ class InventoryReport extends Page
             Select::make('report_type')
                 ->label('نوع التقرير')
                 ->options([
-                    'balance'  => 'أرصدة المخزون الحالية',
-                    'slow'     => 'الأصناف الراكدة',
+                    'balance' => 'أرصدة المخزون الحالية',
+                    'slow' => 'الأصناف الراكدة',
                     'movement' => 'حركة صنف',
                 ])
                 ->default('balance')
@@ -75,7 +92,7 @@ class InventoryReport extends Page
                 ->options(fn () => Product::where('is_active', true)
                     ->orderBy('code')
                     ->get()
-                    ->mapWithKeys(fn ($p) => [$p->id => $p->code . ' — ' . $p->name])
+                    ->mapWithKeys(fn ($p) => [$p->id => $p->code.' — '.$p->name])
                     ->toArray()
                 )
                 ->searchable()
@@ -97,9 +114,9 @@ class InventoryReport extends Page
             Select::make('slow_days')
                 ->label('فترة الركود')
                 ->options([
-                    30  => '30 يوم',
-                    60  => '60 يوم',
-                    90  => '90 يوم',
+                    30 => '30 يوم',
+                    60 => '60 يوم',
+                    90 => '90 يوم',
                     180 => '6 أشهر',
                     365 => 'سنة',
                 ])
@@ -109,17 +126,17 @@ class InventoryReport extends Page
         ])->columns(3);
     }
 
-    public function getData(): \Illuminate\Support\Collection
+    public function getData(): Collection
     {
         $service = app(ReportService::class);
 
-        return match($this->report_type) {
-            'balance'  => $service->stockBalance($this->warehouse_id ?: null, $this->business_unit_id ?: null),
-            'slow'     => $service->slowMovingStock($this->slow_days, $this->warehouse_id ?: null),
+        return match ($this->report_type) {
+            'balance' => $service->stockBalance($this->warehouse_id ?: null, $this->business_unit_id ?: null),
+            'slow' => $service->slowMovingStock($this->slow_days, $this->warehouse_id ?: null),
             'movement' => $this->product_id
                 ? $service->productMovement($this->product_id, $this->from_date ?? today()->startOfMonth()->toDateString(), $this->to_date ?? today()->toDateString(), $this->warehouse_id ?: null)
                 : collect(),
-            default    => collect(),
+            default => collect(),
         };
     }
 }

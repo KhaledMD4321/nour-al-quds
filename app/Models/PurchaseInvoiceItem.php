@@ -3,8 +3,8 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class PurchaseInvoiceItem extends Model
 {
@@ -21,11 +21,11 @@ class PurchaseInvoiceItem extends Model
     ];
 
     protected $casts = [
-        'quantity'          => 'decimal:3',
-        'unit_cost'         => 'decimal:4',
-        'total'             => 'decimal:2',
+        'quantity' => 'decimal:3',
+        'unit_cost' => 'decimal:4',
+        'total' => 'decimal:2',
         'landed_cost_share' => 'decimal:4',
-        'avg_cost_after'    => 'decimal:4',
+        'avg_cost_after' => 'decimal:4',
     ];
 
     // ── Relations ──────────────────────────────────────────────────────────────
@@ -51,6 +51,7 @@ class PurchaseInvoiceItem extends Model
         if ($qty <= 0) {
             return (float) $this->unit_cost;
         }
+
         return ((float) $this->total + (float) $this->landed_cost_share) / $qty;
     }
 }

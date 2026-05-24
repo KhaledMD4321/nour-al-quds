@@ -14,9 +14,9 @@ class TaxRate extends Model
     ];
 
     protected $casts = [
-        'rate'       => 'decimal:2',
+        'rate' => 'decimal:2',
         'is_default' => 'boolean',
-        'is_active'  => 'boolean',
+        'is_active' => 'boolean',
     ];
 
     // ─── Scopes ────────────────────────────────────────────────────────────────

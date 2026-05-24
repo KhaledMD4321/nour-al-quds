@@ -29,7 +29,7 @@ class PurchaseItemsImporter
         }
 
         $imported = 0;
-        $skipped  = [];
+        $skipped = [];
 
         DB::transaction(function () use ($invoice, $rows, &$imported, &$skipped) {
             foreach ($rows as $index => $row) {
@@ -39,6 +39,7 @@ class PurchaseItemsImporter
                 $product = $this->resolveProduct($row);
                 if (! $product) {
                     $skipped[] = "سطر {$rowNum}: المنتج غير موجود — \"{$row['product_name']}\"";
+
                     continue;
                 }
 
@@ -47,11 +48,13 @@ class PurchaseItemsImporter
 
                 if ($quantity <= 0) {
                     $skipped[] = "سطر {$rowNum}: الكمية يجب أن تكون أكبر من صفر";
+
                     continue;
                 }
 
                 if ($unitCost <= 0) {
                     $skipped[] = "سطر {$rowNum}: سعر الوحدة يجب أن يكون أكبر من صفر";
+
                     continue;
                 }
 
@@ -61,20 +64,20 @@ class PurchaseItemsImporter
                     ->first();
 
                 if ($existing) {
-                    $newQty   = (float) $existing->quantity + $quantity;
+                    $newQty = (float) $existing->quantity + $quantity;
                     $newTotal = round($newQty * $unitCost, 2);
                     $existing->update([
-                        'quantity'  => $newQty,
+                        'quantity' => $newQty,
                         'unit_cost' => $unitCost,
-                        'total'     => $newTotal,
+                        'total' => $newTotal,
                     ]);
                 } else {
                     PurchaseInvoiceItem::create([
                         'purchase_invoice_id' => $invoice->id,
-                        'product_id'          => $product->id,
-                        'quantity'            => $quantity,
-                        'unit_cost'           => $unitCost,
-                        'total'               => round($quantity * $unitCost, 2),
+                        'product_id' => $product->id,
+                        'quantity' => $quantity,
+                        'unit_cost' => $unitCost,
+                        'total' => round($quantity * $unitCost, 2),
                     ]);
                 }
 
@@ -87,7 +90,7 @@ class PurchaseItemsImporter
 
         return [
             'imported' => $imported,
-            'skipped'  => $skipped,
+            'skipped' => $skipped,
         ];
     }
 
@@ -117,10 +120,10 @@ class PurchaseItemsImporter
 
                 PurchaseInvoiceItem::create([
                     'purchase_invoice_id' => $target->id,
-                    'product_id'          => $item->product_id,
-                    'quantity'            => $item->quantity,
-                    'unit_cost'           => $item->unit_cost,
-                    'total'               => $item->total,
+                    'product_id' => $item->product_id,
+                    'quantity' => $item->quantity,
+                    'unit_cost' => $item->unit_cost,
+                    'total' => $item->total,
                 ]);
 
                 $copied++;
@@ -144,12 +147,12 @@ class PurchaseItemsImporter
         ];
 
         $lines = [];
-        $lines[] = implode(',', array_map(fn ($v) => '"' . $v . '"', $header));
+        $lines[] = implode(',', array_map(fn ($v) => '"'.$v.'"', $header));
         foreach ($sample as $row) {
-            $lines[] = implode(',', array_map(fn ($v) => '"' . $v . '"', $row));
+            $lines[] = implode(',', array_map(fn ($v) => '"'.$v.'"', $row));
         }
 
-        return "\xEF\xBB\xBF" . implode("\n", $lines); // BOM للعربية في Excel
+        return "\xEF\xBB\xBF".implode("\n", $lines); // BOM للعربية في Excel
     }
 
     // ──────────────────────────────────────────────────────────────────────────
@@ -185,23 +188,27 @@ class PurchaseItemsImporter
         while (($line = fgetcsv($handle)) !== false) {
             if ($headers === null) {
                 $headers = array_map('trim', $line);
+
                 continue;
             }
-            if (count($line) < 2) continue;
+            if (count($line) < 2) {
+                continue;
+            }
 
             $rows[] = $this->mapRow($headers, $line);
         }
 
         fclose($handle);
+
         return collect($rows);
     }
 
     private function parseSpreadsheet(string $filePath): Collection
     {
         $spreadsheet = IOFactory::load($filePath);
-        $sheet       = $spreadsheet->getActiveSheet();
-        $rows        = [];
-        $headers     = null;
+        $sheet = $spreadsheet->getActiveSheet();
+        $rows = [];
+        $headers = null;
 
         foreach ($sheet->getRowIterator() as $row) {
             $cells = [];
@@ -211,10 +218,13 @@ class PurchaseItemsImporter
 
             if ($headers === null) {
                 $headers = $cells;
+
                 continue;
             }
 
-            if (empty(array_filter($cells))) continue;
+            if (empty(array_filter($cells))) {
+                continue;
+            }
 
             $rows[] = $this->mapRow($headers, $cells);
         }
@@ -253,21 +263,25 @@ class PurchaseItemsImporter
 
         return [
             'product_name' => trim((string) $productName),
-            'quantity'     => (float) str_replace(',', '', (string) $quantity),
-            'unit_cost'    => (float) str_replace(',', '', (string) $unitCost),
+            'quantity' => (float) str_replace(',', '', (string) $quantity),
+            'unit_cost' => (float) str_replace(',', '', (string) $unitCost),
         ];
     }
 
     private function resolveProduct(array $row): ?Product
     {
         $name = $row['product_name'] ?? '';
-        if (empty($name)) return null;
+        if (empty($name)) {
+            return null;
+        }
 
         // بحث مباشر أولاً
         $product = Product::where('name', $name)->first();
-        if ($product) return $product;
+        if ($product) {
+            return $product;
+        }
 
         // بحث جزئي
-        return Product::where('name', 'ILIKE', '%' . $name . '%')->first();
+        return Product::where('name', 'ILIKE', '%'.$name.'%')->first();
     }
 }

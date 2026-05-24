@@ -13,31 +13,31 @@ class AdminUserSeeder extends Seeder
         $users = [
             [
                 'data' => [
-                    'name'             => 'أحمد - مدير النظام',
-                    'email'            => 'admin@nour.test',
-                    'password'         => Hash::make('password'),
+                    'name' => 'أحمد - مدير النظام',
+                    'email' => 'admin@nour.test',
+                    'password' => Hash::make('password'),
                     'business_unit_id' => null,
-                    'is_active'        => true,
+                    'is_active' => true,
                 ],
                 'role' => 'super_admin',
             ],
             [
                 'data' => [
-                    'name'             => 'محمد - مدير المعرض',
-                    'email'            => 'showroom@nour.test',
-                    'password'         => Hash::make('password'),
+                    'name' => 'محمد - مدير المعرض',
+                    'email' => 'showroom@nour.test',
+                    'password' => Hash::make('password'),
                     'business_unit_id' => 1,
-                    'is_active'        => true,
+                    'is_active' => true,
                 ],
                 'role' => 'showroom_manager',
             ],
             [
                 'data' => [
-                    'name'             => 'علي - مدير التوزيع',
-                    'email'            => 'dist@nour.test',
-                    'password'         => Hash::make('password'),
+                    'name' => 'علي - مدير التوزيع',
+                    'email' => 'dist@nour.test',
+                    'password' => Hash::make('password'),
                     'business_unit_id' => 2,
-                    'is_active'        => true,
+                    'is_active' => true,
                 ],
                 'role' => 'distribution_manager',
             ],

@@ -3,7 +3,6 @@
 namespace App\Modules\Purchases;
 
 use App\Models\FiscalPeriod;
-use App\Models\LandedCost;
 use App\Models\PurchaseInvoice;
 use App\Models\PurchaseInvoiceItem;
 use App\Models\Stock;
@@ -21,15 +20,15 @@ class PurchaseService
         return DB::transaction(function () use ($data) {
             return PurchaseInvoice::create([
                 'reference_number' => PurchaseInvoice::generateReference(),
-                'supplier_id'      => $data['supplier_id'],
-                'warehouse_id'     => $data['warehouse_id'],
+                'supplier_id' => $data['supplier_id'],
+                'warehouse_id' => $data['warehouse_id'],
                 'business_unit_id' => $data['business_unit_id'],
-                'invoice_number'   => $data['invoice_number'] ?? null,
-                'invoice_date'     => $data['invoice_date'],
-                'due_date'         => $data['due_date'] ?? null,
-                'status'           => 'draft',
-                'notes'            => $data['notes'] ?? null,
-                'created_by'       => Auth::id(),
+                'invoice_number' => $data['invoice_number'] ?? null,
+                'invoice_date' => $data['invoice_date'],
+                'due_date' => $data['due_date'] ?? null,
+                'status' => 'draft',
+                'notes' => $data['notes'] ?? null,
+                'created_by' => Auth::id(),
             ]);
         });
     }
@@ -60,16 +59,16 @@ class PurchaseService
 
             // 3. حساب الإجماليات وتحديث الفاتورة
             $invoice->refresh();
-            $subtotal    = $invoice->items()->whereNull('purchase_invoice_items.deleted_at')->sum('total');
+            $subtotal = $invoice->items()->whereNull('purchase_invoice_items.deleted_at')->sum('total');
             $totalLanded = $invoice->landedCosts()->sum('amount');
-            $taxAmount   = (float) ($invoice->tax_amount ?? 0);
+            $taxAmount = (float) ($invoice->tax_amount ?? 0);
             $totalAmount = $subtotal + $taxAmount + $totalLanded;
 
             $invoice->update([
-                'status'            => 'confirmed',
-                'subtotal'          => $subtotal,
+                'status' => 'confirmed',
+                'subtotal' => $subtotal,
                 'total_landed_cost' => $totalLanded,
-                'total_amount'      => $totalAmount,
+                'total_amount' => $totalAmount,
             ]);
         });
     }
@@ -78,14 +77,14 @@ class PurchaseService
 
     public function recalculateTotals(PurchaseInvoice $invoice): void
     {
-        $subtotal    = $invoice->items()->whereNull('purchase_invoice_items.deleted_at')->sum('total');
-        $taxAmount   = (float) ($invoice->tax_amount ?? 0);
+        $subtotal = $invoice->items()->whereNull('purchase_invoice_items.deleted_at')->sum('total');
+        $taxAmount = (float) ($invoice->tax_amount ?? 0);
         $totalLanded = $invoice->landedCosts()->sum('amount');
 
         $invoice->update([
-            'subtotal'          => $subtotal,
+            'subtotal' => $subtotal,
             'total_landed_cost' => $totalLanded,
-            'total_amount'      => $subtotal + $taxAmount + $totalLanded,
+            'total_amount' => $subtotal + $taxAmount + $totalLanded,
         ]);
     }
 
@@ -94,10 +93,14 @@ class PurchaseService
     public function distributeLandedCosts(PurchaseInvoice $invoice): void
     {
         $totalLanded = (float) $invoice->landedCosts()->sum('amount');
-        if ($totalLanded <= 0) return;
+        if ($totalLanded <= 0) {
+            return;
+        }
 
         $invoiceSubtotal = (float) $invoice->items()->whereNull('purchase_invoice_items.deleted_at')->sum('total');
-        if ($invoiceSubtotal <= 0) return;
+        if ($invoiceSubtotal <= 0) {
+            return;
+        }
 
         $invoice->items()->whereNull('deleted_at')->each(function ($item) use ($totalLanded, $invoiceSubtotal) {
             $share = ((float) $item->total / $invoiceSubtotal) * $totalLanded;
@@ -115,15 +118,15 @@ class PurchaseService
             ->lockForUpdate()
             ->first();
 
-        $oldQty  = $stock ? (float) $stock->quantity : 0;
-        $oldCost = $stock ? (float) $stock->avg_cost  : 0;
-        $newQty  = (float) $item->quantity;
+        $oldQty = $stock ? (float) $stock->quantity : 0;
+        $oldCost = $stock ? (float) $stock->avg_cost : 0;
+        $newQty = (float) $item->quantity;
         $effectiveUnitCost = $item->effective_unit_cost;
 
         // حساب متوسط التكلفة المرجّح (Weighted Average Cost)
         $totalOldValue = $oldQty * $oldCost;
         $totalNewValue = $newQty * $effectiveUnitCost;
-        $newAvgCost    = ($oldQty + $newQty) > 0
+        $newAvgCost = ($oldQty + $newQty) > 0
             ? ($totalOldValue + $totalNewValue) / ($oldQty + $newQty)
             : $effectiveUnitCost;
 
@@ -131,32 +134,32 @@ class PurchaseService
 
         if ($stock) {
             $stock->update([
-                'quantity'     => $balanceAfter,
-                'avg_cost'     => round($newAvgCost, 4),
+                'quantity' => $balanceAfter,
+                'avg_cost' => round($newAvgCost, 4),
                 'last_updated' => now(),
             ]);
         } else {
             Stock::create([
                 'warehouse_id' => $invoice->warehouse_id,
-                'product_id'   => $item->product_id,
-                'quantity'     => $balanceAfter,
-                'avg_cost'     => round($newAvgCost, 4),
+                'product_id' => $item->product_id,
+                'quantity' => $balanceAfter,
+                'avg_cost' => round($newAvgCost, 4),
                 'last_updated' => now(),
             ]);
         }
 
         // ★ تسجيل حركة مخزون — سجل أبدي
         StockMovement::create([
-            'warehouse_id'   => $invoice->warehouse_id,
-            'product_id'     => $item->product_id,
-            'type'           => 'in',
-            'quantity'       => $newQty,
-            'unit_cost'      => round($effectiveUnitCost, 4),
-            'balance_after'  => $balanceAfter,
+            'warehouse_id' => $invoice->warehouse_id,
+            'product_id' => $item->product_id,
+            'type' => 'in',
+            'quantity' => $newQty,
+            'unit_cost' => round($effectiveUnitCost, 4),
+            'balance_after' => $balanceAfter,
             'reference_type' => PurchaseInvoice::class,
-            'reference_id'   => $invoice->id,
-            'notes'          => 'استلام بضاعة — ' . $invoice->reference_number,
-            'created_by'     => $invoice->created_by,
+            'reference_id' => $invoice->id,
+            'notes' => 'استلام بضاعة — '.$invoice->reference_number,
+            'created_by' => $invoice->created_by,
         ]);
 
         // حفظ متوسط التكلفة في البند نفسه

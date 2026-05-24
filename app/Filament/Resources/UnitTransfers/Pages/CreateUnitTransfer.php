@@ -9,13 +9,14 @@ use Illuminate\Support\Facades\Auth;
 
 class CreateUnitTransfer extends CreateRecord
 {
-    protected static string  $resource = UnitTransferResource::class;
-    protected static ?string $title    = 'إنشاء تحويل داخلي جديد';
+    protected static string $resource = UnitTransferResource::class;
+
+    protected static ?string $title = 'إنشاء تحويل داخلي جديد';
 
     protected function mutateFormDataBeforeCreate(array $data): array
     {
-        $data['created_by']   = Auth::id();
-        $data['status']       = 'draft';
+        $data['created_by'] = Auth::id();
+        $data['status'] = 'draft';
         $data['total_amount'] = 0;
 
         if (empty($data['reference_number'])) {

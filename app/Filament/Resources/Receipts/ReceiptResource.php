@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Receipts;
 
+use App\Filament\Concerns\HasModuleGuard;
 use App\Filament\Resources\Receipts\Pages\CreateReceipt;
 use App\Filament\Resources\Receipts\Pages\ListReceipts;
 use App\Filament\Resources\Receipts\Pages\ViewReceipt;
@@ -10,47 +11,58 @@ use App\Models\Customer;
 use App\Models\Invoice;
 use App\Models\Receipt;
 use App\Models\Treasury;
-use Filament\Forms\Components\DatePicker;
-use Filament\Schemas\Components\Grid;
-use Filament\Schemas\Components\Section;
-use Filament\Forms\Components\Select;
-use Filament\Forms\Components\Textarea;
-use Filament\Forms\Components\TextInput;
-use Filament\Schemas\Components\Utilities\Get;
-use Filament\Schemas\Components\Utilities\Set;
-use Filament\Resources\Resource;
-use Filament\Schemas\Schema;
+use Filament\Actions\Action;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\ViewAction;
+use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\TextInput;
+use Filament\Resources\Resource;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Utilities\Get;
+use Filament\Schemas\Components\Utilities\Set;
+use Filament\Schemas\Schema;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
-use App\Filament\Concerns\HasModuleGuard;
 use Illuminate\Database\Eloquent\Builder;
 
 class ReceiptResource extends Resource
 {
     use HasModuleGuard;
+
     protected static string $module = 'finance';
 
     protected static ?string $model = Receipt::class;
 
-    protected static string|\BackedEnum|null $navigationIcon  = 'heroicon-o-document-check';
-    protected static string|\UnitEnum|null   $navigationGroup = 'الخزينة والمالية';
-    protected static ?int                    $navigationSort  = 10;
-    protected static ?string                 $navigationLabel  = 'إيصالات التحصيل';
-    protected static ?string                 $modelLabel       = 'إيصال تحصيل';
-    protected static ?string                 $pluralModelLabel = 'إيصالات التحصيل';
-    protected static ?string                 $recordTitleAttribute = 'receipt_number';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-document-check';
+
+    protected static string|\UnitEnum|null $navigationGroup = 'الخزينة والمالية';
+
+    protected static ?int $navigationSort = 10;
+
+    protected static ?string $navigationLabel = 'إيصالات التحصيل';
+
+    protected static ?string $modelLabel = 'إيصال تحصيل';
+
+    protected static ?string $pluralModelLabel = 'إيصالات التحصيل';
+
+    protected static ?string $recordTitleAttribute = 'receipt_number';
 
     // ── RBAC ──────────────────────────────────────────────────────────────────────
 
     public static function canAccess(): bool
     {
         $user = auth()->user();
-        if (! $user) return false;
-        if ($user->isSuperAdmin()) return true;
+        if (! $user) {
+            return false;
+        }
+        if ($user->isSuperAdmin()) {
+            return true;
+        }
+
         return $user->can('finance.receipt.view');
     }
 
@@ -62,8 +74,13 @@ class ReceiptResource extends Resource
     public static function canCreate(): bool
     {
         $user = auth()->user();
-        if (! $user) return false;
-        if ($user->isSuperAdmin()) return true;
+        if (! $user) {
+            return false;
+        }
+        if ($user->isSuperAdmin()) {
+            return true;
+        }
+
         return $user->can('finance.receipt.create');
     }
 
@@ -121,6 +138,7 @@ class ReceiptResource extends Resource
                         ->preload(false)
                         ->getSearchResultsUsing(function (string $search) {
                             $user = auth()->user();
+
                             return Customer::query()
                                 ->active()
                                 ->when(! $user?->isSuperAdmin(), fn ($q) => $q->where('business_unit_id', $user?->business_unit_id))
@@ -140,7 +158,9 @@ class ReceiptResource extends Resource
                         ->preload(false)
                         ->getSearchResultsUsing(function (string $search, Get $get) {
                             $customerId = $get('customer_id');
-                            if (! $customerId) return [];
+                            if (! $customerId) {
+                                return [];
+                            }
 
                             return Invoice::query()
                                 ->where('customer_id', $customerId)
@@ -149,12 +169,13 @@ class ReceiptResource extends Resource
                                 ->limit(20)
                                 ->get()
                                 ->mapWithKeys(fn ($inv) => [
-                                    $inv->id => $inv->reference_number . ' — متبقي: ' . number_format($inv->remaining_amount, 2) . ' ج.م',
+                                    $inv->id => $inv->reference_number.' — متبقي: '.number_format($inv->remaining_amount, 2).' ج.م',
                                 ]);
                         })
                         ->getOptionLabelUsing(function ($value) {
                             $inv = Invoice::find($value);
-                            return $inv ? $inv->reference_number . ' — متبقي: ' . number_format($inv->remaining_amount, 2) . ' ج.م' : null;
+
+                            return $inv ? $inv->reference_number.' — متبقي: '.number_format($inv->remaining_amount, 2).' ج.م' : null;
                         })
                         ->reactive()
                         ->afterStateUpdated(function (Set $set, $state) {
@@ -170,9 +191,9 @@ class ReceiptResource extends Resource
                         ->label('طريقة الدفع')
                         ->required()
                         ->options([
-                            'cash'          => 'نقدي',
+                            'cash' => 'نقدي',
                             'bank_transfer' => 'تحويل بنكي',
-                            'cheque'        => 'شيك',
+                            'cheque' => 'شيك',
                         ])
                         ->reactive()
                         ->afterStateUpdated(fn (Set $set) => $set('treasury_id', null)),
@@ -184,15 +205,17 @@ class ReceiptResource extends Resource
                         ->hidden(fn (Get $get) => $get('payment_method') === 'cheque')
                         ->options(function (Get $get) {
                             $method = $get('payment_method');
-                            $user   = auth()->user();
+                            $user = auth()->user();
 
                             $type = match ($method) {
-                                'cash'          => 'cash',
+                                'cash' => 'cash',
                                 'bank_transfer' => 'bank',
-                                default         => null,
+                                default => null,
                             };
 
-                            if (! $type) return [];
+                            if (! $type) {
+                                return [];
+                            }
 
                             return Treasury::query()
                                 ->active()
@@ -294,16 +317,16 @@ class ReceiptResource extends Resource
                     ->label('طريقة الدفع')
                     ->badge()
                     ->formatStateUsing(fn ($state) => match ($state) {
-                        'cash'          => 'نقدي',
+                        'cash' => 'نقدي',
                         'bank_transfer' => 'تحويل بنكي',
-                        'cheque'        => 'شيك',
-                        default         => $state,
+                        'cheque' => 'شيك',
+                        default => $state,
                     })
                     ->color(fn ($state) => match ($state) {
-                        'cash'          => 'success',
+                        'cash' => 'success',
                         'bank_transfer' => 'info',
-                        'cheque'        => 'warning',
-                        default         => 'gray',
+                        'cheque' => 'warning',
+                        default => 'gray',
                     }),
 
                 TextColumn::make('amount')
@@ -326,9 +349,9 @@ class ReceiptResource extends Resource
                 SelectFilter::make('payment_method')
                     ->label('طريقة الدفع')
                     ->options([
-                        'cash'          => 'نقدي',
+                        'cash' => 'نقدي',
                         'bank_transfer' => 'تحويل بنكي',
-                        'cheque'        => 'شيك',
+                        'cheque' => 'شيك',
                     ]),
 
                 SelectFilter::make('business_unit_id')
@@ -337,7 +360,7 @@ class ReceiptResource extends Resource
             ])
             ->actions([
                 ViewAction::make(),
-                \Filament\Actions\Action::make('print')
+                Action::make('print')
                     ->label('طباعة')
                     ->icon('heroicon-o-printer')
                     ->color('gray')
@@ -365,9 +388,9 @@ class ReceiptResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index'  => ListReceipts::route('/'),
+            'index' => ListReceipts::route('/'),
             'create' => CreateReceipt::route('/create'),
-            'view'   => ViewReceipt::route('/{record}'),
+            'view' => ViewReceipt::route('/{record}'),
         ];
     }
 }

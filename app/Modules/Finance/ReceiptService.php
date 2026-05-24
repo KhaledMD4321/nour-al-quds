@@ -2,6 +2,7 @@
 
 namespace App\Modules\Finance;
 
+use App\Models\ChartOfAccount;
 use App\Models\Invoice;
 use App\Models\JournalEntry;
 use App\Models\JournalEntryLine;
@@ -23,8 +24,8 @@ class ReceiptService
      *   1130 = شيكات تحت التحصيل
      */
     private const ACCOUNTS = [
-        'cash'  => [1 => 1111, 2 => 1112],
-        'bank'  => [1 => 1114, 2 => 1115],
+        'cash' => [1 => 1111, 2 => 1112],
+        'bank' => [1 => 1114, 2 => 1115],
         'cheques' => 1130,
         'receivables' => [1 => 1121, 2 => 1122],
     ];
@@ -63,7 +64,7 @@ class ReceiptService
 
             // 1. تحقق من الفاتورة إن وُجدت
             $invoice = null;
-            if (!empty($data['invoice_id'])) {
+            if (! empty($data['invoice_id'])) {
                 $invoice = Invoice::lockForUpdate()->findOrFail($data['invoice_id']);
 
                 if ($invoice->isFullyPaid()) {
@@ -86,14 +87,14 @@ class ReceiptService
 
                 // تسجيل treasury_transaction
                 $treasuryTx = $treasury->transactions()->create([
-                    'type'             => 'receipt',
-                    'amount'           => $data['amount'],
-                    'balance_after'    => $treasury->fresh()->current_balance,
+                    'type' => 'receipt',
+                    'amount' => $data['amount'],
+                    'balance_after' => $treasury->fresh()->current_balance,
                     'transaction_date' => $data['receipt_date'],
-                    'description'      => 'تحصيل إيصال رقم ' . $receiptNumber,
-                    'reference_type'   => Receipt::class,
-                    'reference_id'     => null, // سيُحدَّث بعد الإنشاء
-                    'created_by'       => $data['created_by'],
+                    'description' => 'تحصيل إيصال رقم '.$receiptNumber,
+                    'reference_type' => Receipt::class,
+                    'reference_id' => null, // سيُحدَّث بعد الإنشاء
+                    'created_by' => $data['created_by'],
                 ]);
             }
 
@@ -102,25 +103,25 @@ class ReceiptService
 
             // 4. إنشاء الإيصال
             $receipt = Receipt::create([
-                'receipt_number'   => $receiptNumber,
-                'treasury_id'      => $data['payment_method'] !== 'cheque' ? ($data['treasury_id'] ?? null) : null,
-                'customer_id'      => $data['customer_id'],
-                'invoice_id'       => $data['invoice_id'] ?? null,
+                'receipt_number' => $receiptNumber,
+                'treasury_id' => $data['payment_method'] !== 'cheque' ? ($data['treasury_id'] ?? null) : null,
+                'customer_id' => $data['customer_id'],
+                'invoice_id' => $data['invoice_id'] ?? null,
                 'business_unit_id' => $data['business_unit_id'],
-                'amount'           => $data['amount'],
-                'payment_method'   => $data['payment_method'],
-                'receipt_date'     => $data['receipt_date'],
-                'cheque_details'   => $data['cheque_details'] ?? null,
-                'bank_reference'   => $data['bank_reference'] ?? null,
-                'notes'            => $data['notes'] ?? null,
+                'amount' => $data['amount'],
+                'payment_method' => $data['payment_method'],
+                'receipt_date' => $data['receipt_date'],
+                'cheque_details' => $data['cheque_details'] ?? null,
+                'bank_reference' => $data['bank_reference'] ?? null,
+                'notes' => $data['notes'] ?? null,
                 'journal_entry_id' => $journalEntry->id,
-                'created_by'       => $data['created_by'],
+                'created_by' => $data['created_by'],
             ]);
 
             // 5. ربط polymorphic في journal_entry source
             $journalEntry->update([
                 'source_type' => Receipt::class,
-                'source_id'   => $receipt->id,
+                'source_id' => $receipt->id,
             ]);
 
             // 5b. ربط treasury_transaction بالإيصال
@@ -141,60 +142,60 @@ class ReceiptService
 
     private function buildJournalEntry(array $data): JournalEntry
     {
-        $unitId    = (int) $data['business_unit_id'];
-        $amount    = (float) $data['amount'];
-        $method    = $data['payment_method'];
+        $unitId = (int) $data['business_unit_id'];
+        $amount = (float) $data['amount'];
+        $method = $data['payment_method'];
 
         // حدد حساب المدين (الطرف الذي يتلقى المال)
         $debitAccountCode = match ($method) {
-            'cash'          => self::ACCOUNTS['cash'][$unitId]  ?? 1111,
-            'bank_transfer' => self::ACCOUNTS['bank'][$unitId]  ?? 1113,
-            'cheque'        => self::ACCOUNTS['cheques'],
+            'cash' => self::ACCOUNTS['cash'][$unitId] ?? 1111,
+            'bank_transfer' => self::ACCOUNTS['bank'][$unitId] ?? 1113,
+            'cheque' => self::ACCOUNTS['cheques'],
         };
 
         // حدد حساب الدائن (عملاء الوحدة)
         $creditAccountCode = self::ACCOUNTS['receivables'][$unitId] ?? 1121;
 
-        $debitAccount  = \App\Models\ChartOfAccount::where('code', $debitAccountCode)->firstOrFail();
-        $creditAccount = \App\Models\ChartOfAccount::where('code', $creditAccountCode)->firstOrFail();
+        $debitAccount = ChartOfAccount::where('code', $debitAccountCode)->firstOrFail();
+        $creditAccount = ChartOfAccount::where('code', $creditAccountCode)->firstOrFail();
 
         $description = match ($method) {
-            'cash'          => 'تحصيل نقدي',
+            'cash' => 'تحصيل نقدي',
             'bank_transfer' => 'تحويل بنكي',
-            'cheque'        => 'شيك تحت التحصيل',
+            'cheque' => 'شيك تحت التحصيل',
         };
 
         $entry = JournalEntry::create([
             'entry_number' => JournalEntry::generateEntryNumber(),
-            'entry_date'   => $data['receipt_date'],
-            'description'  => $description . ' من العميل رقم ' . $data['customer_id'],
-            'source_type'  => Receipt::class, // سيُحدَّث بعد الإنشاء
-            'source_id'    => null,
-            'is_manual'    => false,
-            'is_posted'    => true,
-            'total_debit'  => $amount,
+            'entry_date' => $data['receipt_date'],
+            'description' => $description.' من العميل رقم '.$data['customer_id'],
+            'source_type' => Receipt::class, // سيُحدَّث بعد الإنشاء
+            'source_id' => null,
+            'is_manual' => false,
+            'is_posted' => true,
+            'total_debit' => $amount,
             'total_credit' => $amount,
-            'created_by'   => $data['created_by'],
+            'created_by' => $data['created_by'],
         ]);
 
         JournalEntryLine::insert([
             [
                 'journal_entry_id' => $entry->id,
-                'account_id'       => $debitAccount->id,
+                'account_id' => $debitAccount->id,
                 'business_unit_id' => $unitId,
-                'debit'            => $amount,
-                'credit'           => 0,
-                'description'      => $description,
-                'created_at'       => now(),
+                'debit' => $amount,
+                'credit' => 0,
+                'description' => $description,
+                'created_at' => now(),
             ],
             [
                 'journal_entry_id' => $entry->id,
-                'account_id'       => $creditAccount->id,
+                'account_id' => $creditAccount->id,
                 'business_unit_id' => $unitId,
-                'debit'            => 0,
-                'credit'           => $amount,
-                'description'      => 'تسوية ذمة عميل',
-                'created_at'       => now(),
+                'debit' => 0,
+                'credit' => $amount,
+                'description' => 'تسوية ذمة عميل',
+                'created_at' => now(),
             ],
         ]);
 

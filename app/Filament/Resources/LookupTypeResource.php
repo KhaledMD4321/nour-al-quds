@@ -9,7 +9,6 @@ use Filament\Actions\DeleteAction;
 use Filament\Actions\EditAction;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
-use Filament\Forms\Components\Toggle;
 use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Schemas\Components\Section;
@@ -134,6 +133,7 @@ class LookupTypeResource extends Resource
                                 ->title('مش ممكن تحذف قائمة نظامية')
                                 ->danger()
                                 ->send();
+
                             return;
                         }
                         $record->delete();
@@ -164,9 +164,9 @@ class LookupTypeResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index'  => Pages\ListLookupTypes::route('/'),
+            'index' => Pages\ListLookupTypes::route('/'),
             'create' => Pages\CreateLookupType::route('/create'),
-            'edit'   => Pages\EditLookupType::route('/{record}/edit'),
+            'edit' => Pages\EditLookupType::route('/{record}/edit'),
         ];
     }
 }

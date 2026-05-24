@@ -8,8 +8,9 @@ use Filament\Resources\Pages\ListRecords;
 
 class ListPurchaseReturns extends ListRecords
 {
-    protected static string  $resource = PurchaseReturnResource::class;
-    protected static ?string $title    = 'مرتجعات المشتريات';
+    protected static string $resource = PurchaseReturnResource::class;
+
+    protected static ?string $title = 'مرتجعات المشتريات';
 
     protected function getHeaderActions(): array
     {

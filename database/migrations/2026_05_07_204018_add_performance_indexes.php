@@ -47,11 +47,11 @@ return new class extends Migration
 
     public function down(): void
     {
-        Schema::table('invoices',             fn (Blueprint $t) => $t->dropIndexIfExists('invoices_business_unit_id_type_status_index'));
-        Schema::table('invoice_items',        fn (Blueprint $t) => $t->dropIndexIfExists('invoice_items_invoice_id_product_id_index'));
-        Schema::table('journal_entry_lines',  fn (Blueprint $t) => $t->dropIndexIfExists('journal_entry_lines_account_id_business_unit_id_index'));
-        Schema::table('purchase_invoices',    fn (Blueprint $t) => $t->dropIndexIfExists('purchase_invoices_supplier_id_invoice_date_index'));
-        Schema::table('stock_movements',      fn (Blueprint $t) => $t->dropIndexIfExists('stock_movements_created_at_index'));
+        Schema::table('invoices', fn (Blueprint $t) => $t->dropIndexIfExists('invoices_business_unit_id_type_status_index'));
+        Schema::table('invoice_items', fn (Blueprint $t) => $t->dropIndexIfExists('invoice_items_invoice_id_product_id_index'));
+        Schema::table('journal_entry_lines', fn (Blueprint $t) => $t->dropIndexIfExists('journal_entry_lines_account_id_business_unit_id_index'));
+        Schema::table('purchase_invoices', fn (Blueprint $t) => $t->dropIndexIfExists('purchase_invoices_supplier_id_invoice_date_index'));
+        Schema::table('stock_movements', fn (Blueprint $t) => $t->dropIndexIfExists('stock_movements_created_at_index'));
     }
 
     private function indexExists(string $table, string $index): bool

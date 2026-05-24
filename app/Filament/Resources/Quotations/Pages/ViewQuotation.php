@@ -12,8 +12,9 @@ use Throwable;
 
 class ViewQuotation extends ViewRecord
 {
-    protected static string  $resource = QuotationResource::class;
-    protected static ?string $title    = 'تفاصيل عرض السعر';
+    protected static string $resource = QuotationResource::class;
+
+    protected static ?string $title = 'تفاصيل عرض السعر';
 
     protected function getHeaderActions(): array
     {
@@ -43,7 +44,7 @@ class ViewQuotation extends ViewRecord
                         $invoice = app(InvoiceService::class)->convertToInvoice($quotation);
                         Notification::make()
                             ->title('تم التحويل بنجاح')
-                            ->body('تم إنشاء الفاتورة: ' . $invoice->reference_number)
+                            ->body('تم إنشاء الفاتورة: '.$invoice->reference_number)
                             ->success()
                             ->send();
                         $this->refreshFormData(['status']);

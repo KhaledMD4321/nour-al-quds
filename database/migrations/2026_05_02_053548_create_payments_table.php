@@ -14,16 +14,16 @@ return new class extends Migration
         if ($typeId) {
             $labels = [
                 'supplier_payment' => 'دفع مورد',
-                'rent'             => 'إيجار',
-                'salary'           => 'رواتب وأجور',
-                'transport'        => 'نقل وشحن',
-                'electricity'      => 'كهرباء',
-                'water'            => 'مياه',
-                'phone'            => 'اتصالات',
-                'maintenance'      => 'صيانة',
-                'office_supplies'  => 'أدوات مكتبية',
-                'taxes'            => 'ضرائب ورسوم',
-                'other'            => 'مصروفات أخرى',
+                'rent' => 'إيجار',
+                'salary' => 'رواتب وأجور',
+                'transport' => 'نقل وشحن',
+                'electricity' => 'كهرباء',
+                'water' => 'مياه',
+                'phone' => 'اتصالات',
+                'maintenance' => 'صيانة',
+                'office_supplies' => 'أدوات مكتبية',
+                'taxes' => 'ضرائب ورسوم',
+                'other' => 'مصروفات أخرى',
             ];
             foreach ($labels as $code => $label) {
                 DB::table('lookup_values')
@@ -40,25 +40,25 @@ return new class extends Migration
 
             // الخزينة — nullable للشيكات
             $table->foreignId('treasury_id')
-                  ->nullable()
-                  ->constrained('treasuries')
-                  ->restrictOnDelete();
+                ->nullable()
+                ->constrained('treasuries')
+                ->restrictOnDelete();
 
             // المورد — إلزامي لو category = supplier_payment
             $table->foreignId('supplier_id')
-                  ->nullable()
-                  ->constrained('suppliers')
-                  ->restrictOnDelete();
+                ->nullable()
+                ->constrained('suppliers')
+                ->restrictOnDelete();
 
             // فاتورة المشتريات (اختياري)
             $table->foreignId('purchase_invoice_id')
-                  ->nullable()
-                  ->constrained('purchase_invoices')
-                  ->restrictOnDelete();
+                ->nullable()
+                ->constrained('purchase_invoices')
+                ->restrictOnDelete();
 
             $table->foreignId('business_unit_id')
-                  ->constrained('business_units')
-                  ->restrictOnDelete();
+                ->constrained('business_units')
+                ->restrictOnDelete();
 
             $table->decimal('amount', 15, 2);
 
@@ -75,21 +75,21 @@ return new class extends Migration
 
             // حساب المصروف من شجرة الحسابات (للمصروفات التشغيلية)
             $table->foreignId('expense_account_id')
-                  ->nullable()
-                  ->constrained('chart_of_accounts')
-                  ->restrictOnDelete();
+                ->nullable()
+                ->constrained('chart_of_accounts')
+                ->restrictOnDelete();
 
             $table->text('notes')->nullable();
 
             // القيد المحاسبي المولَّد تلقائياً
             $table->foreignId('journal_entry_id')
-                  ->nullable()
-                  ->constrained('journal_entries')
-                  ->nullOnDelete();
+                ->nullable()
+                ->constrained('journal_entries')
+                ->nullOnDelete();
 
             $table->foreignId('created_by')
-                  ->constrained('users')
-                  ->restrictOnDelete();
+                ->constrained('users')
+                ->restrictOnDelete();
 
             $table->timestamps();
             $table->softDeletes();

@@ -23,16 +23,20 @@ class SystemSetting extends Model
     {
         return Cache::remember("setting:{$dotKey}", 3600, function () use ($dotKey, $default) {
             [$group, $key] = array_pad(explode('.', $dotKey, 2), 2, null);
-            if (! $key) return $default;
+            if (! $key) {
+                return $default;
+            }
 
             $setting = self::where('group', $group)->where('key', $key)->first();
-            if (! $setting) return $default;
+            if (! $setting) {
+                return $default;
+            }
 
             return match ($setting->type) {
                 'toggle' => filter_var($setting->value, FILTER_VALIDATE_BOOLEAN),
                 'number' => is_numeric($setting->value) ? (float) $setting->value : $default,
-                'json'   => json_decode($setting->value, true) ?? $default,
-                default  => $setting->value ?? $default,
+                'json' => json_decode($setting->value, true) ?? $default,
+                default => $setting->value ?? $default,
             };
         });
     }
@@ -43,7 +47,9 @@ class SystemSetting extends Model
     public static function set(string $dotKey, mixed $value): void
     {
         [$group, $key] = array_pad(explode('.', $dotKey, 2), 2, null);
-        if (! $key) return;
+        if (! $key) {
+            return;
+        }
 
         $stored = is_bool($value) ? ($value ? '1' : '0') : (string) $value;
 

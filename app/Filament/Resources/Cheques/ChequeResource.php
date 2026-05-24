@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Cheques;
 
+use App\Filament\Concerns\HasModuleGuard;
 use App\Filament\Resources\Cheques\Pages\CreateCheque;
 use App\Filament\Resources\Cheques\Pages\ListCheques;
 use App\Filament\Resources\Cheques\Pages\ViewCheque;
@@ -21,38 +22,49 @@ use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
-use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Utilities\Get;
+use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Schema;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
-use App\Filament\Concerns\HasModuleGuard;
 use Illuminate\Database\Eloquent\Builder;
 
 class ChequeResource extends Resource
 {
     use HasModuleGuard;
+
     protected static string $module = 'finance';
 
     protected static ?string $model = Cheque::class;
 
-    protected static string|\BackedEnum|null $navigationIcon  = 'heroicon-o-document-check';
-    protected static string|\UnitEnum|null   $navigationGroup = 'الخزينة والمالية';
-    protected static ?int                    $navigationSort   = 12;
-    protected static ?string                 $navigationLabel  = 'الشيكات';
-    protected static ?string                 $modelLabel       = 'شيك';
-    protected static ?string                 $pluralModelLabel = 'الشيكات';
-    protected static ?string                 $recordTitleAttribute = 'cheque_number';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-document-check';
+
+    protected static string|\UnitEnum|null $navigationGroup = 'الخزينة والمالية';
+
+    protected static ?int $navigationSort = 12;
+
+    protected static ?string $navigationLabel = 'الشيكات';
+
+    protected static ?string $modelLabel = 'شيك';
+
+    protected static ?string $pluralModelLabel = 'الشيكات';
+
+    protected static ?string $recordTitleAttribute = 'cheque_number';
 
     // ── RBAC ──────────────────────────────────────────────────────────────────
 
     public static function canAccess(): bool
     {
         $user = auth()->user();
-        if (! $user) return false;
-        if ($user->isSuperAdmin()) return true;
+        if (! $user) {
+            return false;
+        }
+        if ($user->isSuperAdmin()) {
+            return true;
+        }
+
         return $user->can('finance.cheque.view');
     }
 
@@ -64,8 +76,13 @@ class ChequeResource extends Resource
     public static function canCreate(): bool
     {
         $user = auth()->user();
-        if (! $user) return false;
-        if ($user->isSuperAdmin()) return true;
+        if (! $user) {
+            return false;
+        }
+        if ($user->isSuperAdmin()) {
+            return true;
+        }
+
         return $user->can('finance.cheque.create');
     }
 
@@ -127,7 +144,7 @@ class ChequeResource extends Resource
                         ->required()
                         ->default('incoming')
                         ->live()
-                        ->afterStateUpdated(function (\Filament\Schemas\Components\Utilities\Set $set) {
+                        ->afterStateUpdated(function (Set $set) {
                             $set('customer_id', null);
                             $set('supplier_id', null);
                         }),
@@ -171,7 +188,7 @@ class ChequeResource extends Resource
                         ->label('العميل')
                         ->options(fn () => Customer::active()->orderBy('name')
                             ->get()
-                            ->mapWithKeys(fn ($c) => [$c->id => ($c->code ?? '') . ' — ' . $c->name])
+                            ->mapWithKeys(fn ($c) => [$c->id => ($c->code ?? '').' — '.$c->name])
                             ->toArray()
                         )
                         ->hidden(fn (Get $get) => $get('direction') !== 'incoming')
@@ -182,7 +199,7 @@ class ChequeResource extends Resource
                         ->label('المورد')
                         ->options(fn () => Supplier::active()->orderBy('name')
                             ->get()
-                            ->mapWithKeys(fn ($s) => [$s->id => $s->code . ' — ' . $s->name])
+                            ->mapWithKeys(fn ($s) => [$s->id => $s->code.' — '.$s->name])
                             ->toArray()
                         )
                         ->hidden(fn (Get $get) => $get('direction') !== 'outgoing')
@@ -195,7 +212,10 @@ class ChequeResource extends Resource
                         ->helperText('يمكن تركه فارغاً وتحديده عند الإيداع أو الصرف')
                         ->options(function (Get $get) {
                             $unitId = $get('business_unit_id') ?: auth()->user()?->business_unit_id;
-                            if (! $unitId) return [];
+                            if (! $unitId) {
+                                return [];
+                            }
+
                             return Treasury::active()
                                 ->where('type', 'bank')
                                 ->where('business_unit_id', $unitId)
@@ -246,20 +266,20 @@ class ChequeResource extends Resource
                     ->label('الحالة')
                     ->badge()
                     ->formatStateUsing(fn ($state) => match ($state) {
-                        'pending'   => 'قيد الانتظار',
+                        'pending' => 'قيد الانتظار',
                         'deposited' => 'مودع بالبنك',
                         'collected' => 'تم التحصيل',
-                        'bounced'   => 'مرفوض',
-                        'replaced'  => 'تم الاستبدال',
-                        default     => $state,
+                        'bounced' => 'مرفوض',
+                        'replaced' => 'تم الاستبدال',
+                        default => $state,
                     })
                     ->color(fn ($state) => match ($state) {
-                        'pending'   => 'warning',
+                        'pending' => 'warning',
                         'deposited' => 'info',
                         'collected' => 'success',
-                        'bounced'   => 'danger',
-                        'replaced'  => 'gray',
-                        default     => 'gray',
+                        'bounced' => 'danger',
+                        'replaced' => 'gray',
+                        default => 'gray',
                     }),
 
                 TextColumn::make('bank_name')
@@ -279,8 +299,7 @@ class ChequeResource extends Resource
                     ->label('تاريخ الاستحقاق')
                     ->date('d/m/Y')
                     ->sortable()
-                    ->color(fn (Cheque $record): ?string =>
-                        ($record->isPending() || $record->isDeposited())
+                    ->color(fn (Cheque $record): ?string => ($record->isPending() || $record->isDeposited())
                             ? ($record->due_date->isPast() ? 'danger' : ($record->due_date->diffInDays(today()) <= 3 ? 'warning' : 'gray'))
                             : 'gray'
                     ),
@@ -318,11 +337,11 @@ class ChequeResource extends Resource
                 SelectFilter::make('status')
                     ->label('الحالة')
                     ->options([
-                        'pending'   => 'قيد الانتظار',
+                        'pending' => 'قيد الانتظار',
                         'deposited' => 'مودع بالبنك',
                         'collected' => 'تم التحصيل',
-                        'bounced'   => 'مرفوض',
-                        'replaced'  => 'تم الاستبدال',
+                        'bounced' => 'مرفوض',
+                        'replaced' => 'تم الاستبدال',
                     ]),
 
                 SelectFilter::make('business_unit_id')
@@ -341,8 +360,7 @@ class ChequeResource extends Resource
                         && (auth()->user()?->isSuperAdmin() || auth()->user()?->can('finance.cheque.deposit'))
                     )
                     ->modalHeading('إيداع الشيك بالبنك')
-                    ->modalDescription(fn (Cheque $r) =>
-                        "شيك #{$r->cheque_number} — " . number_format((float) $r->amount, 2) . ' ج.م'
+                    ->modalDescription(fn (Cheque $r) => "شيك #{$r->cheque_number} — ".number_format((float) $r->amount, 2).' ج.م'
                     )
                     ->form(fn (Cheque $record) => [
                         Select::make('bank_treasury_id')
@@ -375,8 +393,7 @@ class ChequeResource extends Resource
                         && (auth()->user()?->isSuperAdmin() || auth()->user()?->can('finance.cheque.collect'))
                     )
                     ->modalHeading('تأكيد تحصيل الشيك')
-                    ->modalDescription(fn (Cheque $r) =>
-                        "هل تم تحصيل شيك #{$r->cheque_number} بمبلغ " . number_format((float) $r->amount, 2) . ' ج.م؟'
+                    ->modalDescription(fn (Cheque $r) => "هل تم تحصيل شيك #{$r->cheque_number} بمبلغ ".number_format((float) $r->amount, 2).' ج.م؟'
                     )
                     // لو صادر → نختار البنك؛ لو وارد مودع → لا فورم
                     ->form(fn (Cheque $record) => $record->isOutgoing() ? [
@@ -493,9 +510,9 @@ class ChequeResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index'  => ListCheques::route('/'),
+            'index' => ListCheques::route('/'),
             'create' => CreateCheque::route('/create'),
-            'view'   => ViewCheque::route('/{record}'),
+            'view' => ViewCheque::route('/{record}'),
         ];
     }
 }

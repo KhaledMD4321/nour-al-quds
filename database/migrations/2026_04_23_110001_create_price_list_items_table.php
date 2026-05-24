@@ -12,8 +12,8 @@ return new class extends Migration
             $table->id();
 
             $table->foreignId('version_id')
-                  ->constrained('price_list_versions')
-                  ->cascadeOnDelete();         // لو الإصدار اتحذف، البنود تتحذف معاه
+                ->constrained('price_list_versions')
+                ->cascadeOnDelete();         // لو الإصدار اتحذف، البنود تتحذف معاه
             $table->foreignId('product_id')->constrained()->cascadeOnDelete();
             $table->decimal('price', 15, 4);   // سعر القائمة بدقة 4 خانات عشرية
             $table->timestamps();

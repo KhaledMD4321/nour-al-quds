@@ -9,13 +9,14 @@ use Illuminate\Support\Facades\Auth;
 
 class CreatePurchaseReturn extends CreateRecord
 {
-    protected static string  $resource = PurchaseReturnResource::class;
-    protected static ?string $title    = 'إنشاء مرتجع مشتريات جديد';
+    protected static string $resource = PurchaseReturnResource::class;
+
+    protected static ?string $title = 'إنشاء مرتجع مشتريات جديد';
 
     protected function mutateFormDataBeforeCreate(array $data): array
     {
-        $data['created_by']   = Auth::id();
-        $data['status']       = 'draft';
+        $data['created_by'] = Auth::id();
+        $data['status'] = 'draft';
         $data['total_amount'] = 0;
 
         // توليد رقم المرتجع لو لم يُولَّد بعد

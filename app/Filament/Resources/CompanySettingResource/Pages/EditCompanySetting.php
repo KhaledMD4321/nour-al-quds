@@ -16,7 +16,7 @@ class EditCompanySetting extends EditRecord
      * Singleton page — always load the one and only company settings row.
      * We accept an optional record key so Filament doesn't require an ID in the URL.
      */
-    public function mount(int|string $record = null): void
+    public function mount(int|string|null $record = null): void
     {
         $this->record = CompanySetting::getInstance();
 

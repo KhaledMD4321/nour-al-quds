@@ -86,7 +86,7 @@ class SuppliersTable
                     ->trueLabel('عليه رصيد')
                     ->falseLabel('بدون رصيد')
                     ->queries(
-                        true:  fn ($query) => $query->where('opening_balance', '>', 0),
+                        true: fn ($query) => $query->where('opening_balance', '>', 0),
                         false: fn ($query) => $query->where('opening_balance', '<=', 0),
                     ),
 

@@ -67,7 +67,7 @@ class ViewCheque extends ViewRecord
                 ->icon('heroicon-o-check-circle')
                 ->color('success')
                 ->modalHeading('تأكيد تحصيل الشيك')
-                ->modalDescription("هل تم تحصيل الشيك #{$cheque->cheque_number} بمبلغ " . number_format((float) $cheque->amount, 2) . ' ج.م؟')
+                ->modalDescription("هل تم تحصيل الشيك #{$cheque->cheque_number} بمبلغ ".number_format((float) $cheque->amount, 2).' ج.م؟')
                 ->form($cheque->isOutgoing() ? [
                     Select::make('treasury_id')
                         ->label('البنك المُنفِّذ للصرف')

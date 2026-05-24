@@ -8,8 +8,9 @@ use Filament\Resources\Pages\ListRecords;
 
 class ListTreasuries extends ListRecords
 {
-    protected static string  $resource = TreasuryResource::class;
-    protected static ?string $title    = 'الخزائن';
+    protected static string $resource = TreasuryResource::class;
+
+    protected static ?string $title = 'الخزائن';
 
     protected function getHeaderActions(): array
     {

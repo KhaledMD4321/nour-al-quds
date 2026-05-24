@@ -14,13 +14,13 @@ return new class extends Migration
             $table->string('code')->unique();         // PRD-00001 — auto-generated
             $table->string('name');                   // اسم الصنف
             $table->foreignId('company_id')
-                  ->nullable()
-                  ->constrained('companies')
-                  ->nullOnDelete();
+                ->nullable()
+                ->constrained('companies')
+                ->nullOnDelete();
             $table->foreignId('category_id')
-                  ->nullable()
-                  ->constrained('categories')
-                  ->nullOnDelete();
+                ->nullable()
+                ->constrained('categories')
+                ->nullOnDelete();
             $table->string('unit_of_measure');        // lookup code: 'piece', 'meter', …
             $table->decimal('list_price', 15, 2)->default(0);
             $table->string('image')->nullable();      // relative path under storage/app/public

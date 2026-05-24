@@ -30,12 +30,12 @@ class PriceListService
 
             // 3. إنشاء الإصدار الجديد
             $version = PriceListVersion::create([
-                'company_id'     => $companyId,
+                'company_id' => $companyId,
                 'version_number' => $next,
                 'effective_date' => now()->toDateString(),
-                'status'         => 'active',
-                'notes'          => $notes,
-                'created_by'     => $createdBy,
+                'status' => 'active',
+                'notes' => $notes,
+                'created_by' => $createdBy,
             ]);
 
             // 4. إضافة البنود
@@ -43,7 +43,7 @@ class PriceListService
                 PriceListItem::create([
                     'version_id' => $version->id,
                     'product_id' => $item['product_id'],
-                    'price'      => $item['price'],
+                    'price' => $item['price'],
                 ]);
             }
 
@@ -76,74 +76,76 @@ class PriceListService
         $rows = $this->readExcelFile($filePath);
 
         $result = [
-            'new_products'      => [],
+            'new_products' => [],
             'existing_products' => [],
-            'invalid_rows'      => [],
-            'summary'           => [],
+            'invalid_rows' => [],
+            'summary' => [],
         ];
 
         foreach ($rows as $index => $row) {
             $rowNumber = $index + 2; // +2: صف headers + بداية array من 0
 
-            $code  = trim((string) ($row[0] ?? ''));
-            $name  = trim((string) ($row[1] ?? ''));
+            $code = trim((string) ($row[0] ?? ''));
+            $name = trim((string) ($row[1] ?? ''));
             $price = $this->parsePrice($row[2] ?? '');
-            $unit  = trim((string) ($row[3] ?? 'piece')) ?: 'piece';
+            $unit = trim((string) ($row[3] ?? 'piece')) ?: 'piece';
 
             if (empty($name)) {
                 $result['invalid_rows'][] = [
-                    'row'   => $rowNumber,
-                    'data'  => $row,
+                    'row' => $rowNumber,
+                    'data' => $row,
                     'error' => "الصف {$rowNumber}: اسم الصنف مطلوب",
                 ];
+
                 continue;
             }
 
             if ($price === null || $price <= 0) {
                 $result['invalid_rows'][] = [
-                    'row'   => $rowNumber,
-                    'data'  => $row,
+                    'row' => $rowNumber,
+                    'data' => $row,
                     'error' => "الصف {$rowNumber}: السعر غير صالح",
                 ];
+
                 continue;
             }
 
             // بحث بالكود أولاً، ثم بالاسم داخل نفس المصنّع
             $product = null;
-            if (!empty($code)) {
+            if (! empty($code)) {
                 $product = Product::where('code', $code)->first();
             }
-            if (!$product) {
+            if (! $product) {
                 $product = Product::where('name', $name)
-                                  ->where('company_id', $companyId)
-                                  ->first();
+                    ->where('company_id', $companyId)
+                    ->first();
             }
 
             if ($product) {
                 $result['existing_products'][] = [
-                    'row'        => $rowNumber,
+                    'row' => $rowNumber,
                     'product_id' => $product->id,
-                    'code'       => $product->code,
-                    'name'       => $product->name,
-                    'new_price'  => $price,
-                    'old_price'  => $product->getCurrentPrice(),
+                    'code' => $product->code,
+                    'name' => $product->name,
+                    'new_price' => $price,
+                    'old_price' => $product->getCurrentPrice(),
                 ];
             } else {
                 $result['new_products'][] = [
-                    'row'   => $rowNumber,
-                    'code'  => $code,
-                    'name'  => $name,
+                    'row' => $rowNumber,
+                    'code' => $code,
+                    'name' => $name,
                     'price' => $price,
-                    'unit'  => $unit,
+                    'unit' => $unit,
                 ];
             }
         }
 
         $result['summary'] = [
-            'total_rows'   => count($rows),
+            'total_rows' => count($rows),
             'new_products' => count($result['new_products']),
-            'existing'     => count($result['existing_products']),
-            'invalid'      => count($result['invalid_rows']),
+            'existing' => count($result['existing_products']),
+            'invalid' => count($result['invalid_rows']),
         ];
 
         return $result;
@@ -167,22 +169,22 @@ class PriceListService
 
             // 3. إنشاء الإصدار
             $version = PriceListVersion::create([
-                'company_id'     => $companyId,
+                'company_id' => $companyId,
                 'version_number' => $next,
                 'effective_date' => now()->toDateString(),
-                'status'         => 'active',
-                'notes'          => 'تم الاستيراد من Excel',
-                'created_by'     => $createdBy,
+                'status' => 'active',
+                'notes' => 'تم الاستيراد من Excel',
+                'created_by' => $createdBy,
             ]);
 
-            $newCount     = 0;
+            $newCount = 0;
             $updatedCount = 0;
 
             // 4. أصناف جديدة — تتضاف للـ products أولاً
             foreach ($preview['new_products'] as $item) {
                 $product = Product::create([
-                    'name'            => $item['name'],
-                    'company_id'      => $companyId,
+                    'name' => $item['name'],
+                    'company_id' => $companyId,
                     'unit_of_measure' => $item['unit'],
                     // الكود يتولّد تلقائياً من Product::booted()
                 ]);
@@ -190,7 +192,7 @@ class PriceListService
                 PriceListItem::create([
                     'version_id' => $version->id,
                     'product_id' => $product->id,
-                    'price'      => $item['price'],
+                    'price' => $item['price'],
                 ]);
 
                 $newCount++;
@@ -201,18 +203,18 @@ class PriceListService
                 PriceListItem::create([
                     'version_id' => $version->id,
                     'product_id' => $item['product_id'],
-                    'price'      => $item['new_price'],
+                    'price' => $item['new_price'],
                 ]);
 
                 $updatedCount++;
             }
 
             return [
-                'version'      => $version,
+                'version' => $version,
                 'new_products' => $newCount,
-                'updated'      => $updatedCount,
-                'skipped'      => count($preview['invalid_rows']),
-                'message'      => "تم إنشاء الإصدار رقم {$version->version_number} — {$newCount} صنف جديد، {$updatedCount} سعر محدّث",
+                'updated' => $updatedCount,
+                'skipped' => count($preview['invalid_rows']),
+                'message' => "تم إنشاء الإصدار رقم {$version->version_number} — {$newCount} صنف جديد، {$updatedCount} سعر محدّث",
             ];
         });
     }
@@ -225,9 +227,9 @@ class PriceListService
     public function getActiveVersion(int $companyId): ?PriceListVersion
     {
         return PriceListVersion::where('company_id', $companyId)
-                               ->where('status', 'active')
-                               ->latest('effective_date')
-                               ->first();
+            ->where('status', 'active')
+            ->latest('effective_date')
+            ->first();
     }
 
     /**
@@ -248,8 +250,8 @@ class PriceListService
     public function archiveActiveVersions(int $companyId): void
     {
         PriceListVersion::where('company_id', $companyId)
-                        ->where('status', 'active')
-                        ->update(['status' => 'archived']);
+            ->where('status', 'active')
+            ->update(['status' => 'archived']);
     }
 
     /**
@@ -258,7 +260,7 @@ class PriceListService
     public function archiveVersion(int $versionId): void
     {
         PriceListVersion::where('id', $versionId)
-                        ->update(['status' => 'archived']);
+            ->update(['status' => 'archived']);
     }
 
     /**
@@ -273,9 +275,9 @@ class PriceListService
         $multiplier = 1 + ($percentage / 100);
 
         return PriceListItem::where('version_id', $versionId)
-                            ->update([
-                                'price' => DB::raw("ROUND(price * {$multiplier}, 4)"),
-                            ]);
+            ->update([
+                'price' => DB::raw("ROUND(price * {$multiplier}, 4)"),
+            ]);
     }
 
     // ─── Private helpers ───────────────────────────────────────────────────────
@@ -287,7 +289,7 @@ class PriceListService
     private function readExcelFile(string $filePath): array
     {
         $spreadsheet = IOFactory::load($filePath);
-        $allRows     = $spreadsheet->getActiveSheet()->toArray(
+        $allRows = $spreadsheet->getActiveSheet()->toArray(
             nullValue: null,
             calculateFormulas: false,
             formatData: false,
@@ -296,7 +298,7 @@ class PriceListService
 
         return collect($allRows)
             ->slice(1)   // تجاهل أول صف (headers)
-            ->filter(fn ($row) => !empty(array_filter(
+            ->filter(fn ($row) => ! empty(array_filter(
                 $row,
                 fn ($cell) => $cell !== null && $cell !== '',
             )))
@@ -319,9 +321,9 @@ class PriceListService
         $cleaned = str_replace(',', '.', $cleaned);
         // لو فيه أكتر من نقطة، احتفظ بالأخيرة بس
         if (substr_count($cleaned, '.') > 1) {
-            $parts   = explode('.', $cleaned);
-            $last    = array_pop($parts);
-            $cleaned = implode('', $parts) . '.' . $last;
+            $parts = explode('.', $cleaned);
+            $last = array_pop($parts);
+            $cleaned = implode('', $parts).'.'.$last;
         }
 
         $price = (float) $cleaned;

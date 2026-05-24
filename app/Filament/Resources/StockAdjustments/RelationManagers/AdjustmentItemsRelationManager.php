@@ -19,7 +19,8 @@ use Filament\Tables\Table;
 class AdjustmentItemsRelationManager extends RelationManager
 {
     protected static string $relationship = 'items';
-    protected static ?string $title       = 'بنود التسوية';
+
+    protected static ?string $title = 'بنود التسوية';
 
     public function form(Schema $schema): Schema
     {
@@ -55,7 +56,7 @@ class AdjustmentItemsRelationManager extends RelationManager
                 ->live(onBlur: true)
                 ->afterStateUpdated(function ($state, callable $get, callable $set) {
                     $expected = (float) ($get('expected_quantity') ?? 0);
-                    $actual   = (float) ($state ?? 0);
+                    $actual = (float) ($state ?? 0);
                     $set('difference', round($actual - $expected, 3));
                 }),
 
@@ -81,7 +82,7 @@ class AdjustmentItemsRelationManager extends RelationManager
     {
         /** @var StockAdjustment $adjustment */
         $adjustment = $this->getOwnerRecord();
-        $isDraft    = $adjustment->isDraft();
+        $isDraft = $adjustment->isDraft();
 
         return $table
             ->columns([
@@ -104,16 +105,16 @@ class AdjustmentItemsRelationManager extends RelationManager
                     ->color(fn ($record): string => match (true) {
                         (float) $record->difference > 0 => 'success',
                         (float) $record->difference < 0 => 'danger',
-                        default                          => 'gray',
+                        default => 'gray',
                     }),
 
                 TextColumn::make('direction_label')
                     ->label('الاتجاه')
                     ->badge()
                     ->color(fn ($record): string => match ($record->direction) {
-                        'surplus'  => 'success',
+                        'surplus' => 'success',
                         'shortage' => 'danger',
-                        default    => 'gray',
+                        default => 'gray',
                     }),
 
                 TextColumn::make('reason')

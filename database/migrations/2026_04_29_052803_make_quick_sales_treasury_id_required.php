@@ -36,7 +36,7 @@ return new class extends Migration
             // تحقق من أنه تم إصلاح الكل
             $stillNull = DB::table('quick_sales')->whereNull('treasury_id')->count();
             if ($stillNull > 0) {
-                throw new \Exception(
+                throw new Exception(
                     "لا يزال هناك {$stillNull} سجل بـ treasury_id = NULL. تأكد من وجود خزائن كاش أولاً."
                 );
             }

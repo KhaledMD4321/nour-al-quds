@@ -2,35 +2,51 @@
 
 namespace App\Filament\Resources\StockMovements;
 
+use App\Filament\Concerns\HasModuleGuard;
 use App\Filament\Resources\StockMovements\Pages\ListStockMovements;
 use App\Models\StockMovement;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
-use Filament\Tables;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
-use App\Filament\Concerns\HasModuleGuard;
 use Filament\Tables\Table;
 
 class StockMovementResource extends Resource
 {
     use HasModuleGuard;
+
     protected static string $module = 'inventory';
 
     protected static ?string $model = StockMovement::class;
 
     protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-arrow-path';
+
     protected static ?string $navigationLabel = 'حركات المخزون';
-    protected static ?string $modelLabel      = 'حركة مخزون';
+
+    protected static ?string $modelLabel = 'حركة مخزون';
+
     protected static ?string $pluralModelLabel = 'حركات المخزون';
+
     protected static string|\UnitEnum|null $navigationGroup = 'المخزون';
-    protected static ?int    $navigationSort  = 3;
+
+    protected static ?int $navigationSort = 3;
 
     // ── Read-only resource ───────────────────────────────────────────────────
 
-    public static function canCreate(): bool { return false; }
-    public static function canEdit($record): bool { return false; }
-    public static function canDelete($record): bool { return false; }
+    public static function canCreate(): bool
+    {
+        return false;
+    }
+
+    public static function canEdit($record): bool
+    {
+        return false;
+    }
+
+    public static function canDelete($record): bool
+    {
+        return false;
+    }
 
     // ── Table ────────────────────────────────────────────────────────────────
 
@@ -58,8 +74,8 @@ class StockMovementResource extends Resource
                     ->badge()
                     ->color(fn (StockMovement $record): string => match ($record->type) {
                         'in', 'transfer_in', 'adjustment_plus', 'opening' => 'success',
-                        'out', 'transfer_out', 'adjustment_minus'          => 'danger',
-                        default                                             => 'gray',
+                        'out', 'transfer_out', 'adjustment_minus' => 'danger',
+                        default => 'gray',
                     }),
 
                 TextColumn::make('quantity')
@@ -90,13 +106,13 @@ class StockMovementResource extends Resource
                 SelectFilter::make('type')
                     ->label('نوع الحركة')
                     ->options([
-                        'in'               => 'دخول',
-                        'out'              => 'خروج',
-                        'transfer_in'      => 'تحويل وارد',
-                        'transfer_out'     => 'تحويل صادر',
-                        'adjustment_plus'  => 'تسوية بالزيادة',
+                        'in' => 'دخول',
+                        'out' => 'خروج',
+                        'transfer_in' => 'تحويل وارد',
+                        'transfer_out' => 'تحويل صادر',
+                        'adjustment_plus' => 'تسوية بالزيادة',
                         'adjustment_minus' => 'تسوية بالنقص',
-                        'opening'          => 'رصيد افتتاحي',
+                        'opening' => 'رصيد افتتاحي',
                     ]),
             ])
             ->defaultSort('id', 'desc')

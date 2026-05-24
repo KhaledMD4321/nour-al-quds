@@ -9,7 +9,8 @@ use Maatwebsite\Excel\Facades\Excel;
 
 class GenerateSamplePriceList extends Command
 {
-    protected $signature   = 'pricelist:sample {--company= : اسم المصنّع في اسم الملف}';
+    protected $signature = 'pricelist:sample {--company= : اسم المصنّع في اسم الملف}';
+
     protected $description = 'إنشاء ملف Excel تجريبي لاختبار رفع قوائم الأسعار';
 
     public function handle(): int
@@ -30,7 +31,8 @@ class GenerateSamplePriceList extends Command
             ['',          'صنف خاطئ بسعر صفر',                  0,      'piece'],
         ];
 
-        $export = new class($rows) implements FromArray, WithHeadings {
+        $export = new class($rows) implements FromArray, WithHeadings
+        {
             public function __construct(private readonly array $rows) {}
 
             public function array(): array
@@ -45,11 +47,11 @@ class GenerateSamplePriceList extends Command
         };
 
         $filename = 'sample-price-list.xlsx';
-        Excel::store($export, 'public/' . $filename);
+        Excel::store($export, 'public/'.$filename);
 
-        $path = storage_path('app/public/' . $filename);
+        $path = storage_path('app/public/'.$filename);
         $this->info("✅ تم إنشاء الملف التجريبي: {$path}");
-        $this->line("   الملف فيه " . count($rows) . " صفوف (منهم 1 خاطئ للاختبار)");
+        $this->line('   الملف فيه '.count($rows).' صفوف (منهم 1 خاطئ للاختبار)');
 
         return self::SUCCESS;
     }

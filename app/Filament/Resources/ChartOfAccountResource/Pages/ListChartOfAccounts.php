@@ -70,11 +70,11 @@ class ListChartOfAccounts extends Page
             ->values()
             ->toArray();
 
-        $visible    = [];
+        $visible = [];
         $visibleIds = [];          // tracks which IDs made it into the visible list
 
         foreach ($allAccounts as $account) {
-            $isRoot        = $account->parent_id === null;
+            $isRoot = $account->parent_id === null;
             $parentVisible = in_array($account->parent_id, $visibleIds);
             $parentExpanded = in_array($account->parent_id, $this->expandedIds);
 
@@ -82,16 +82,16 @@ class ListChartOfAccounts extends Page
                 $visibleIds[] = $account->id;
 
                 $visible[] = [
-                    'id'          => $account->id,
-                    'code'        => $account->code,
-                    'name'        => $account->name,
-                    'type'        => $account->type,
-                    'level'       => $account->level,
-                    'parent_id'   => $account->parent_id,
-                    'has_children'=> in_array($account->id, $parentIds),
+                    'id' => $account->id,
+                    'code' => $account->code,
+                    'name' => $account->name,
+                    'type' => $account->type,
+                    'level' => $account->level,
+                    'parent_id' => $account->parent_id,
+                    'has_children' => in_array($account->id, $parentIds),
                     'is_expanded' => in_array($account->id, $this->expandedIds),
-                    'is_active'   => $account->is_active,
-                    'unit_name'   => $account->businessUnit?->name,
+                    'is_active' => $account->is_active,
+                    'unit_name' => $account->businessUnit?->name,
                 ];
             }
         }

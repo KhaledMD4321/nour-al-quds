@@ -25,14 +25,14 @@ return new class extends Migration
             $table->boolean('is_manual')->default(false);
             $table->boolean('is_posted')->default(true); // مرحلياً كله مُرحَّل فوراً
 
-            $table->decimal('total_debit',  15, 2)->default(0);
+            $table->decimal('total_debit', 15, 2)->default(0);
             $table->decimal('total_credit', 15, 2)->default(0);
 
             $table->text('notes')->nullable();
 
             $table->foreignId('created_by')
-                  ->constrained('users')
-                  ->restrictOnDelete();
+                ->constrained('users')
+                ->restrictOnDelete();
 
             $table->timestamps();
             $table->softDeletes();

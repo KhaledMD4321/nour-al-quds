@@ -3,14 +3,14 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\CompanyResource\Pages;
-use App\Services\CustomFieldRenderer;
 use App\Models\Company;
+use App\Models\LookupType;
+use App\Services\CustomFieldRenderer;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\EditAction;
 use Filament\Actions\ForceDeleteAction;
 use Filament\Actions\RestoreAction;
 use Filament\Actions\ViewAction;
-use App\Models\LookupType;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
@@ -44,6 +44,7 @@ class CompanyResource extends Resource
     public static function canAccess(): bool
     {
         $user = auth()->user();
+
         return $user->hasRole('super_admin')
             || $user->hasRole('showroom_manager')
             || $user->hasRole('distribution_manager');
@@ -99,7 +100,10 @@ class CompanyResource extends Resource
             ...array_filter([
                 (function () {
                     $components = CustomFieldRenderer::formComponents('company');
-                    if (empty($components)) return null;
+                    if (empty($components)) {
+                        return null;
+                    }
+
                     return Section::make('بيانات إضافية')
                         ->schema($components)
                         ->columns(2)
@@ -178,10 +182,10 @@ class CompanyResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index'  => Pages\ListCompanies::route('/'),
+            'index' => Pages\ListCompanies::route('/'),
             'create' => Pages\CreateCompany::route('/create'),
-            'view'   => Pages\ViewCompany::route('/{record}'),
-            'edit'   => Pages\EditCompany::route('/{record}/edit'),
+            'view' => Pages\ViewCompany::route('/{record}'),
+            'edit' => Pages\EditCompany::route('/{record}/edit'),
         ];
     }
 }

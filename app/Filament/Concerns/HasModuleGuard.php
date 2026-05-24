@@ -16,7 +16,9 @@ trait HasModuleGuard
     public static function shouldRegisterNavigation(): bool
     {
         $code = static::$module ?? null;
-        if (! $code) return true;
+        if (! $code) {
+            return true;
+        }
 
         return Module::isActive($code);
     }

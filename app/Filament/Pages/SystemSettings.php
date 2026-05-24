@@ -5,20 +5,26 @@ namespace App\Filament\Pages;
 use App\Models\SystemSetting;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Storage;
-use Livewire\Attributes\Computed;
 use Livewire\WithFileUploads;
 
 class SystemSettings extends Page
 {
     use WithFileUploads;
 
-    protected static string|\BackedEnum|null $navigationIcon  = 'heroicon-o-cog-6-tooth';
-    protected static string|\UnitEnum|null   $navigationGroup = 'الإدارة';
-    protected static ?int                    $navigationSort  = 90;
-    protected static ?string                 $title           = 'إعدادات النظام';
-    protected static ?string                 $navigationLabel = 'إعدادات النظام';
-    protected string                         $view            = 'filament.pages.system-settings';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-cog-6-tooth';
+
+    protected static string|\UnitEnum|null $navigationGroup = 'الإدارة';
+
+    protected static ?int $navigationSort = 90;
+
+    protected static ?string $title = 'إعدادات النظام';
+
+    protected static ?string $navigationLabel = 'إعدادات النظام';
+
+    protected string $view = 'filament.pages.system-settings';
 
     public string $activeTab = 'company';
 
@@ -49,7 +55,7 @@ class SystemSettings extends Page
     }
 
     /** إعدادات مجموعة معينة مرتبة بـ sort_order */
-    public function getSettingsByGroup(string $group): \Illuminate\Support\Collection
+    public function getSettingsByGroup(string $group): Collection
     {
         return SystemSetting::where('group', $group)
             ->orderBy('sort_order')
@@ -66,12 +72,12 @@ class SystemSettings extends Page
     public function getTabs(): array
     {
         return [
-            'company'        => ['label' => 'بيانات الشركة',     'icon' => 'heroicon-o-building-office'],
-            'invoice'        => ['label' => 'إعدادات الفاتورة',  'icon' => 'heroicon-o-document-text'],
-            'numbering'      => ['label' => 'تسلسل الأرقام',     'icon' => 'heroicon-o-hashtag'],
-            'defaults'       => ['label' => 'الافتراضيات',        'icon' => 'heroicon-o-adjustments-horizontal'],
-            'alerts'         => ['label' => 'التنبيهات',          'icon' => 'heroicon-o-bell'],
-            'print'          => ['label' => 'إعدادات الطباعة',   'icon' => 'heroicon-o-printer'],
+            'company' => ['label' => 'بيانات الشركة',     'icon' => 'heroicon-o-building-office'],
+            'invoice' => ['label' => 'إعدادات الفاتورة',  'icon' => 'heroicon-o-document-text'],
+            'numbering' => ['label' => 'تسلسل الأرقام',     'icon' => 'heroicon-o-hashtag'],
+            'defaults' => ['label' => 'الافتراضيات',        'icon' => 'heroicon-o-adjustments-horizontal'],
+            'alerts' => ['label' => 'التنبيهات',          'icon' => 'heroicon-o-bell'],
+            'print' => ['label' => 'إعدادات الطباعة',   'icon' => 'heroicon-o-printer'],
             'business_rules' => ['label' => 'قواعد الأعمال',      'icon' => 'heroicon-o-scale'],
         ];
     }
@@ -104,7 +110,7 @@ class SystemSettings extends Page
         SystemSetting::clearCache();
 
         // مسح Blade/View cache عشان اللوجو يتحدث في الـ Sidebar فوراً
-        \Illuminate\Support\Facades\Artisan::call('view:clear');
+        Artisan::call('view:clear');
 
         Notification::make()
             ->title('تم الحفظ')
@@ -129,7 +135,10 @@ class SystemSettings extends Page
     public function getLogoUrl(): ?string
     {
         $logo = $this->formData['company']['logo'] ?? null;
-        if (! $logo) return null;
+        if (! $logo) {
+            return null;
+        }
+
         return Storage::url($logo);
     }
 }

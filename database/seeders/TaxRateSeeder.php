@@ -11,8 +11,8 @@ class TaxRateSeeder extends Seeder
     {
         $rates = [
             ['name' => 'ضريبة القيمة المضافة', 'rate' => 14.00, 'is_default' => true,  'is_active' => true],
-            ['name' => 'معفى من الضريبة',       'rate' =>  0.00, 'is_default' => false, 'is_active' => true],
-            ['name' => 'ضريبة جدول',            'rate' =>  5.00, 'is_default' => false, 'is_active' => true],
+            ['name' => 'معفى من الضريبة',       'rate' => 0.00, 'is_default' => false, 'is_active' => true],
+            ['name' => 'ضريبة جدول',            'rate' => 5.00, 'is_default' => false, 'is_active' => true],
         ];
 
         foreach ($rates as $data) {

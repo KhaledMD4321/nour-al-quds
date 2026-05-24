@@ -10,32 +10,45 @@ use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Filament\Schemas\Schema;
+use Illuminate\Database\Eloquent\Collection;
 
 class PeriodManagerPage extends Page
 {
-    protected static string|\BackedEnum|null $navigationIcon  = 'heroicon-o-calendar-days';
-    protected static string|\UnitEnum|null   $navigationGroup = 'إدارة البيانات';
-    protected static ?int                    $navigationSort  = 32;
-    protected static ?string                 $title           = 'مدير الفترات المالية';
-    protected static ?string                 $navigationLabel = 'مدير الفترات';
-    protected string                         $view            = 'filament.pages.period-manager';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-calendar-days';
 
-    public ?string $rollback_from    = null;
-    public ?string $rollback_to      = null;
+    protected static string|\UnitEnum|null $navigationGroup = 'إدارة البيانات';
+
+    protected static ?int $navigationSort = 32;
+
+    protected static ?string $title = 'مدير الفترات المالية';
+
+    protected static ?string $navigationLabel = 'مدير الفترات';
+
+    protected string $view = 'filament.pages.period-manager';
+
+    public ?string $rollback_from = null;
+
+    public ?string $rollback_to = null;
+
     public ?string $confirm_password = null;
 
     public static function canAccess(): bool
     {
         $user = auth()->user();
-        if (! $user) return false;
-        if ($user->isSuperAdmin()) return true;
+        if (! $user) {
+            return false;
+        }
+        if ($user->isSuperAdmin()) {
+            return true;
+        }
+
         return $user->can('accounting.lock_period');
     }
 
     public function mount(): void
     {
         $this->rollback_from = today()->startOfMonth()->toDateString();
-        $this->rollback_to   = today()->toDateString();
+        $this->rollback_to = today()->toDateString();
     }
 
     public function form(Schema $schema): Schema
@@ -81,8 +94,9 @@ class PeriodManagerPage extends Page
 
     public function previewRollback(): void
     {
-        if (!$this->rollback_from || !$this->rollback_to) {
+        if (! $this->rollback_from || ! $this->rollback_to) {
             Notification::make()->warning()->title('الرجاء تحديد الفترة أولاً')->send();
+
             return;
         }
 
@@ -95,11 +109,11 @@ class PeriodManagerPage extends Page
             ->warning()
             ->title('معاينة Rollback')
             ->body(
-                "فواتير مبيعات: {$preview['invoices']} | " .
-                "فواتير مشتريات: {$preview['purchases']} | " .
-                "سندات قبض: {$preview['receipts']} | " .
-                "سندات صرف: {$preview['payments']} | " .
-                "قيود: {$preview['entries']} | " .
+                "فواتير مبيعات: {$preview['invoices']} | ".
+                "فواتير مشتريات: {$preview['purchases']} | ".
+                "سندات قبض: {$preview['receipts']} | ".
+                "سندات صرف: {$preview['payments']} | ".
+                "قيود: {$preview['entries']} | ".
                 "الإجمالي: {$total} معاملة"
             )
             ->persistent()
@@ -108,19 +122,21 @@ class PeriodManagerPage extends Page
 
     public function executeRollback(): void
     {
-        if (!$this->rollback_from || !$this->rollback_to) {
+        if (! $this->rollback_from || ! $this->rollback_to) {
             Notification::make()->warning()->title('الرجاء تحديد الفترة أولاً')->send();
+
             return;
         }
 
         if (! \Hash::check($this->confirm_password ?? '', auth()->user()->password)) {
             Notification::make()->danger()->title('كلمة السر غير صحيحة')->send();
+
             return;
         }
 
         try {
             $service = app(PeriodRollbackService::class);
-            $result  = $service->rollback($this->rollback_from, $this->rollback_to, auth()->id());
+            $result = $service->rollback($this->rollback_from, $this->rollback_to, auth()->id());
 
             $total = array_sum($result);
 
@@ -157,7 +173,7 @@ class PeriodManagerPage extends Page
         }
     }
 
-    public function getPeriods(): \Illuminate\Database\Eloquent\Collection
+    public function getPeriods(): Collection
     {
         return FiscalPeriod::orderByDesc('year')->orderByDesc('month')->get();
     }

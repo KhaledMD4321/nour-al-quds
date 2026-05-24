@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources;
 
+use App\Filament\Concerns\HasModuleGuard;
 use App\Filament\Resources\ChartOfAccountResource\Pages;
 use App\Models\BusinessUnit;
 use App\Models\ChartOfAccount;
@@ -16,16 +17,19 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\ToggleColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\TernaryFilter;
-use App\Filament\Concerns\HasModuleGuard;
 use Filament\Tables\Table;
 
 class ChartOfAccountResource extends Resource
 {
     use HasModuleGuard;
+
     protected static string $module = 'accounting';
 
     // Hidden from nav — replaced by ChartOfAccountsTree page
-    public static function shouldRegisterNavigation(): bool { return false; }
+    public static function shouldRegisterNavigation(): bool
+    {
+        return false;
+    }
 
     protected static ?string $model = ChartOfAccount::class;
 
@@ -135,7 +139,8 @@ class ChartOfAccountResource extends Resource
                     ->searchable()
                     ->formatStateUsing(function (string $state, ChartOfAccount $record): string {
                         $indent = str_repeat('— ', max(0, $record->level - 1));
-                        return $indent . $state;
+
+                        return $indent.$state;
                     }),
 
                 TextColumn::make('type')
@@ -177,9 +182,9 @@ class ChartOfAccountResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index'  => Pages\ListChartOfAccounts::route('/'),
+            'index' => Pages\ListChartOfAccounts::route('/'),
             'create' => Pages\CreateChartOfAccount::route('/create'),
-            'edit'   => Pages\EditChartOfAccount::route('/{record}/edit'),
+            'edit' => Pages\EditChartOfAccount::route('/{record}/edit'),
         ];
     }
 
@@ -188,11 +193,11 @@ class ChartOfAccountResource extends Resource
     public static function typeOptions(): array
     {
         return [
-            ChartOfAccount::TYPE_ASSET     => 'أصول',
+            ChartOfAccount::TYPE_ASSET => 'أصول',
             ChartOfAccount::TYPE_LIABILITY => 'خصوم',
-            ChartOfAccount::TYPE_EQUITY    => 'حقوق ملكية',
-            ChartOfAccount::TYPE_REVENUE   => 'إيرادات',
-            ChartOfAccount::TYPE_EXPENSE   => 'مصروفات',
+            ChartOfAccount::TYPE_EQUITY => 'حقوق ملكية',
+            ChartOfAccount::TYPE_REVENUE => 'إيرادات',
+            ChartOfAccount::TYPE_EXPENSE => 'مصروفات',
         ];
     }
 
@@ -204,12 +209,12 @@ class ChartOfAccountResource extends Resource
     public static function typeColor(string $type): string
     {
         return match ($type) {
-            ChartOfAccount::TYPE_ASSET     => 'info',
+            ChartOfAccount::TYPE_ASSET => 'info',
             ChartOfAccount::TYPE_LIABILITY => 'danger',
-            ChartOfAccount::TYPE_EQUITY    => 'warning',
-            ChartOfAccount::TYPE_REVENUE   => 'success',
-            ChartOfAccount::TYPE_EXPENSE   => 'gray',
-            default                        => 'gray',
+            ChartOfAccount::TYPE_EQUITY => 'warning',
+            ChartOfAccount::TYPE_REVENUE => 'success',
+            ChartOfAccount::TYPE_EXPENSE => 'gray',
+            default => 'gray',
         };
     }
 }

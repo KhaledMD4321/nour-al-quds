@@ -21,10 +21,10 @@ class OpeningBalance extends Model
     ];
 
     protected $casts = [
-        'debit'        => 'decimal:2',
-        'credit'       => 'decimal:2',
-        'quantity'     => 'decimal:3',
-        'unit_cost'    => 'decimal:4',
+        'debit' => 'decimal:2',
+        'credit' => 'decimal:2',
+        'quantity' => 'decimal:3',
+        'unit_cost' => 'decimal:4',
         'balance_date' => 'date',
     ];
 
@@ -38,9 +38,9 @@ class OpeningBalance extends Model
         return match ($this->type) {
             'customer' => Customer::find($this->reference_id)?->name,
             'supplier' => Supplier::find($this->reference_id)?->name,
-            'stock'    => Warehouse::find($this->reference_id)?->name,
+            'stock' => Warehouse::find($this->reference_id)?->name,
             'treasury' => null,
-            default    => null,
+            default => null,
         };
     }
 
@@ -49,9 +49,10 @@ class OpeningBalance extends Model
      */
     public function getProductNameAttribute(): ?string
     {
-        if ($this->type !== 'stock' || !$this->product_id) {
+        if ($this->type !== 'stock' || ! $this->product_id) {
             return null;
         }
+
         return Product::find($this->product_id)?->name;
     }
 

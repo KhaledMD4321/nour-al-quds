@@ -49,6 +49,7 @@ class NourConfig
     public static function currencySymbol(?string $code = null): string
     {
         $code ??= static::defaultCurrency();
+
         return static::currencies()[$code]['symbol'] ?? $code;
     }
 
@@ -110,10 +111,10 @@ class NourConfig
      */
     public static function formatMoney(float $amount, ?string $currency = null): string
     {
-        $currency      ??= static::defaultCurrency();
-        $decimals        = static::currencies()[$currency]['decimal_places'] ?? 2;
-        $symbol          = static::currencySymbol($currency);
-        $formatted       = number_format($amount, $decimals);
+        $currency ??= static::defaultCurrency();
+        $decimals = static::currencies()[$currency]['decimal_places'] ?? 2;
+        $symbol = static::currencySymbol($currency);
+        $formatted = number_format($amount, $decimals);
 
         return "{$formatted} {$symbol}";
     }

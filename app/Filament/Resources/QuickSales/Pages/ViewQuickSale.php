@@ -8,8 +8,9 @@ use Filament\Resources\Pages\ViewRecord;
 
 class ViewQuickSale extends ViewRecord
 {
-    protected static string  $resource = QuickSaleResource::class;
-    protected static ?string $title    = 'تفاصيل الإيصال';
+    protected static string $resource = QuickSaleResource::class;
+
+    protected static ?string $title = 'تفاصيل الإيصال';
 
     protected function getHeaderActions(): array
     {

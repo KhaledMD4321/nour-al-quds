@@ -19,7 +19,7 @@ class Category extends Model
     ];
 
     protected $casts = [
-        'is_active'  => 'boolean',
+        'is_active' => 'boolean',
         'sort_order' => 'integer',
     ];
 
@@ -47,7 +47,7 @@ class Category extends Model
     public function children(): HasMany
     {
         return $this->hasMany(Category::class, 'parent_id')
-                    ->orderBy('sort_order');
+            ->orderBy('sort_order');
     }
 
     /** Recursive children — for full tree eager loading. */
@@ -80,7 +80,7 @@ class Category extends Model
      */
     public function getFullPathAttribute(): string
     {
-        $path   = collect([$this->name]);
+        $path = collect([$this->name]);
         $parent = $this->parent;
 
         while ($parent) {

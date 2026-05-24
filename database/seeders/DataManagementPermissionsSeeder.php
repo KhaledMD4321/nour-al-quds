@@ -20,6 +20,6 @@ class DataManagementPermissionsSeeder extends Seeder
             Permission::firstOrCreate(['name' => $name, 'guard_name' => 'web']);
         }
 
-        $this->command->info('Data Management permissions seeded (' . count($permissions) . ')');
+        $this->command->info('Data Management permissions seeded ('.count($permissions).')');
     }
 }

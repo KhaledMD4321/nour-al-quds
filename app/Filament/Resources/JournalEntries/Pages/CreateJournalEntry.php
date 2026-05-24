@@ -6,12 +6,13 @@ use App\Filament\Resources\JournalEntries\JournalEntryResource;
 use App\Modules\Accounting\AccountingService;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\CreateRecord;
+use Illuminate\Database\Eloquent\Model;
 
 class CreateJournalEntry extends CreateRecord
 {
     protected static string $resource = JournalEntryResource::class;
 
-    protected function handleRecordCreation(array $data): \Illuminate\Database\Eloquent\Model
+    protected function handleRecordCreation(array $data): Model
     {
         $data['created_by'] = auth()->id();
 

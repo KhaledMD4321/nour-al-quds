@@ -12,30 +12,41 @@ use Filament\Schemas\Schema;
 
 class TrialBalance extends Page
 {
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-scale';
 
-    protected static string|\BackedEnum|null $navigationIcon  = 'heroicon-o-scale';
-    protected static string|\UnitEnum|null   $navigationGroup = 'المحاسبة';
-    protected static ?int                    $navigationSort  = 11;
-    protected static ?string                 $title           = 'ميزان المراجعة';
-    protected static ?string                 $navigationLabel = 'ميزان المراجعة';
-    protected string         $view            = 'filament.pages.trial-balance';
+    protected static string|\UnitEnum|null $navigationGroup = 'المحاسبة';
 
-    public ?string $from_date        = null;
-    public ?string $to_date          = null;
-    public ?int    $business_unit_id = null;
+    protected static ?int $navigationSort = 11;
+
+    protected static ?string $title = 'ميزان المراجعة';
+
+    protected static ?string $navigationLabel = 'ميزان المراجعة';
+
+    protected string $view = 'filament.pages.trial-balance';
+
+    public ?string $from_date = null;
+
+    public ?string $to_date = null;
+
+    public ?int $business_unit_id = null;
 
     public static function canAccess(): bool
     {
         $user = auth()->user();
-        if (! $user) return false;
-        if ($user->isSuperAdmin()) return true;
+        if (! $user) {
+            return false;
+        }
+        if ($user->isSuperAdmin()) {
+            return true;
+        }
+
         return $user->can('accounting.trial_balance.view');
     }
 
     public function mount(): void
     {
         $this->from_date = today()->startOfYear()->toDateString();
-        $this->to_date   = today()->toDateString();
+        $this->to_date = today()->toDateString();
 
         if (! auth()->user()?->isSuperAdmin()) {
             $this->business_unit_id = auth()->user()?->business_unit_id;
@@ -72,23 +83,25 @@ class TrialBalance extends Page
                 $query = JournalEntryLine::where('account_id', $account->id)
                     ->whereHas('journalEntry', function ($q) {
                         $q->when($this->from_date, fn ($q, $d) => $q->whereDate('entry_date', '>=', $d))
-                          ->when($this->to_date,   fn ($q, $d) => $q->whereDate('entry_date', '<=', $d));
+                            ->when($this->to_date, fn ($q, $d) => $q->whereDate('entry_date', '<=', $d));
                     })
                     ->when($this->business_unit_id, fn ($q) => $q->where('business_unit_id', $this->business_unit_id));
 
-                $debit  = (float) $query->sum('debit');
+                $debit = (float) $query->sum('debit');
                 $credit = (float) $query->sum('credit');
-                $net    = $debit - $credit;
+                $net = $debit - $credit;
 
-                if ($debit == 0 && $credit == 0) return null;
+                if ($debit == 0 && $credit == 0) {
+                    return null;
+                }
 
                 return (object) [
-                    'code'           => $account->code,
-                    'name'           => $account->name,
-                    'type'           => $account->type,
-                    'total_debit'    => $debit,
-                    'total_credit'   => $credit,
-                    'balance_debit'  => $net > 0 ? $net : 0,
+                    'code' => $account->code,
+                    'name' => $account->name,
+                    'type' => $account->type,
+                    'total_debit' => $debit,
+                    'total_credit' => $credit,
+                    'balance_debit' => $net > 0 ? $net : 0,
                     'balance_credit' => $net < 0 ? abs($net) : 0,
                 ];
             })

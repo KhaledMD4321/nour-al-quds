@@ -6,7 +6,6 @@ use App\Models\FiscalPeriod;
 use App\Models\Invoice;
 use App\Models\InvoiceItem;
 use App\Models\PurchaseReturn;
-use App\Models\PurchaseReturnItem;
 use App\Models\Stock;
 use App\Models\StockMovement;
 use Exception;
@@ -29,7 +28,7 @@ class ReturnService
      */
     public function createSaleReturn(
         Invoice $originalInvoice,
-        array   $items,
+        array $items,
         ?string $notes = null
     ): Invoice {
 
@@ -59,9 +58,9 @@ class ReturnService
             $maxReturnable = (float) $originalItem->quantity - $alreadyReturned;
 
             if ((float) $itemData['quantity'] > $maxReturnable) {
-                $name = $originalItem->product?->name ?? '#' . $originalItem->product_id;
+                $name = $originalItem->product?->name ?? '#'.$originalItem->product_id;
                 throw new Exception(
-                    "الكمية المرتجعة للصنف \"{$name}\" " .
+                    "الكمية المرتجعة للصنف \"{$name}\" ".
                     "({$itemData['quantity']}) أكبر من المسموح ({$maxReturnable})"
                 );
             }
@@ -74,35 +73,35 @@ class ReturnService
 
             foreach ($items as $itemData) {
                 $originalItem = InvoiceItem::find($itemData['invoice_item_id']);
-                $qty          = (float) $itemData['quantity'];
-                $total        = round($qty * (float) $originalItem->unit_price, 2);
+                $qty = (float) $itemData['quantity'];
+                $total = round($qty * (float) $originalItem->unit_price, 2);
                 $totalAmount += $total;
 
                 $returnItems[] = [
                     'original_item' => $originalItem,
-                    'quantity'      => $qty,
-                    'total'         => $total,
+                    'quantity' => $qty,
+                    'total' => $total,
                 ];
             }
 
             // ── فاتورة المرتجع ────────────────────────────────────────────────────
             $returnInvoice = Invoice::create([
-                'type'                => 'sale_return',
-                'reference_number'    => Invoice::generateReturnReference(),
-                'business_unit_id'    => $originalInvoice->business_unit_id,
-                'warehouse_id'        => $originalInvoice->warehouse_id,
-                'customer_id'         => $originalInvoice->customer_id,
-                'invoice_date'        => now()->toDateString(),
-                'status'              => 'confirmed',
-                'payment_type'        => $originalInvoice->payment_type,
-                'subtotal'            => $totalAmount,
-                'discount_amount'     => 0,
-                'tax_amount'          => 0,
-                'total_amount'        => $totalAmount,
-                'paid_amount'         => 0,
-                'notes'               => $notes ?? ('مرتجع من ' . $originalInvoice->reference_number),
+                'type' => 'sale_return',
+                'reference_number' => Invoice::generateReturnReference(),
+                'business_unit_id' => $originalInvoice->business_unit_id,
+                'warehouse_id' => $originalInvoice->warehouse_id,
+                'customer_id' => $originalInvoice->customer_id,
+                'invoice_date' => now()->toDateString(),
+                'status' => 'confirmed',
+                'payment_type' => $originalInvoice->payment_type,
+                'subtotal' => $totalAmount,
+                'discount_amount' => 0,
+                'tax_amount' => 0,
+                'total_amount' => $totalAmount,
+                'paid_amount' => 0,
+                'notes' => $notes ?? ('مرتجع من '.$originalInvoice->reference_number),
                 'original_invoice_id' => $originalInvoice->id,
-                'created_by'          => Auth::id(),
+                'created_by' => Auth::id(),
             ]);
 
             // ── البنود + إرجاع المخزون ────────────────────────────────────────────
@@ -111,23 +110,23 @@ class ReturnService
 
                 $returnInvoice->items()->create([
                     'product_id' => $originalItem->product_id,
-                    'quantity'   => $ri['quantity'],
+                    'quantity' => $ri['quantity'],
                     'list_price' => $originalItem->list_price,
                     'discount_1' => $originalItem->discount_1,
                     'discount_2' => $originalItem->discount_2,
                     'discount_3' => $originalItem->discount_3,
                     'unit_price' => $originalItem->unit_price,
-                    'total'      => $ri['total'],
+                    'total' => $ri['total'],
                 ]);
 
                 $this->increaseStock(
                     warehouseId: $originalInvoice->warehouse_id,
-                    productId:   $originalItem->product_id,
-                    quantity:    $ri['quantity'],
-                    unitCost:    (float) $originalItem->unit_price,
-                    refType:     'sale_return',
-                    refId:       $returnInvoice->id,
-                    notes:       'مرتجع مبيعات — ' . $returnInvoice->reference_number,
+                    productId: $originalItem->product_id,
+                    quantity: $ri['quantity'],
+                    unitCost: (float) $originalItem->unit_price,
+                    refType: 'sale_return',
+                    refId: $returnInvoice->id,
+                    notes: 'مرتجع مبيعات — '.$returnInvoice->reference_number,
                 );
             }
 
@@ -160,7 +159,7 @@ class ReturnService
                 ->first();
 
             if (! $originalItem) {
-                $name = $item->product?->name ?? '#' . $item->product_id;
+                $name = $item->product?->name ?? '#'.$item->product_id;
                 throw new Exception("الصنف \"{$name}\" مش موجود في فاتورة الشراء الأصلية");
             }
 
@@ -173,9 +172,9 @@ class ReturnService
             $maxReturnable = (float) $originalItem->quantity - $alreadyReturned;
 
             if ((float) $item->quantity > $maxReturnable) {
-                $name = $item->product?->name ?? '#' . $item->product_id;
+                $name = $item->product?->name ?? '#'.$item->product_id;
                 throw new Exception(
-                    "الكمية المرتجعة للصنف \"{$name}\" " .
+                    "الكمية المرتجعة للصنف \"{$name}\" ".
                     "({$item->quantity}) أكبر من المسموح ({$maxReturnable})"
                 );
             }
@@ -192,12 +191,12 @@ class ReturnService
                     ->first();
 
                 $available = $stock ? (float) $stock->quantity : 0;
-                $qty       = (float) $item->quantity;
+                $qty = (float) $item->quantity;
 
                 if ($available < $qty) {
-                    $name = $item->product?->name ?? '#' . $item->product_id;
+                    $name = $item->product?->name ?? '#'.$item->product_id;
                     throw new Exception(
-                        "الكمية المتاحة للصنف \"{$name}\" " .
+                        "الكمية المتاحة للصنف \"{$name}\" ".
                         "({$available}) أقل من المرتجع ({$qty})"
                     );
                 }
@@ -209,23 +208,23 @@ class ReturnService
                 }
 
                 StockMovement::create([
-                    'warehouse_id'   => $return->warehouse_id,
-                    'product_id'     => $item->product_id,
-                    'type'           => 'out',
-                    'quantity'       => $qty,
-                    'unit_cost'      => (float) $item->unit_cost,
-                    'balance_after'  => $balanceAfter,
+                    'warehouse_id' => $return->warehouse_id,
+                    'product_id' => $item->product_id,
+                    'type' => 'out',
+                    'quantity' => $qty,
+                    'unit_cost' => (float) $item->unit_cost,
+                    'balance_after' => $balanceAfter,
                     'reference_type' => 'purchase_return',
-                    'reference_id'   => $return->id,
-                    'notes'          => 'مرتجع مشتريات — ' . $return->reference_number,
-                    'created_by'     => Auth::id(),
+                    'reference_id' => $return->id,
+                    'notes' => 'مرتجع مشتريات — '.$return->reference_number,
+                    'created_by' => Auth::id(),
                 ]);
 
                 $totalAmount += (float) $item->total;
             }
 
             $return->update([
-                'status'       => 'confirmed',
+                'status' => 'confirmed',
                 'total_amount' => round($totalAmount, 2),
             ]);
         });
@@ -242,12 +241,12 @@ class ReturnService
     // ══════════════════════════════════════════════════════════════════════════════
 
     private function increaseStock(
-        int    $warehouseId,
-        int    $productId,
-        float  $quantity,
-        float  $unitCost,
+        int $warehouseId,
+        int $productId,
+        float $quantity,
+        float $unitCost,
         string $refType,
-        int    $refId,
+        int $refId,
         string $notes,
     ): void {
         $stock = Stock::where('warehouse_id', $warehouseId)
@@ -255,7 +254,7 @@ class ReturnService
             ->lockForUpdate()
             ->first();
 
-        $currentQty   = $stock ? (float) $stock->quantity : 0;
+        $currentQty = $stock ? (float) $stock->quantity : 0;
         $balanceAfter = $currentQty + $quantity;
 
         if ($stock) {
@@ -263,25 +262,25 @@ class ReturnService
         } else {
             Stock::create([
                 'warehouse_id' => $warehouseId,
-                'product_id'   => $productId,
-                'quantity'     => $balanceAfter,
-                'avg_cost'     => $unitCost,
+                'product_id' => $productId,
+                'quantity' => $balanceAfter,
+                'avg_cost' => $unitCost,
                 'min_quantity' => 0,
                 'last_updated' => now(),
             ]);
         }
 
         StockMovement::create([
-            'warehouse_id'   => $warehouseId,
-            'product_id'     => $productId,
-            'type'           => 'in',
-            'quantity'       => $quantity,
-            'unit_cost'      => $unitCost,
-            'balance_after'  => $balanceAfter,
+            'warehouse_id' => $warehouseId,
+            'product_id' => $productId,
+            'type' => 'in',
+            'quantity' => $quantity,
+            'unit_cost' => $unitCost,
+            'balance_after' => $balanceAfter,
             'reference_type' => $refType,
-            'reference_id'   => $refId,
-            'notes'          => $notes,
-            'created_by'     => Auth::id(),
+            'reference_id' => $refId,
+            'notes' => $notes,
+            'created_by' => Auth::id(),
         ]);
     }
 
@@ -298,8 +297,8 @@ class ReturnService
 
     /** الكمية المرتجعة مسبقاً من فاتورة شراء لصنف معين */
     private function getPurchaseReturnedQuantity(
-        int  $purchaseInvoiceId,
-        int  $productId,
+        int $purchaseInvoiceId,
+        int $productId,
         ?int $excludeReturnId = null
     ): float {
         return (float) PurchaseReturn::where('purchase_invoice_id', $purchaseInvoiceId)

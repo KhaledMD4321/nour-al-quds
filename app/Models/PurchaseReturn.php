@@ -3,9 +3,9 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class PurchaseReturn extends Model
 {
@@ -25,7 +25,7 @@ class PurchaseReturn extends Model
     ];
 
     protected $casts = [
-        'return_date'  => 'date',
+        'return_date' => 'date',
         'total_amount' => 'decimal:2',
     ];
 
@@ -67,12 +67,12 @@ class PurchaseReturn extends Model
     {
         $last = self::withTrashed()
             ->whereRaw("reference_number ~ '^PRR-[0-9]+$'")
-            ->orderByRaw("CAST(SUBSTRING(reference_number FROM 5) AS INTEGER) DESC")
+            ->orderByRaw('CAST(SUBSTRING(reference_number FROM 5) AS INTEGER) DESC')
             ->value('reference_number');
 
         $num = $last ? ((int) substr($last, 4)) + 1 : 1;
 
-        return 'PRR-' . str_pad($num, 5, '0', STR_PAD_LEFT);
+        return 'PRR-'.str_pad($num, 5, '0', STR_PAD_LEFT);
     }
 
     public function isDraft(): bool

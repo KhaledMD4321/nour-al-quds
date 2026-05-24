@@ -22,9 +22,9 @@ return new class extends Migration
             $table->decimal('default_discount_2', 5, 2)->default(0);        // خصم 2 افتراضي %
             $table->decimal('default_discount_3', 5, 2)->default(0);        // خصم 3 افتراضي %
             $table->foreignId('business_unit_id')                           // الوحدة التشغيلية (اختياري)
-                  ->nullable()
-                  ->constrained()
-                  ->nullOnDelete();
+                ->nullable()
+                ->constrained()
+                ->nullOnDelete();
             $table->decimal('opening_balance', 15, 2)->default(0);          // رصيد افتتاحي (موجب = عليه فلوس)
             $table->text('notes')->nullable();
             $table->boolean('is_active')->default(true);

@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Warehouses\Tables;
 
+use App\Models\BusinessUnit;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
@@ -16,7 +17,6 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Table;
-use App\Models\BusinessUnit;
 
 class WarehousesTable
 {
@@ -34,8 +34,7 @@ class WarehousesTable
                     ->label('الوحدة التشغيلية')
                     ->sortable()
                     ->badge()
-                    ->color(fn ($record) =>
-                        $record->businessUnit?->type === BusinessUnit::TYPE_SHOWROOM
+                    ->color(fn ($record) => $record->businessUnit?->type === BusinessUnit::TYPE_SHOWROOM
                             ? 'info'
                             : 'success'
                     ),

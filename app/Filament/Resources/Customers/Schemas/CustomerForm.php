@@ -146,7 +146,10 @@ class CustomerForm
             ...array_filter([
                 (function () {
                     $components = CustomFieldRenderer::formComponents('customer');
-                    if (empty($components)) return null;
+                    if (empty($components)) {
+                        return null;
+                    }
+
                     return Section::make('بيانات إضافية')
                         ->schema($components)
                         ->columns(2)

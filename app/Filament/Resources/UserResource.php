@@ -5,14 +5,14 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\UserResource\Pages;
 use App\Models\BusinessUnit;
 use App\Models\User;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\EditAction;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Resources\Resource;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
-use Filament\Actions\DeleteAction;
-use Filament\Actions\EditAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\ToggleColumn;
 use Filament\Tables\Filters\SelectFilter;
@@ -65,7 +65,7 @@ class UserResource extends Resource
                         ->password()
                         ->revealable()
                         ->required($isCreate)
-                        ->nullable(!$isCreate)
+                        ->nullable(! $isCreate)
                         ->minLength(8)
                         ->dehydrateStateUsing(fn (?string $state): ?string => filled($state) ? bcrypt($state) : null)
                         ->dehydrated(fn (?string $state): bool => filled($state))
@@ -174,9 +174,9 @@ class UserResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index'  => Pages\ListUsers::route('/'),
+            'index' => Pages\ListUsers::route('/'),
             'create' => Pages\CreateUser::route('/create'),
-            'edit'   => Pages\EditUser::route('/{record}/edit'),
+            'edit' => Pages\EditUser::route('/{record}/edit'),
         ];
     }
 
@@ -184,13 +184,13 @@ class UserResource extends Resource
     public static function roleLabel(string $role): string
     {
         return match ($role) {
-            'super_admin'              => 'الإدارة العُليا',
-            'showroom_manager'         => 'مدير المعرض',
-            'showroom_cashier'         => 'كاشير المعرض',
-            'distribution_manager'     => 'مدير التوزيع',
-            'distribution_accountant'  => 'محاسب التوزيع',
-            'warehouse_keeper'         => 'أمين المخزن',
-            default                    => $role,
+            'super_admin' => 'الإدارة العُليا',
+            'showroom_manager' => 'مدير المعرض',
+            'showroom_cashier' => 'كاشير المعرض',
+            'distribution_manager' => 'مدير التوزيع',
+            'distribution_accountant' => 'محاسب التوزيع',
+            'warehouse_keeper' => 'أمين المخزن',
+            default => $role,
         };
     }
 }

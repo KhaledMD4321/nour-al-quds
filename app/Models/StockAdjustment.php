@@ -26,7 +26,7 @@ class StockAdjustment extends Model
 
     protected $casts = [
         'adjustment_date' => 'date',
-        'confirmed_at'    => 'datetime',
+        'confirmed_at' => 'datetime',
     ];
 
     // ── Auto-code ───────────────────────────────────────────────────────────
@@ -34,10 +34,11 @@ class StockAdjustment extends Model
     public static function generateReference(): string
     {
         $last = self::withTrashed()
-            ->orderByRaw("CAST(SUBSTRING(reference_number FROM 5) AS INTEGER) DESC")
+            ->orderByRaw('CAST(SUBSTRING(reference_number FROM 5) AS INTEGER) DESC')
             ->value('reference_number');
         $num = $last ? ((int) substr($last, 4)) + 1 : 1;
-        return 'ADJ-' . str_pad($num, 5, '0', STR_PAD_LEFT);
+
+        return 'ADJ-'.str_pad($num, 5, '0', STR_PAD_LEFT);
     }
 
     // ── Status helpers ──────────────────────────────────────────────────────
@@ -55,9 +56,9 @@ class StockAdjustment extends Model
     public function getStatusLabelAttribute(): string
     {
         return match ($this->status) {
-            'draft'     => 'مسودة',
+            'draft' => 'مسودة',
             'confirmed' => 'مؤكد',
-            default     => $this->status,
+            default => $this->status,
         };
     }
 

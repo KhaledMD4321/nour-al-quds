@@ -8,7 +8,9 @@ use Filament\Widgets\ChartWidget;
 class SalesChartWidget extends ChartWidget
 {
     protected static ?int $sort = 5;
+
     protected int|string|array $columnSpan = 'full';
+
     protected ?string $heading = 'مبيعات آخر 30 يوم';
 
     protected function getType(): string
@@ -18,15 +20,15 @@ class SalesChartWidget extends ChartWidget
 
     protected function getData(): array
     {
-        $user   = auth()->user();
-        $unitId = ($user && !$user->isSuperAdmin() && $user->business_unit_id)
+        $user = auth()->user();
+        $unitId = ($user && ! $user->isSuperAdmin() && $user->business_unit_id)
             ? $user->business_unit_id : null;
 
-        $data   = [];
+        $data = [];
         $labels = [];
 
         for ($i = 29; $i >= 0; $i--) {
-            $date     = today()->subDays($i);
+            $date = today()->subDays($i);
             $labels[] = $date->format('d/m');
 
             $total = Invoice::where('type', 'sale')
@@ -41,10 +43,10 @@ class SalesChartWidget extends ChartWidget
         return [
             'datasets' => [
                 [
-                    'label'           => 'المبيعات (ج.م)',
-                    'data'            => $data,
+                    'label' => 'المبيعات (ج.م)',
+                    'data' => $data,
                     'backgroundColor' => '#3b82f6',
-                    'borderRadius'    => 4,
+                    'borderRadius' => 4,
                 ],
             ],
             'labels' => $labels,

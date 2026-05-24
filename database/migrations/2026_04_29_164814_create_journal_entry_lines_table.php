@@ -15,19 +15,19 @@ return new class extends Migration
             $table->id();
 
             $table->foreignId('journal_entry_id')
-                  ->constrained('journal_entries')
-                  ->cascadeOnDelete();
+                ->constrained('journal_entries')
+                ->cascadeOnDelete();
 
             $table->foreignId('account_id')
-                  ->constrained('chart_of_accounts')
-                  ->restrictOnDelete();
+                ->constrained('chart_of_accounts')
+                ->restrictOnDelete();
 
             $table->foreignId('business_unit_id')
-                  ->nullable()
-                  ->constrained('business_units')
-                  ->restrictOnDelete();
+                ->nullable()
+                ->constrained('business_units')
+                ->restrictOnDelete();
 
-            $table->decimal('debit',  15, 2)->default(0);
+            $table->decimal('debit', 15, 2)->default(0);
             $table->decimal('credit', 15, 2)->default(0);
 
             $table->text('description')->nullable();

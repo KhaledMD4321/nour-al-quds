@@ -9,11 +9,15 @@ use Filament\Tables\Table;
 
 class ItemsRelationManager extends RelationManager
 {
-    protected static string  $relationship = 'items';
-    protected static ?string $title        = 'بنود الإيصال';
+    protected static string $relationship = 'items';
+
+    protected static ?string $title = 'بنود الإيصال';
 
     // قراءة فقط — لا إضافة ولا تعديل ولا حذف
-    public function isReadOnly(): bool { return true; }
+    public function isReadOnly(): bool
+    {
+        return true;
+    }
 
     public function form(Schema $schema): Schema
     {

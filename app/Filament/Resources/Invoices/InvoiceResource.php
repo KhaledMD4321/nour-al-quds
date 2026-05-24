@@ -2,13 +2,13 @@
 
 namespace App\Filament\Resources\Invoices;
 
+use App\Filament\Concerns\HasModuleGuard;
 use App\Filament\Resources\Invoices\Pages\CreateInvoice;
 use App\Filament\Resources\Invoices\Pages\ListInvoices;
 use App\Filament\Resources\Invoices\Pages\ViewInvoice;
 use App\Filament\Resources\Invoices\RelationManagers\ItemsRelationManager;
 use App\Filament\Resources\Invoices\Schemas\InvoiceForm;
 use App\Filament\Resources\Invoices\Tables\InvoicesTable;
-use App\Filament\Concerns\HasModuleGuard;
 use App\Models\Invoice;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
@@ -21,15 +21,22 @@ class InvoiceResource extends Resource
     use HasModuleGuard;
 
     protected static string $module = 'sales';
+
     protected static ?string $model = Invoice::class;
 
-    protected static string|\BackedEnum|null $navigationIcon      = 'heroicon-o-document-text';
-    protected static string|\UnitEnum|null   $navigationGroup     = 'المبيعات';
-    protected static ?int                    $navigationSort      = 3;
-    protected static ?string                 $navigationLabel     = 'فواتير المبيعات';
-    protected static ?string                 $modelLabel          = 'فاتورة بيع';
-    protected static ?string                 $pluralModelLabel    = 'فواتير المبيعات';
-    protected static ?string                 $recordTitleAttribute = 'reference_number';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-document-text';
+
+    protected static string|\UnitEnum|null $navigationGroup = 'المبيعات';
+
+    protected static ?int $navigationSort = 3;
+
+    protected static ?string $navigationLabel = 'فواتير المبيعات';
+
+    protected static ?string $modelLabel = 'فاتورة بيع';
+
+    protected static ?string $pluralModelLabel = 'فواتير المبيعات';
+
+    protected static ?string $recordTitleAttribute = 'reference_number';
 
     // ── Eager Load ─────────────────────────────────────────────────────────────
 
@@ -65,9 +72,9 @@ class InvoiceResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index'  => ListInvoices::route('/'),
+            'index' => ListInvoices::route('/'),
             'create' => CreateInvoice::route('/create'),
-            'view'   => ViewInvoice::route('/{record}'),
+            'view' => ViewInvoice::route('/{record}'),
         ];
     }
 

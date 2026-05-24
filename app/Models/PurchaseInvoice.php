@@ -3,9 +3,9 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class PurchaseInvoice extends Model
 {
@@ -30,13 +30,13 @@ class PurchaseInvoice extends Model
     ];
 
     protected $casts = [
-        'invoice_date'      => 'date',
-        'due_date'          => 'date',
-        'subtotal'          => 'decimal:2',
-        'tax_amount'        => 'decimal:2',
+        'invoice_date' => 'date',
+        'due_date' => 'date',
+        'subtotal' => 'decimal:2',
+        'tax_amount' => 'decimal:2',
         'total_landed_cost' => 'decimal:2',
-        'total_amount'      => 'decimal:2',
-        'paid_amount'       => 'decimal:2',
+        'total_amount' => 'decimal:2',
+        'paid_amount' => 'decimal:2',
     ];
 
     // ── Relations ──────────────────────────────────────────────────────────────
@@ -76,10 +76,11 @@ class PurchaseInvoice extends Model
     public static function generateReference(): string
     {
         $last = self::withTrashed()
-                    ->orderByRaw("CAST(SUBSTRING(reference_number FROM 6) AS INTEGER) DESC")
-                    ->value('reference_number');
+            ->orderByRaw('CAST(SUBSTRING(reference_number FROM 6) AS INTEGER) DESC')
+            ->value('reference_number');
         $num = $last ? ((int) substr($last, 5)) + 1 : 1;
-        return 'PINV-' . str_pad($num, 5, '0', STR_PAD_LEFT);
+
+        return 'PINV-'.str_pad($num, 5, '0', STR_PAD_LEFT);
     }
 
     public function isDraft(): bool
@@ -95,10 +96,10 @@ class PurchaseInvoice extends Model
     public function getStatusLabelAttribute(): string
     {
         return match ($this->status) {
-            'draft'     => 'مسودة',
+            'draft' => 'مسودة',
             'confirmed' => 'مؤكدة',
-            'paid'      => 'مدفوعة',
-            default     => $this->status,
+            'paid' => 'مدفوعة',
+            default => $this->status,
         };
     }
 

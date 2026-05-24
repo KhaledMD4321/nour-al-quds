@@ -11,7 +11,9 @@ use Illuminate\Database\Eloquent\Builder;
 class LowStockWidget extends TableWidget
 {
     protected static ?int $sort = 3;
+
     protected int|string|array $columnSpan = 'full';
+
     protected static ?string $heading = 'أصناف تحت الحد الأدنى';
 
     // عتبة الحد الأدنى الافتراضية (لأن products.min_stock_level غير موجود في قاعدة البيانات بعد)
@@ -19,8 +21,8 @@ class LowStockWidget extends TableWidget
 
     public function table(Table $table): Table
     {
-        $user   = auth()->user();
-        $unitId = ($user && !$user->isSuperAdmin() && $user->business_unit_id)
+        $user = auth()->user();
+        $unitId = ($user && ! $user->isSuperAdmin() && $user->business_unit_id)
             ? $user->business_unit_id : null;
 
         return $table

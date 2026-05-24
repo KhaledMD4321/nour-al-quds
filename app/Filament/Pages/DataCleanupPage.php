@@ -4,8 +4,8 @@ namespace App\Filament\Pages;
 
 use App\Models\ChartOfAccount;
 use App\Models\Cheque;
-use App\Models\CustomFieldValue;
 use App\Models\Customer;
+use App\Models\CustomFieldValue;
 use App\Models\Invoice;
 use App\Models\InvoiceItem;
 use App\Models\JournalEntry;
@@ -14,7 +14,6 @@ use App\Models\LandedCost;
 use App\Models\OpeningBalance;
 use App\Models\Payment;
 use App\Models\PriceListItem;
-use App\Models\PriceListVersion;
 use App\Models\Product;
 use App\Models\PurchaseInvoice;
 use App\Models\PurchaseInvoiceItem;
@@ -41,23 +40,34 @@ use Filament\Forms\Components\Select;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Filament\Schemas\Schema;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
 class DataCleanupPage extends Page
 {
-    protected static string|\BackedEnum|null $navigationIcon  = 'heroicon-o-trash';
-    protected static string|\UnitEnum|null   $navigationGroup = 'إدارة البيانات';
-    protected static ?int                    $navigationSort  = 33;
-    protected static ?string                 $title           = 'أدوات تنظيف البيانات';
-    protected static ?string                 $navigationLabel = 'تنظيف البيانات';
-    protected string                         $view            = 'filament.pages.data-cleanup';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-trash';
 
-    public int    $inactive_months      = 12;
-    public string $deleteTarget         = '';
-    public string $confirmText          = '';
-    public string $resetConfirm         = '';
-    public string $masterDeleteTarget   = '';
-    public string $masterDeleteConfirm  = '';
+    protected static string|\UnitEnum|null $navigationGroup = 'إدارة البيانات';
+
+    protected static ?int $navigationSort = 33;
+
+    protected static ?string $title = 'أدوات تنظيف البيانات';
+
+    protected static ?string $navigationLabel = 'تنظيف البيانات';
+
+    protected string $view = 'filament.pages.data-cleanup';
+
+    public int $inactive_months = 12;
+
+    public string $deleteTarget = '';
+
+    public string $confirmText = '';
+
+    public string $resetConfirm = '';
+
+    public string $masterDeleteTarget = '';
+
+    public string $masterDeleteConfirm = '';
 
     public static function canAccess(): bool
     {
@@ -70,8 +80,8 @@ class DataCleanupPage extends Page
             Select::make('inactive_months')
                 ->label('فترة عدم النشاط')
                 ->options([
-                    3  => '3 أشهر',
-                    6  => '6 أشهر',
+                    3 => '3 أشهر',
+                    6 => '6 أشهر',
                     12 => 'سنة',
                     24 => 'سنتين',
                 ])
@@ -90,7 +100,7 @@ class DataCleanupPage extends Page
                 ->icon('heroicon-o-archive-box-x-mark')
                 ->color('warning')
                 ->requiresConfirmation()
-                ->modalDescription('سيتم أرشفة الأصناف بدون مخزون وبدون حركة منذ ' . $this->inactive_months . ' شهر.')
+                ->modalDescription('سيتم أرشفة الأصناف بدون مخزون وبدون حركة منذ '.$this->inactive_months.' شهر.')
                 ->action(fn () => $this->archiveProducts()),
 
             Action::make('archive_customers')
@@ -98,7 +108,7 @@ class DataCleanupPage extends Page
                 ->icon('heroicon-o-user-minus')
                 ->color('warning')
                 ->requiresConfirmation()
-                ->modalDescription('سيتم أرشفة العملاء بدون معاملات منذ ' . $this->inactive_months . ' شهر.')
+                ->modalDescription('سيتم أرشفة العملاء بدون معاملات منذ '.$this->inactive_months.' شهر.')
                 ->action(fn () => $this->archiveCustomers()),
         ];
     }
@@ -140,12 +150,12 @@ class DataCleanupPage extends Page
         return app(DataCleanupService::class)->getCleanupStats();
     }
 
-    public function getDuplicateCustomers(): \Illuminate\Support\Collection
+    public function getDuplicateCustomers(): Collection
     {
         return app(DataCleanupService::class)->findDuplicateCustomers();
     }
 
-    public function getDuplicateProducts(): \Illuminate\Support\Collection
+    public function getDuplicateProducts(): Collection
     {
         return app(DataCleanupService::class)->findDuplicateProducts();
     }
@@ -155,14 +165,14 @@ class DataCleanupPage extends Page
     public function getDeleteTargets(): array
     {
         return [
-            'test_invoices'   => ['label' => 'فواتير المبيعات',          'count' => Invoice::count()],
-            'test_purchases'  => ['label' => 'فواتير المشتريات',         'count' => PurchaseInvoice::count()],
-            'test_receipts'   => ['label' => 'سندات القبض',              'count' => Receipt::withTrashed()->count()],
-            'test_payments'   => ['label' => 'سندات الصرف',              'count' => Payment::withTrashed()->count()],
-            'test_cheques'    => ['label' => 'الشيكات',                  'count' => Cheque::count()],
-            'test_journals'   => ['label' => 'القيود المحاسبية',          'count' => JournalEntry::count()],
+            'test_invoices' => ['label' => 'فواتير المبيعات',          'count' => Invoice::count()],
+            'test_purchases' => ['label' => 'فواتير المشتريات',         'count' => PurchaseInvoice::count()],
+            'test_receipts' => ['label' => 'سندات القبض',              'count' => Receipt::withTrashed()->count()],
+            'test_payments' => ['label' => 'سندات الصرف',              'count' => Payment::withTrashed()->count()],
+            'test_cheques' => ['label' => 'الشيكات',                  'count' => Cheque::count()],
+            'test_journals' => ['label' => 'القيود المحاسبية',          'count' => JournalEntry::count()],
             'stock_movements' => ['label' => 'حركات المخزون',            'count' => StockMovement::count()],
-            'treasury_txns'   => ['label' => 'حركات الخزائن',            'count' => TreasuryTransaction::count()],
+            'treasury_txns' => ['label' => 'حركات الخزائن',            'count' => TreasuryTransaction::count()],
         ];
     }
 
@@ -170,30 +180,32 @@ class DataCleanupPage extends Page
     {
         if (! auth()->user()?->isSuperAdmin()) {
             Notification::make()->danger()->title('غير مسموح')->send();
+
             return;
         }
 
         if ($this->confirmText !== 'تأكيد الحذف') {
             Notification::make()->danger()->title('اكتب "تأكيد الحذف" للمتابعة')->send();
+
             return;
         }
 
         try {
             DB::transaction(function () {
                 match ($this->deleteTarget) {
-                    'test_invoices'   => $this->purgeInvoices(),
-                    'test_purchases'  => $this->purgePurchases(),
-                    'test_receipts'   => Receipt::withTrashed()->forceDelete(),
-                    'test_payments'   => Payment::withTrashed()->forceDelete(),
-                    'test_cheques'    => Cheque::query()->forceDelete(),
-                    'test_journals'   => $this->purgeJournals(),
+                    'test_invoices' => $this->purgeInvoices(),
+                    'test_purchases' => $this->purgePurchases(),
+                    'test_receipts' => Receipt::withTrashed()->forceDelete(),
+                    'test_payments' => Payment::withTrashed()->forceDelete(),
+                    'test_cheques' => Cheque::query()->forceDelete(),
+                    'test_journals' => $this->purgeJournals(),
                     'stock_movements' => StockMovement::query()->delete(),
-                    'treasury_txns'   => $this->purgeTreasuryTxns(),
-                    default           => null,
+                    'treasury_txns' => $this->purgeTreasuryTxns(),
+                    default => null,
                 };
             });
 
-            $this->confirmText  = '';
+            $this->confirmText = '';
             $this->deleteTarget = '';
             Notification::make()->success()->title('تم حذف البيانات بنجاح')->send();
         } catch (\Exception $e) {
@@ -231,23 +243,26 @@ class DataCleanupPage extends Page
     public function getMasterDeleteTargets(): array
     {
         return [
-            'products'  => ['label' => 'الأصناف',       'count' => Product::withTrashed()->count(),       'confirm' => 'حذف الأصناف'],
+            'products' => ['label' => 'الأصناف',       'count' => Product::withTrashed()->count(),       'confirm' => 'حذف الأصناف'],
             'customers' => ['label' => 'العملاء',        'count' => Customer::withTrashed()->count(),      'confirm' => 'حذف العملاء'],
             'suppliers' => ['label' => 'الموردين',       'count' => Supplier::withTrashed()->count(),      'confirm' => 'حذف الموردين'],
-            'accounts'  => ['label' => 'شجرة الحسابات', 'count' => ChartOfAccount::count(),               'confirm' => 'حذف الحسابات'],
-            'settings'  => ['label' => 'الإعدادات',     'count' => SystemSetting::count(),                'confirm' => 'حذف الإعدادات'],
+            'accounts' => ['label' => 'شجرة الحسابات', 'count' => ChartOfAccount::count(),               'confirm' => 'حذف الحسابات'],
+            'settings' => ['label' => 'الإعدادات',     'count' => SystemSetting::count(),                'confirm' => 'حذف الإعدادات'],
         ];
     }
 
     public function deleteMasterData(): void
     {
-        if (! auth()->user()?->isSuperAdmin()) return;
+        if (! auth()->user()?->isSuperAdmin()) {
+            return;
+        }
 
-        $targets   = $this->getMasterDeleteTargets();
+        $targets = $this->getMasterDeleteTargets();
         $targetKey = $this->masterDeleteTarget;
 
         if (! isset($targets[$targetKey])) {
             Notification::make()->danger()->title('اختر نوع البيانات أولاً')->send();
+
             return;
         }
 
@@ -256,22 +271,23 @@ class DataCleanupPage extends Page
             Notification::make()->danger()
                 ->title("اكتب \"{$expected}\" بالضبط للمتابعة")
                 ->send();
+
             return;
         }
 
         try {
             DB::transaction(function () use ($targetKey) {
                 match ($targetKey) {
-                    'products'  => $this->purgeMasterProducts(),
+                    'products' => $this->purgeMasterProducts(),
                     'customers' => $this->purgeMasterCustomers(),
                     'suppliers' => $this->purgeMasterSuppliers(),
-                    'accounts'  => $this->purgeMasterAccounts(),
-                    'settings'  => SystemSetting::query()->delete(),
-                    default     => null,
+                    'accounts' => $this->purgeMasterAccounts(),
+                    'settings' => SystemSetting::query()->delete(),
+                    default => null,
                 };
             });
 
-            $this->masterDeleteTarget  = '';
+            $this->masterDeleteTarget = '';
             $this->masterDeleteConfirm = '';
             Notification::make()->success()->title('تم الحذف بنجاح')->send();
         } catch (\Exception $e) {
@@ -329,10 +345,13 @@ class DataCleanupPage extends Page
 
     public function fullReset(): void
     {
-        if (! auth()->user()?->isSuperAdmin()) return;
+        if (! auth()->user()?->isSuperAdmin()) {
+            return;
+        }
 
         if ($this->resetConfirm !== 'إعادة تعيين النظام') {
             Notification::make()->danger()->title('اكتب "إعادة تعيين النظام" بالضبط للمتابعة')->send();
+
             return;
         }
 

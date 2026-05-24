@@ -3,7 +3,6 @@
 namespace App\Filament\Resources\Invoices\RelationManagers;
 
 use App\Models\Invoice;
-use App\Models\PriceListItem;
 use App\Models\PriceListVersion;
 use App\Models\Product;
 use App\Models\Stock;
@@ -21,14 +20,16 @@ use Filament\Tables\Table;
 
 class ItemsRelationManager extends RelationManager
 {
-    protected static string  $relationship = 'items';
-    protected static ?string $title        = 'بنود الفاتورة';
+    protected static string $relationship = 'items';
+
+    protected static ?string $title = 'بنود الفاتورة';
 
     // ── للقراءة فقط لو الفاتورة مش مسودة ────────────────────────────────────────
     public function isReadOnly(): bool
     {
         /** @var Invoice $invoice */
         $invoice = $this->getOwnerRecord();
+
         return ! $invoice->isDraft();
     }
 
@@ -46,18 +47,20 @@ class ItemsRelationManager extends RelationManager
                 ->searchable()
                 ->live()
                 ->afterStateUpdated(function ($state, callable $set) {
-                    if (! $state) return;
+                    if (! $state) {
+                        return;
+                    }
 
                     /** @var Invoice $invoice */
                     $invoice = $this->getOwnerRecord();
 
                     // 1. سعر اللستة من قائمة الأسعار النشطة
-                    $product      = Product::find($state);
-                    $listPrice    = $product ? ($product->getCurrentPrice() ?? 0) : 0;
-                    $versionId    = null;
+                    $product = Product::find($state);
+                    $listPrice = $product ? ($product->getCurrentPrice() ?? 0) : 0;
+                    $versionId = null;
 
                     if ($product?->company_id) {
-                        $version   = PriceListVersion::where('company_id', $product->company_id)
+                        $version = PriceListVersion::where('company_id', $product->company_id)
                             ->where('status', 'active')
                             ->latest('effective_date')
                             ->first();
@@ -69,9 +72,9 @@ class ItemsRelationManager extends RelationManager
 
                     // 2. خصومات العميل الافتراضية
                     $customer = $invoice->customer;
-                    $d1       = $customer ? (float) $customer->default_discount_1 : 0;
-                    $d2       = $customer ? (float) $customer->default_discount_2 : 0;
-                    $d3       = $customer ? (float) $customer->default_discount_3 : 0;
+                    $d1 = $customer ? (float) $customer->default_discount_1 : 0;
+                    $d2 = $customer ? (float) $customer->default_discount_2 : 0;
+                    $d3 = $customer ? (float) $customer->default_discount_3 : 0;
 
                     // 3. الكمية المتاحة
                     $available = Stock::where('warehouse_id', $invoice->warehouse_id)
@@ -80,14 +83,14 @@ class ItemsRelationManager extends RelationManager
 
                     $unitPrice = PriceCalculator::calculateUnitPrice($listPrice, $d1, $d2, $d3);
 
-                    $set('list_price',           $listPrice);
-                    $set('discount_1',           $d1);
-                    $set('discount_2',           $d2);
-                    $set('discount_3',           $d3);
-                    $set('unit_price',           $unitPrice);
-                    $set('total',                $unitPrice); // quantity=1 by default
+                    $set('list_price', $listPrice);
+                    $set('discount_1', $d1);
+                    $set('discount_2', $d2);
+                    $set('discount_3', $d3);
+                    $set('unit_price', $unitPrice);
+                    $set('total', $unitPrice); // quantity=1 by default
                     $set('price_list_version_id', $versionId);
-                    $set('_available',           (float) $available);
+                    $set('_available', (float) $available);
                 }),
 
             TextInput::make('_available')
@@ -105,7 +108,7 @@ class ItemsRelationManager extends RelationManager
                 ->default(1)
                 ->live(onBlur: true)
                 ->afterStateUpdated(function ($state, callable $get, callable $set) {
-                    $qty       = (float) ($state ?? 1);
+                    $qty = (float) ($state ?? 1);
                     $unitPrice = (float) ($get('unit_price') ?? 0);
                     $set('total', round($qty * $unitPrice, 2));
                 }),
@@ -248,7 +251,7 @@ class ItemsRelationManager extends RelationManager
         $d3 = (float) ($get('discount_3') ?? 0);
 
         $unitPrice = PriceCalculator::calculateUnitPrice($lp, $d1, $d2, $d3);
-        $qty       = (float) ($get('quantity') ?? 1);
+        $qty = (float) ($get('quantity') ?? 1);
 
         $set('unit_price', $unitPrice);
         $set('total', round($qty * $unitPrice, 2));

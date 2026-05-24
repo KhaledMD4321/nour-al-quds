@@ -16,9 +16,9 @@ class UnitTransferItem extends Model
     ];
 
     protected $casts = [
-        'quantity'   => 'decimal:3',
+        'quantity' => 'decimal:3',
         'unit_price' => 'decimal:4',
-        'total'      => 'decimal:2',
+        'total' => 'decimal:2',
     ];
 
     // ── Relations ────────────────────────────────────────────────────────────────

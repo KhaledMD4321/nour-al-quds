@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Customers;
 
+use App\Filament\Concerns\HasModuleGuard;
 use App\Filament\Resources\Customers\Pages\CreateCustomer;
 use App\Filament\Resources\Customers\Pages\EditCustomer;
 use App\Filament\Resources\Customers\Pages\ListCustomers;
@@ -12,7 +13,6 @@ use App\Models\Customer;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Tables\Table;
-use App\Filament\Concerns\HasModuleGuard;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
@@ -20,23 +20,31 @@ use Illuminate\Database\Eloquent\SoftDeletingScope;
 class CustomerResource extends Resource
 {
     use HasModuleGuard;
+
     protected static string $module = 'customers';
 
     protected static ?string $model = Customer::class;
 
-    protected static string|\BackedEnum|null $navigationIcon  = 'heroicon-o-user-group';
-    protected static string|\UnitEnum|null   $navigationGroup = 'العملاء والموردين';
-    protected static ?int                    $navigationSort   = 1;
-    protected static ?string                 $navigationLabel  = 'العملاء';
-    protected static ?string                 $modelLabel       = 'عميل';
-    protected static ?string                 $pluralModelLabel = 'العملاء';
-    protected static ?string                 $recordTitleAttribute = 'name';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-user-group';
+
+    protected static string|\UnitEnum|null $navigationGroup = 'العملاء والموردين';
+
+    protected static ?int $navigationSort = 1;
+
+    protected static ?string $navigationLabel = 'العملاء';
+
+    protected static ?string $modelLabel = 'عميل';
+
+    protected static ?string $pluralModelLabel = 'العملاء';
+
+    protected static ?string $recordTitleAttribute = 'name';
 
     // ─── Access ────────────────────────────────────────────────────────────────
 
     public static function canAccess(): bool
     {
         $user = auth()->user();
+
         return $user->hasRole('super_admin')
             || $user->hasRole('showroom_manager')
             || $user->hasRole('distribution_manager')
@@ -53,7 +61,7 @@ class CustomerResource extends Resource
     public static function getGlobalSearchResultDetails(Model $record): array
     {
         return [
-            'النوع'     => $record->type_label,
+            'النوع' => $record->type_label,
             'التليفون' => $record->phone ?? '—',
         ];
     }
@@ -75,10 +83,10 @@ class CustomerResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index'  => ListCustomers::route('/'),
+            'index' => ListCustomers::route('/'),
             'create' => CreateCustomer::route('/create'),
-            'view'   => ViewCustomer::route('/{record}'),
-            'edit'   => EditCustomer::route('/{record}/edit'),
+            'view' => ViewCustomer::route('/{record}'),
+            'edit' => EditCustomer::route('/{record}/edit'),
         ];
     }
 

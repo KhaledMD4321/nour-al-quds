@@ -2,46 +2,54 @@
 
 namespace App\Filament\Resources\Treasuries;
 
+use App\Filament\Concerns\HasModuleGuard;
 use App\Filament\Resources\Treasuries\Pages\CreateTreasury;
 use App\Filament\Resources\Treasuries\Pages\EditTreasury;
 use App\Filament\Resources\Treasuries\Pages\ListTreasuries;
+use App\Filament\Resources\TreasuryTransactions\TreasuryTransactionResource;
 use App\Models\BusinessUnit;
 use App\Models\ChartOfAccount;
 use App\Models\Treasury;
 use Filament\Actions\Action;
 use Filament\Actions\EditAction;
-use Filament\Schemas\Components\Grid;
 use Filament\Forms\Components\Placeholder;
-use Filament\Schemas\Components\Section;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
-use Filament\Schemas\Components\Utilities\Get;
 use Filament\Resources\Resource;
+use Filament\Schemas\Components\Grid;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Table;
-use App\Filament\Concerns\HasModuleGuard;
 use Illuminate\Database\Eloquent\Builder;
 
 class TreasuryResource extends Resource
 {
     use HasModuleGuard;
+
     protected static string $module = 'finance';
 
     protected static ?string $model = Treasury::class;
 
-    protected static string|\BackedEnum|null $navigationIcon  = 'heroicon-o-banknotes';
-    protected static string|\UnitEnum|null   $navigationGroup = 'الخزينة والمالية';
-    protected static ?int                    $navigationSort  = 1;
-    protected static ?string                 $navigationLabel  = 'الخزائن';
-    protected static ?string                 $modelLabel       = 'خزينة';
-    protected static ?string                 $pluralModelLabel = 'الخزائن';
-    protected static ?string                 $recordTitleAttribute = 'name';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-banknotes';
+
+    protected static string|\UnitEnum|null $navigationGroup = 'الخزينة والمالية';
+
+    protected static ?int $navigationSort = 1;
+
+    protected static ?string $navigationLabel = 'الخزائن';
+
+    protected static ?string $modelLabel = 'خزينة';
+
+    protected static ?string $pluralModelLabel = 'الخزائن';
+
+    protected static ?string $recordTitleAttribute = 'name';
 
     // ── RBAC ─────────────────────────────────────────────────────────────────────
 
@@ -69,7 +77,7 @@ class TreasuryResource extends Resource
     public static function getEloquentQuery(): Builder
     {
         $query = parent::getEloquentQuery();
-        $user  = auth()->user();
+        $user = auth()->user();
 
         if (! $user->isSuperAdmin() && $user->business_unit_id) {
             $query->where('business_unit_id', $user->business_unit_id);
@@ -116,7 +124,7 @@ class TreasuryResource extends Resource
                         Select::make('account_id')
                             ->label('الحساب المحاسبي المرتبط')
                             ->options(function (Get $get): array {
-                                $type   = $get('type');
+                                $type = $get('type');
                                 $unitId = $get('business_unit_id');
 
                                 // حسابات النقدية والبنوك فقط (تحت 1110)
@@ -129,7 +137,7 @@ class TreasuryResource extends Resource
                                 return ChartOfAccount::whereIn('code', $codes)
                                     ->when($unitId, fn ($q) => $q->where(function ($q) use ($unitId) {
                                         $q->where('business_unit_id', $unitId)
-                                          ->orWhereNull('business_unit_id');
+                                            ->orWhereNull('business_unit_id');
                                     }))
                                     ->pluck('name', 'id')
                                     ->toArray();
@@ -155,8 +163,7 @@ class TreasuryResource extends Resource
                 ->schema([
                     Placeholder::make('current_balance_display')
                         ->label('الرصيد')
-                        ->content(fn (Treasury $record): string =>
-                            number_format((float) $record->current_balance, 2) . ' ج.م'
+                        ->content(fn (Treasury $record): string => number_format((float) $record->current_balance, 2).' ج.م'
                         ),
                 ]),
         ]);
@@ -177,13 +184,13 @@ class TreasuryResource extends Resource
                     ->label('النوع')
                     ->badge()
                     ->formatStateUsing(fn (string $state): string => match ($state) {
-                        'cash'  => 'نقدية',
-                        'bank'  => 'بنك',
+                        'cash' => 'نقدية',
+                        'bank' => 'بنك',
                         default => $state,
                     })
                     ->color(fn (string $state): string => match ($state) {
-                        'cash'  => 'success',
-                        'bank'  => 'info',
+                        'cash' => 'success',
+                        'bank' => 'info',
                         default => 'gray',
                     }),
 
@@ -202,8 +209,7 @@ class TreasuryResource extends Resource
                     ->label('كود الحساب')
                     ->fontFamily('mono')
                     ->color('gray')
-                    ->formatStateUsing(fn ($state, Treasury $record): string =>
-                        $state . ' — ' . ($record->account?->name ?? '')
+                    ->formatStateUsing(fn ($state, Treasury $record): string => $state.' — '.($record->account?->name ?? '')
                     ),
 
                 IconColumn::make('is_active')
@@ -235,9 +241,8 @@ class TreasuryResource extends Resource
                     ->label('كشف الحركة')
                     ->icon('heroicon-o-list-bullet')
                     ->color('info')
-                    ->url(fn (Treasury $record): string =>
-                        \App\Filament\Resources\TreasuryTransactions\TreasuryTransactionResource::getUrl('index') .
-                        '?tableFilters[treasury_id][value]=' . $record->id
+                    ->url(fn (Treasury $record): string => TreasuryTransactionResource::getUrl('index').
+                        '?tableFilters[treasury_id][value]='.$record->id
                     ),
 
                 EditAction::make()->label('تعديل'),
@@ -255,9 +260,9 @@ class TreasuryResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index'  => ListTreasuries::route('/'),
+            'index' => ListTreasuries::route('/'),
             'create' => CreateTreasury::route('/create'),
-            'edit'   => EditTreasury::route('/{record}/edit'),
+            'edit' => EditTreasury::route('/{record}/edit'),
         ];
     }
 }

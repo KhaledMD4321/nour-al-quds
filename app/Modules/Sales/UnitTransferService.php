@@ -5,7 +5,6 @@ namespace App\Modules\Sales;
 use App\Models\Customer;
 use App\Models\FiscalPeriod;
 use App\Models\Invoice;
-use App\Models\PriceListItem;
 use App\Models\PurchaseInvoice;
 use App\Models\Stock;
 use App\Models\StockMovement;
@@ -48,9 +47,9 @@ class UnitTransferService
                 ->value('quantity') ?? 0);
 
             if ($available < (float) $item->quantity) {
-                $name = $item->product?->name ?? '#' . $item->product_id;
+                $name = $item->product?->name ?? '#'.$item->product_id;
                 throw new Exception(
-                    "الكمية المطلوبة للصنف \"{$name}\" ({$item->quantity}) " .
+                    "الكمية المطلوبة للصنف \"{$name}\" ({$item->quantity}) ".
                     "أكبر من المتاح في مخزن المصدر ({$available})"
                 );
             }
@@ -66,7 +65,7 @@ class UnitTransferService
 
             // ── 3. حركات المخزون ──────────────────────────────────────────────────
             foreach ($transfer->items as $item) {
-                $qty       = (float) $item->quantity;
+                $qty = (float) $item->quantity;
                 $unitPrice = (float) $item->unit_price;
 
                 // خصم من مخزن المصدر
@@ -79,17 +78,17 @@ class UnitTransferService
                 $fromStock->update(['quantity' => $fromBalance, 'last_updated' => now()]);
 
                 StockMovement::create([
-                    'warehouse_id'   => $transfer->from_warehouse_id,
-                    'product_id'     => $item->product_id,
-                    'type'           => 'transfer_out',
-                    'quantity'       => $qty,
-                    'unit_cost'      => (float) $fromStock->avg_cost,
-                    'balance_after'  => $fromBalance,
+                    'warehouse_id' => $transfer->from_warehouse_id,
+                    'product_id' => $item->product_id,
+                    'type' => 'transfer_out',
+                    'quantity' => $qty,
+                    'unit_cost' => (float) $fromStock->avg_cost,
+                    'balance_after' => $fromBalance,
                     'reference_type' => 'unit_transfer',
-                    'reference_id'   => $transfer->id,
-                    'notes'          => 'تحويل صادر — ' . $transfer->reference_number .
-                                       ' → ' . $transfer->toBusinessUnit->name,
-                    'created_by'     => Auth::id(),
+                    'reference_id' => $transfer->id,
+                    'notes' => 'تحويل صادر — '.$transfer->reference_number.
+                                       ' → '.$transfer->toBusinessUnit->name,
+                    'created_by' => Auth::id(),
                 ]);
 
                 // إضافة لمخزن الوجهة
@@ -98,9 +97,9 @@ class UnitTransferService
                     ->lockForUpdate()
                     ->first();
 
-                $oldQty      = $toStock ? (float) $toStock->quantity : 0;
-                $oldAvgCost  = $toStock ? (float) $toStock->avg_cost  : 0;
-                $toBalance   = $oldQty + $qty;
+                $oldQty = $toStock ? (float) $toStock->quantity : 0;
+                $oldAvgCost = $toStock ? (float) $toStock->avg_cost : 0;
+                $toBalance = $oldQty + $qty;
 
                 // متوسط تكلفة مرجَّح
                 $newAvgCost = $toBalance > 0
@@ -109,42 +108,42 @@ class UnitTransferService
 
                 if ($toStock) {
                     $toStock->update([
-                        'quantity'     => $toBalance,
-                        'avg_cost'     => round($newAvgCost, 4),
+                        'quantity' => $toBalance,
+                        'avg_cost' => round($newAvgCost, 4),
                         'last_updated' => now(),
                     ]);
                 } else {
                     Stock::create([
                         'warehouse_id' => $transfer->to_warehouse_id,
-                        'product_id'   => $item->product_id,
-                        'quantity'     => $toBalance,
-                        'avg_cost'     => round($newAvgCost, 4),
+                        'product_id' => $item->product_id,
+                        'quantity' => $toBalance,
+                        'avg_cost' => round($newAvgCost, 4),
                         'min_quantity' => 0,
                         'last_updated' => now(),
                     ]);
                 }
 
                 StockMovement::create([
-                    'warehouse_id'   => $transfer->to_warehouse_id,
-                    'product_id'     => $item->product_id,
-                    'type'           => 'transfer_in',
-                    'quantity'       => $qty,
-                    'unit_cost'      => $unitPrice,
-                    'balance_after'  => $toBalance,
+                    'warehouse_id' => $transfer->to_warehouse_id,
+                    'product_id' => $item->product_id,
+                    'type' => 'transfer_in',
+                    'quantity' => $qty,
+                    'unit_cost' => $unitPrice,
+                    'balance_after' => $toBalance,
                     'reference_type' => 'unit_transfer',
-                    'reference_id'   => $transfer->id,
-                    'notes'          => 'تحويل وارد — ' . $transfer->reference_number .
-                                       ' ← ' . $transfer->fromBusinessUnit->name,
-                    'created_by'     => Auth::id(),
+                    'reference_id' => $transfer->id,
+                    'notes' => 'تحويل وارد — '.$transfer->reference_number.
+                                       ' ← '.$transfer->fromBusinessUnit->name,
+                    'created_by' => Auth::id(),
                 ]);
             }
 
             // ── 4. تحديث وثيقة التحويل ───────────────────────────────────────────
             $transfer->update([
-                'status'              => 'confirmed',
-                'sale_invoice_id'     => $saleInvoice->id,
+                'status' => 'confirmed',
+                'sale_invoice_id' => $saleInvoice->id,
                 'purchase_invoice_id' => $purchaseInvoice->id,
-                'total_amount'        => round($transfer->items->sum('total'), 2),
+                'total_amount' => round($transfer->items->sum('total'), 2),
             ]);
         });
     }
@@ -170,33 +169,33 @@ class UnitTransferService
         $subtotal = round($transfer->items->sum('total'), 2);
 
         $invoice = Invoice::create([
-            'type'             => 'sale',
+            'type' => 'sale',
             'reference_number' => Invoice::generateReference(),
             'business_unit_id' => $transfer->from_business_unit_id,
-            'warehouse_id'     => $transfer->from_warehouse_id,
-            'customer_id'      => $internalCustomer->id,
-            'invoice_date'     => $transfer->transfer_date,
-            'status'           => 'confirmed',
-            'payment_type'     => 'internal',
-            'subtotal'         => $subtotal,
-            'discount_amount'  => 0,
-            'tax_amount'       => 0,
-            'total_amount'     => $subtotal,
-            'paid_amount'      => $subtotal, // داخلي = مدفوع تلقائياً
-            'notes'            => 'تحويل داخلي — ' . $transfer->reference_number,
-            'created_by'       => Auth::id(),
+            'warehouse_id' => $transfer->from_warehouse_id,
+            'customer_id' => $internalCustomer->id,
+            'invoice_date' => $transfer->transfer_date,
+            'status' => 'confirmed',
+            'payment_type' => 'internal',
+            'subtotal' => $subtotal,
+            'discount_amount' => 0,
+            'tax_amount' => 0,
+            'total_amount' => $subtotal,
+            'paid_amount' => $subtotal, // داخلي = مدفوع تلقائياً
+            'notes' => 'تحويل داخلي — '.$transfer->reference_number,
+            'created_by' => Auth::id(),
         ]);
 
         foreach ($transfer->items as $item) {
             $invoice->items()->create([
                 'product_id' => $item->product_id,
-                'quantity'   => $item->quantity,
+                'quantity' => $item->quantity,
                 'list_price' => $item->unit_price,
                 'discount_1' => 0,
                 'discount_2' => 0,
                 'discount_3' => 0,
                 'unit_price' => $item->unit_price,
-                'total'      => $item->total,
+                'total' => $item->total,
             ]);
         }
 
@@ -213,30 +212,30 @@ class UnitTransferService
         $subtotal = round($transfer->items->sum('total'), 2);
 
         $purchaseInvoice = PurchaseInvoice::create([
-            'reference_number'  => PurchaseInvoice::generateReference(),
-            'supplier_id'       => $internalSupplier->id,
-            'warehouse_id'      => $transfer->to_warehouse_id,
-            'business_unit_id'  => $transfer->to_business_unit_id,
-            'invoice_number'    => $transfer->reference_number,
-            'invoice_date'      => $transfer->transfer_date,
-            'status'            => 'confirmed',
-            'subtotal'          => $subtotal,
-            'tax_amount'        => 0,
+            'reference_number' => PurchaseInvoice::generateReference(),
+            'supplier_id' => $internalSupplier->id,
+            'warehouse_id' => $transfer->to_warehouse_id,
+            'business_unit_id' => $transfer->to_business_unit_id,
+            'invoice_number' => $transfer->reference_number,
+            'invoice_date' => $transfer->transfer_date,
+            'status' => 'confirmed',
+            'subtotal' => $subtotal,
+            'tax_amount' => 0,
             'total_landed_cost' => 0,
-            'total_amount'      => $subtotal,
-            'paid_amount'       => $subtotal, // داخلي = مدفوع تلقائياً
-            'notes'             => 'تحويل داخلي — ' . $transfer->reference_number,
-            'created_by'        => Auth::id(),
+            'total_amount' => $subtotal,
+            'paid_amount' => $subtotal, // داخلي = مدفوع تلقائياً
+            'notes' => 'تحويل داخلي — '.$transfer->reference_number,
+            'created_by' => Auth::id(),
         ]);
 
         foreach ($transfer->items as $item) {
             $purchaseInvoice->items()->create([
-                'product_id'        => $item->product_id,
-                'quantity'          => $item->quantity,
-                'unit_cost'         => $item->unit_price,
-                'total'             => $item->total,
+                'product_id' => $item->product_id,
+                'quantity' => $item->quantity,
+                'unit_cost' => $item->unit_price,
+                'total' => $item->total,
                 'landed_cost_share' => 0,
-                'avg_cost_after'    => $item->unit_price,
+                'avg_cost_after' => $item->unit_price,
             ]);
         }
 
@@ -247,19 +246,19 @@ class UnitTransferService
 
     private function getOrCreateInternalCustomer(string $unitName, int $businessUnitId): Customer
     {
-        $name = '[داخلي] ' . $unitName;
+        $name = '[داخلي] '.$unitName;
 
         return Customer::firstOrCreate(
             ['name' => $name],
             [
-                'type'               => 'internal',
-                'business_unit_id'   => $businessUnitId,
-                'credit_limit'       => 0,
+                'type' => 'internal',
+                'business_unit_id' => $businessUnitId,
+                'credit_limit' => 0,
                 'default_discount_1' => 0,
                 'default_discount_2' => 0,
                 'default_discount_3' => 0,
-                'opening_balance'    => 0,
-                'is_active'          => true,
+                'opening_balance' => 0,
+                'is_active' => true,
             ]
         );
     }
@@ -268,7 +267,7 @@ class UnitTransferService
 
     private function getOrCreateInternalSupplier(string $unitName, int $businessUnitId): Supplier
     {
-        $name = '[داخلي] ' . $unitName;
+        $name = '[داخلي] '.$unitName;
 
         return Supplier::firstOrCreate(
             ['name' => $name],

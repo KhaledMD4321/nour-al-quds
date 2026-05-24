@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources;
 
+use App\Filament\Concerns\HasModuleGuard;
 use App\Filament\Resources\PriceListVersionResource\Pages;
 use App\Filament\Resources\PriceListVersionResource\RelationManagers;
 use App\Models\Company;
@@ -20,12 +21,12 @@ use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
-use App\Filament\Concerns\HasModuleGuard;
 use Filament\Tables\Table;
 
 class PriceListVersionResource extends Resource
 {
     use HasModuleGuard;
+
     protected static string $module = 'catalog';
 
     protected static ?string $model = PriceListVersion::class;
@@ -49,6 +50,7 @@ class PriceListVersionResource extends Resource
     public static function canAccess(): bool
     {
         $user = auth()->user();
+
         return $user->hasRole('super_admin')
             || $user->hasRole('showroom_manager')
             || $user->hasRole('distribution_manager');
@@ -86,7 +88,7 @@ class PriceListVersionResource extends Resource
                     Select::make('status')
                         ->label('الحالة')
                         ->options([
-                            'active'   => 'نشطة',
+                            'active' => 'نشطة',
                             'archived' => 'مؤرشفة',
                         ])
                         ->default('active')
@@ -135,14 +137,14 @@ class PriceListVersionResource extends Resource
                     ->label('الحالة')
                     ->badge()
                     ->formatStateUsing(fn (string $state): string => match ($state) {
-                        'active'   => 'نشطة',
+                        'active' => 'نشطة',
                         'archived' => 'مؤرشفة',
-                        default    => $state,
+                        default => $state,
                     })
                     ->color(fn (string $state): string => match ($state) {
-                        'active'   => 'success',
+                        'active' => 'success',
                         'archived' => 'gray',
-                        default    => 'gray',
+                        default => 'gray',
                     }),
 
                 TextColumn::make('createdBy.name')
@@ -167,7 +169,7 @@ class PriceListVersionResource extends Resource
                 SelectFilter::make('status')
                     ->label('الحالة')
                     ->options([
-                        'active'   => 'نشطة',
+                        'active' => 'نشطة',
                         'archived' => 'مؤرشفة',
                     ])
                     ->placeholder('الكل'),
@@ -213,10 +215,10 @@ class PriceListVersionResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index'  => Pages\ListPriceListVersions::route('/'),
+            'index' => Pages\ListPriceListVersions::route('/'),
             'create' => Pages\CreatePriceListVersion::route('/create'),
-            'view'   => Pages\ViewPriceListVersion::route('/{record}'),
-            'edit'   => Pages\EditPriceListVersion::route('/{record}/edit'),
+            'view' => Pages\ViewPriceListVersion::route('/{record}'),
+            'edit' => Pages\EditPriceListVersion::route('/{record}/edit'),
         ];
     }
 }

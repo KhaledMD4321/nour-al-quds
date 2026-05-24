@@ -13,28 +13,28 @@ return new class extends Migration
     public function up(): void
     {
         DB::transaction(function () {
-            $parentId       = DB::table('chart_of_accounts')->where('code', '1110')->value('id');
-            $showroomId     = DB::table('business_units')->where('type', 'showroom')->value('id');
+            $parentId = DB::table('chart_of_accounts')->where('code', '1110')->value('id');
+            $showroomId = DB::table('business_units')->where('type', 'showroom')->value('id');
             $distributionId = DB::table('business_units')->where('type', 'distribution')->value('id');
 
             $accounts = [
                 [
-                    'code'             => '1114',
-                    'name'             => 'بنك المعرض',
-                    'type'             => 'asset',
-                    'parent_id'        => $parentId,
+                    'code' => '1114',
+                    'name' => 'بنك المعرض',
+                    'type' => 'asset',
+                    'parent_id' => $parentId,
                     'business_unit_id' => $showroomId,
-                    'level'            => 4,
-                    'is_active'        => true,
+                    'level' => 4,
+                    'is_active' => true,
                 ],
                 [
-                    'code'             => '1115',
-                    'name'             => 'بنك التوزيع',
-                    'type'             => 'asset',
-                    'parent_id'        => $parentId,
+                    'code' => '1115',
+                    'name' => 'بنك التوزيع',
+                    'type' => 'asset',
+                    'parent_id' => $parentId,
                     'business_unit_id' => $distributionId,
-                    'level'            => 4,
-                    'is_active'        => true,
+                    'level' => 4,
+                    'is_active' => true,
                 ],
             ];
 

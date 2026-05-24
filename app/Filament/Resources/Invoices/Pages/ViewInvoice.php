@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Invoices\Pages;
 
+use App\Filament\Pages\SaleReturn;
 use App\Filament\Resources\Invoices\InvoiceResource;
 use App\Models\Invoice;
 use App\Modules\Sales\InvoiceService;
@@ -12,8 +13,9 @@ use Throwable;
 
 class ViewInvoice extends ViewRecord
 {
-    protected static string  $resource = InvoiceResource::class;
-    protected static ?string $title    = 'تفاصيل الفاتورة';
+    protected static string $resource = InvoiceResource::class;
+
+    protected static ?string $title = 'تفاصيل الفاتورة';
 
     protected function getHeaderActions(): array
     {
@@ -26,11 +28,10 @@ class ViewInvoice extends ViewRecord
                 ->label('إنشاء مرتجع')
                 ->icon('heroicon-o-arrow-uturn-right')
                 ->color('warning')
-                ->visible(fn () =>
-                    $invoice->type === 'sale' &&
+                ->visible(fn () => $invoice->type === 'sale' &&
                     in_array($invoice->status, ['confirmed', 'delivered', 'partially_paid', 'paid'])
                 )
-                ->url(fn () => \App\Filament\Pages\SaleReturn::getUrl(['invoice' => $invoice->id])),
+                ->url(fn () => SaleReturn::getUrl(['invoice' => $invoice->id])),
 
             // ── PDF ──────────────────────────────────────────────────────────
             Action::make('pdf')

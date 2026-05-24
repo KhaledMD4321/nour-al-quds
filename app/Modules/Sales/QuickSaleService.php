@@ -49,9 +49,9 @@ class QuickSaleService
 
         // تحقق من صحة بنود البيع
         foreach ($data['items'] as $i => $item) {
-            $qty   = (float) ($item['quantity'] ?? 0);
+            $qty = (float) ($item['quantity'] ?? 0);
             $price = (float) ($item['unit_price'] ?? 0);
-            $row   = $i + 1;
+            $row = $i + 1;
             if ($qty <= 0) {
                 throw new Exception("الصف {$row}: الكمية لازم تكون أكبر من صفر");
             }
@@ -71,18 +71,18 @@ class QuickSaleService
             $sale = QuickSale::create([
                 'reference_number' => QuickSale::generateReference(),
                 'business_unit_id' => $data['business_unit_id'],
-                'warehouse_id'     => $data['warehouse_id'],
-                'treasury_id'      => $data['treasury_id'],
-                'total_amount'     => $totalAmount,
-                'payment_method'   => $data['payment_method'] ?? 'cash',
-                'customer_name'    => $data['customer_name'] ?? null,
-                'notes'            => $data['notes'] ?? null,
-                'created_by'       => Auth::id(),
+                'warehouse_id' => $data['warehouse_id'],
+                'treasury_id' => $data['treasury_id'],
+                'total_amount' => $totalAmount,
+                'payment_method' => $data['payment_method'] ?? 'cash',
+                'customer_name' => $data['customer_name'] ?? null,
+                'notes' => $data['notes'] ?? null,
+                'created_by' => Auth::id(),
             ]);
 
             // 3. البنود + خصم المخزون
             foreach ($data['items'] as $itemData) {
-                $qty   = (float) $itemData['quantity'];
+                $qty = (float) $itemData['quantity'];
                 $price = (float) $itemData['unit_price'];
 
                 // تحقق من الرصيد + lockForUpdate
@@ -94,7 +94,7 @@ class QuickSaleService
                 $available = $stock ? (float) $stock->quantity : 0;
 
                 if ($available < $qty) {
-                    $productName = Product::find($itemData['product_id'])?->name ?? '#' . $itemData['product_id'];
+                    $productName = Product::find($itemData['product_id'])?->name ?? '#'.$itemData['product_id'];
                     if (! SystemSetting::get('business_rules.allow_negative_stock', false)) {
                         throw new Exception(
                             "الكمية المطلوبة للصنف \"{$productName}\" ({$qty}) أكبر من المتاح ({$available})"
@@ -106,42 +106,42 @@ class QuickSaleService
                 // إنشاء البند
                 QuickSaleItem::create([
                     'quick_sale_id' => $sale->id,
-                    'product_id'    => $itemData['product_id'],
-                    'quantity'      => $qty,
-                    'unit_price'    => $price,
-                    'total'         => round($qty * $price, 2),
+                    'product_id' => $itemData['product_id'],
+                    'quantity' => $qty,
+                    'unit_price' => $price,
+                    'total' => round($qty * $price, 2),
                 ]);
 
                 // خصم المخزون
                 $balanceAfter = $available - $qty;
                 $stock->update([
-                    'quantity'     => $balanceAfter,
+                    'quantity' => $balanceAfter,
                     'last_updated' => now(),
                 ]);
 
                 // تسجيل حركة المخزون — سجل أبدي
                 StockMovement::create([
-                    'warehouse_id'   => $data['warehouse_id'],
-                    'product_id'     => $itemData['product_id'],
-                    'type'           => 'out',
-                    'quantity'       => $qty,
-                    'unit_cost'      => $stock ? (float) $stock->avg_cost : 0,
-                    'balance_after'  => $balanceAfter,
+                    'warehouse_id' => $data['warehouse_id'],
+                    'product_id' => $itemData['product_id'],
+                    'type' => 'out',
+                    'quantity' => $qty,
+                    'unit_cost' => $stock ? (float) $stock->avg_cost : 0,
+                    'balance_after' => $balanceAfter,
                     'reference_type' => QuickSale::class,
-                    'reference_id'   => $sale->id,
-                    'notes'          => 'بيع سريع — ' . $sale->reference_number,
-                    'created_by'     => Auth::id(),
+                    'reference_id' => $sale->id,
+                    'notes' => 'بيع سريع — '.$sale->reference_number,
+                    'created_by' => Auth::id(),
                 ]);
             }
 
             // 4. إضافة الإيراد للخزينة — سجل حركة مقبوضات
             $this->treasuryService->addFunds(
-                treasuryId:    (int) $data['treasury_id'],
-                amount:        $totalAmount,
-                description:   'بيع سريع — ' . $sale->reference_number,
+                treasuryId: (int) $data['treasury_id'],
+                amount: $totalAmount,
+                description: 'بيع سريع — '.$sale->reference_number,
                 referenceType: QuickSale::class,
-                referenceId:   $sale->id,
-                createdBy:     Auth::id(),
+                referenceId: $sale->id,
+                createdBy: Auth::id(),
             );
 
             return $sale;

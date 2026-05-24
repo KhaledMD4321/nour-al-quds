@@ -3,7 +3,6 @@
 namespace App\Filament\Resources\Receipts\Pages;
 
 use App\Filament\Resources\Receipts\ReceiptResource;
-use App\Models\Receipt;
 use Filament\Actions\Action;
 use Filament\Resources\Pages\ViewRecord;
 

@@ -9,12 +9,13 @@ use Filament\Widgets\StatsOverviewWidget\Stat;
 class TreasuryStatsWidget extends StatsOverviewWidget
 {
     protected static ?int $sort = 2;
+
     protected int|string|array $columnSpan = 'full';
 
     protected function getStats(): array
     {
-        $user   = auth()->user();
-        $unitId = ($user && !$user->isSuperAdmin() && $user->business_unit_id)
+        $user = auth()->user();
+        $unitId = ($user && ! $user->isSuperAdmin() && $user->business_unit_id)
             ? $user->business_unit_id : null;
 
         $treasuries = Treasury::where('is_active', true)
@@ -27,19 +28,19 @@ class TreasuryStatsWidget extends StatsOverviewWidget
         $stats = [];
 
         foreach ($treasuries as $t) {
-            $icon  = $t->type === 'cash'
+            $icon = $t->type === 'cash'
                 ? 'heroicon-o-banknotes'
                 : 'heroicon-o-building-library';
 
             $balance = (float) $t->current_balance;
-            $color   = $balance > 0 ? 'success' : ($balance < 0 ? 'danger' : 'gray');
+            $color = $balance > 0 ? 'success' : ($balance < 0 ? 'danger' : 'gray');
 
             $stats[] = Stat::make(
                 $t->name,
-                number_format($balance, 2) . ' ج.م'
+                number_format($balance, 2).' ج.م'
             )
                 ->description(
-                    ($t->businessUnit?->name ?? '—') . ' — ' .
+                    ($t->businessUnit?->name ?? '—').' — '.
                     ($t->type === 'cash' ? 'نقدية' : 'بنك')
                 )
                 ->icon($icon)

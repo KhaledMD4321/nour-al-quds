@@ -3,8 +3,8 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class JournalEntry extends Model
@@ -26,10 +26,10 @@ class JournalEntry extends Model
     ];
 
     protected $casts = [
-        'entry_date'   => 'date',
-        'is_manual'    => 'boolean',
-        'is_posted'    => 'boolean',
-        'total_debit'  => 'decimal:2',
+        'entry_date' => 'date',
+        'is_manual' => 'boolean',
+        'is_posted' => 'boolean',
+        'total_debit' => 'decimal:2',
         'total_credit' => 'decimal:2',
     ];
 
@@ -61,7 +61,7 @@ class JournalEntry extends Model
 
         $next = $last ? ((int) substr($last, 3)) + 1 : 1;
 
-        return 'JE-' . str_pad($next, 6, '0', STR_PAD_LEFT);
+        return 'JE-'.str_pad($next, 6, '0', STR_PAD_LEFT);
     }
 
     public function isBalanced(): bool

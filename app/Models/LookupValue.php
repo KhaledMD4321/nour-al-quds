@@ -17,7 +17,7 @@ class LookupValue extends Model
     ];
 
     protected $casts = [
-        'is_active'  => 'boolean',
+        'is_active' => 'boolean',
         'is_default' => 'boolean',
         'sort_order' => 'integer',
     ];
@@ -37,8 +37,8 @@ class LookupValue extends Model
             if ($value->is_default) {
                 // Clear is_default on sibling values before saving this one
                 static::where('lookup_type_id', $value->lookup_type_id)
-                      ->where('id', '!=', $value->id ?? 0)
-                      ->update(['is_default' => false]);
+                    ->where('id', '!=', $value->id ?? 0)
+                    ->update(['is_default' => false]);
             }
         });
     }

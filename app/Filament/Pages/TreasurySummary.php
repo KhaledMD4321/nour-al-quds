@@ -8,11 +8,15 @@ use Illuminate\Support\Collection;
 
 class TreasurySummary extends Page
 {
-    protected static string|\BackedEnum|null $navigationIcon  = 'heroicon-o-chart-pie';
-    protected static string|\UnitEnum|null   $navigationGroup = 'الخزينة والمالية';
-    protected static ?int                    $navigationSort  = 99;
-    protected static ?string                 $title           = 'النظرة الشاملة للخزائن';
-    protected static ?string                 $navigationLabel = 'النظرة الشاملة';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-chart-pie';
+
+    protected static string|\UnitEnum|null $navigationGroup = 'الخزينة والمالية';
+
+    protected static ?int $navigationSort = 99;
+
+    protected static ?string $title = 'النظرة الشاملة للخزائن';
+
+    protected static ?string $navigationLabel = 'النظرة الشاملة';
 
     protected string $view = 'filament.pages.treasury-summary';
 

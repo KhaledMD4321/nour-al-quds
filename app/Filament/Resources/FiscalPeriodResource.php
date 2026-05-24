@@ -16,7 +16,10 @@ use Filament\Tables\Table;
 class FiscalPeriodResource extends Resource
 {
     // Hidden from nav — replaced by FiscalPeriodsManager page
-    public static function shouldRegisterNavigation(): bool { return false; }
+    public static function shouldRegisterNavigation(): bool
+    {
+        return false;
+    }
 
     protected static ?string $model = FiscalPeriod::class;
 

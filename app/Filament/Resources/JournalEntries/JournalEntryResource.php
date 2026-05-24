@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\JournalEntries;
 
+use App\Filament\Concerns\HasModuleGuard;
 use App\Filament\Resources\JournalEntries\Pages\CreateJournalEntry;
 use App\Filament\Resources\JournalEntries\Pages\ListJournalEntries;
 use App\Filament\Resources\JournalEntries\Pages\ViewJournalEntry;
@@ -24,31 +25,42 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
-use App\Filament\Concerns\HasModuleGuard;
 use Illuminate\Database\Eloquent\Builder;
 
 class JournalEntryResource extends Resource
 {
     use HasModuleGuard;
+
     protected static string $module = 'accounting';
 
     protected static ?string $model = JournalEntry::class;
 
-    protected static string|\BackedEnum|null $navigationIcon  = 'heroicon-o-book-open';
-    protected static string|\UnitEnum|null   $navigationGroup = 'المحاسبة';
-    protected static ?int                    $navigationSort   = 9;
-    protected static ?string                 $navigationLabel  = 'القيود اليومية';
-    protected static ?string                 $modelLabel       = 'قيد';
-    protected static ?string                 $pluralModelLabel = 'القيود اليومية';
-    protected static ?string                 $recordTitleAttribute = 'entry_number';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-book-open';
+
+    protected static string|\UnitEnum|null $navigationGroup = 'المحاسبة';
+
+    protected static ?int $navigationSort = 9;
+
+    protected static ?string $navigationLabel = 'القيود اليومية';
+
+    protected static ?string $modelLabel = 'قيد';
+
+    protected static ?string $pluralModelLabel = 'القيود اليومية';
+
+    protected static ?string $recordTitleAttribute = 'entry_number';
 
     // ── RBAC ──────────────────────────────────────────────────────────────────
 
     public static function canAccess(): bool
     {
         $user = auth()->user();
-        if (! $user) return false;
-        if ($user->isSuperAdmin()) return true;
+        if (! $user) {
+            return false;
+        }
+        if ($user->isSuperAdmin()) {
+            return true;
+        }
+
         return $user->can('accounting.journal.view');
     }
 
@@ -60,8 +72,13 @@ class JournalEntryResource extends Resource
     public static function canCreate(): bool
     {
         $user = auth()->user();
-        if (! $user) return false;
-        if ($user->isSuperAdmin()) return true;
+        if (! $user) {
+            return false;
+        }
+        if ($user->isSuperAdmin()) {
+            return true;
+        }
+
         return $user->can('accounting.journal.create');
     }
 
@@ -170,14 +187,14 @@ class JournalEntryResource extends Resource
                 TextColumn::make('source_type')
                     ->label('المصدر')
                     ->formatStateUsing(fn ($state) => match (class_basename($state ?? '')) {
-                        'Receipt'         => 'سند قبض',
-                        'Payment'         => 'سند صرف',
-                        'QuickSale'       => 'بيع سريع',
-                        'Invoice'         => 'فاتورة',
-                        'Cheque'          => 'شيك',
+                        'Receipt' => 'سند قبض',
+                        'Payment' => 'سند صرف',
+                        'QuickSale' => 'بيع سريع',
+                        'Invoice' => 'فاتورة',
+                        'Cheque' => 'شيك',
                         'PurchaseInvoice' => 'فاتورة شراء',
-                        ''                => 'يدوي',
-                        default           => class_basename($state ?? 'يدوي'),
+                        '' => 'يدوي',
+                        default => class_basename($state ?? 'يدوي'),
                     })
                     ->badge()
                     ->color('gray'),
@@ -195,8 +212,7 @@ class JournalEntryResource extends Resource
                         '1' => 'يدوي',
                         '0' => 'أوتوماتيكي',
                     ])
-                    ->query(fn (Builder $query, array $data) =>
-                        $data['value'] !== null && $data['value'] !== ''
+                    ->query(fn (Builder $query, array $data) => $data['value'] !== null && $data['value'] !== ''
                             ? $query->where('is_manual', (bool) $data['value'])
                             : $query
                     ),
@@ -210,7 +226,7 @@ class JournalEntryResource extends Resource
                     ->query(function (Builder $query, array $data) {
                         return $query
                             ->when($data['from'] ?? null, fn ($q, $d) => $q->whereDate('entry_date', '>=', $d))
-                            ->when($data['to']   ?? null, fn ($q, $d) => $q->whereDate('entry_date', '<=', $d));
+                            ->when($data['to'] ?? null, fn ($q, $d) => $q->whereDate('entry_date', '<=', $d));
                     }),
 
             ])
@@ -222,8 +238,7 @@ class JournalEntryResource extends Resource
                     ->label('عكس القيد')
                     ->icon('heroicon-o-arrow-uturn-left')
                     ->color('danger')
-                    ->visible(fn () =>
-                        auth()->user()?->isSuperAdmin()
+                    ->visible(fn () => auth()->user()?->isSuperAdmin()
                         || auth()->user()?->can('accounting.journal.reverse')
                     )
                     ->requiresConfirmation()
@@ -234,7 +249,7 @@ class JournalEntryResource extends Resource
                             $rev = app(AccountingService::class)->reverseEntry($record->id, auth()->id());
                             Notification::make()
                                 ->success()
-                                ->title('تم إنشاء القيد العكسي: ' . $rev->entry_number)
+                                ->title('تم إنشاء القيد العكسي: '.$rev->entry_number)
                                 ->send();
                         } catch (\Exception $e) {
                             Notification::make()
@@ -275,9 +290,9 @@ class JournalEntryResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index'  => ListJournalEntries::route('/'),
+            'index' => ListJournalEntries::route('/'),
             'create' => CreateJournalEntry::route('/create'),
-            'view'   => ViewJournalEntry::route('/{record}'),
+            'view' => ViewJournalEntry::route('/{record}'),
         ];
     }
 }

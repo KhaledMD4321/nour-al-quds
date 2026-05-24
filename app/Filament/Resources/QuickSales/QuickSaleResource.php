@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\QuickSales;
 
+use App\Filament\Concerns\HasModuleGuard;
 use App\Filament\Resources\QuickSales\Pages\ListQuickSales;
 use App\Filament\Resources\QuickSales\Pages\ViewQuickSale;
 use App\Filament\Resources\QuickSales\RelationManagers\ItemsRelationManager;
@@ -13,27 +14,43 @@ use Filament\Schemas\Schema;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\Filter;
 use Filament\Tables\Table;
-use App\Filament\Concerns\HasModuleGuard;
 use Illuminate\Database\Eloquent\Builder;
 
 class QuickSaleResource extends Resource
 {
     use HasModuleGuard;
+
     protected static string $module = 'sales';
 
     protected static ?string $model = QuickSale::class;
 
-    protected static string|\BackedEnum|null $navigationIcon  = 'heroicon-o-receipt-percent';
-    protected static string|\UnitEnum|null   $navigationGroup = 'المبيعات';
-    protected static ?int                    $navigationSort  = 6;
-    protected static ?string                 $navigationLabel  = 'سجل المبيعات السريعة';
-    protected static ?string                 $modelLabel       = 'إيصال بيع سريع';
-    protected static ?string                 $pluralModelLabel = 'سجل المبيعات السريعة';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-receipt-percent';
+
+    protected static string|\UnitEnum|null $navigationGroup = 'المبيعات';
+
+    protected static ?int $navigationSort = 6;
+
+    protected static ?string $navigationLabel = 'سجل المبيعات السريعة';
+
+    protected static ?string $modelLabel = 'إيصال بيع سريع';
+
+    protected static ?string $pluralModelLabel = 'سجل المبيعات السريعة';
 
     // ── Read-only ────────────────────────────────────────────────────────────
-    public static function canCreate(): bool        { return false; }
-    public static function canEdit($record): bool   { return false; }
-    public static function canDelete($record): bool { return false; }
+    public static function canCreate(): bool
+    {
+        return false;
+    }
+
+    public static function canEdit($record): bool
+    {
+        return false;
+    }
+
+    public static function canDelete($record): bool
+    {
+        return false;
+    }
 
     // ── Form (empty — read-only resource) ───────────────────────────────────
     public static function form(Schema $schema): Schema
@@ -114,7 +131,7 @@ class QuickSaleResource extends Resource
     {
         return [
             'index' => ListQuickSales::route('/'),
-            'view'  => ViewQuickSale::route('/{record}'),
+            'view' => ViewQuickSale::route('/{record}'),
         ];
     }
 }

@@ -9,11 +9,15 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class ChartOfAccount extends Model
 {
-    const TYPE_ASSET     = 'asset';
+    const TYPE_ASSET = 'asset';
+
     const TYPE_LIABILITY = 'liability';
-    const TYPE_EQUITY    = 'equity';
-    const TYPE_REVENUE   = 'revenue';
-    const TYPE_EXPENSE   = 'expense';
+
+    const TYPE_EQUITY = 'equity';
+
+    const TYPE_REVENUE = 'revenue';
+
+    const TYPE_EXPENSE = 'expense';
 
     protected $fillable = [
         'code',
@@ -30,7 +34,7 @@ class ChartOfAccount extends Model
     {
         return [
             'is_active' => 'boolean',
-            'level'     => 'integer',
+            'level' => 'integer',
         ];
     }
 

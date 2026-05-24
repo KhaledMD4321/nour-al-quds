@@ -12,9 +12,9 @@ class CompanySettingsSeeder extends Seeder
         CompanySetting::updateOrCreate(
             ['id' => 1],
             [
-                'name'             => 'شركة نور القدس للأدوات الصحية والسباكة',
-                'phone'            => '01000000000',
-                'address'          => 'مصر',
+                'name' => 'شركة نور القدس للأدوات الصحية والسباكة',
+                'phone' => '01000000000',
+                'address' => 'مصر',
                 'default_currency' => 'EGP',
             ]
         );

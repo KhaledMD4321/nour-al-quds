@@ -17,10 +17,13 @@ use Filament\Tables;
 
 class PriceListItemsRelationManager extends RelationManager
 {
-    protected static string  $relationship        = 'items';
-    protected static ?string $title               = 'بنود الأسعار';
-    protected static ?string $modelLabel          = 'بند';
-    protected static ?string $pluralModelLabel    = 'البنود';
+    protected static string $relationship = 'items';
+
+    protected static ?string $title = 'بنود الأسعار';
+
+    protected static ?string $modelLabel = 'بند';
+
+    protected static ?string $pluralModelLabel = 'البنود';
 
     // ─── Form ──────────────────────────────────────────────────────────────────
 
@@ -44,8 +47,7 @@ class PriceListItemsRelationManager extends RelationManager
                         ->pluck('name', 'id')
                         ->toArray();
                 })
-                ->getOptionLabelUsing(fn (mixed $value): ?string =>
-                    Product::find($value)?->name
+                ->getOptionLabelUsing(fn (mixed $value): ?string => Product::find($value)?->name
                 )
                 // ── إضافة صنف جديد خالص من نفس نافذة البند ──
                 ->createOptionModalHeading('إضافة صنف جديد')
@@ -64,8 +66,7 @@ class PriceListItemsRelationManager extends RelationManager
                     // options() مباشرة — مش relationship() — عشان ده form مش مرتبط بـ PriceListItem
                     Select::make('category_id')
                         ->label('التصنيف')
-                        ->options(fn (): array =>
-                            Category::orderBy('name')->pluck('name', 'id')->toArray()
+                        ->options(fn (): array => Category::orderBy('name')->pluck('name', 'id')->toArray()
                         )
                         ->searchable()
                         ->placeholder('اختر التصنيف (اختياري)'),
@@ -79,11 +80,11 @@ class PriceListItemsRelationManager extends RelationManager
                 ])
                 ->createOptionUsing(function (array $data): int {
                     return Product::create([
-                        'name'            => $data['name'],
-                        'company_id'      => $this->getOwnerRecord()->company_id,
-                        'category_id'     => $data['category_id'] ?? null,
+                        'name' => $data['name'],
+                        'company_id' => $this->getOwnerRecord()->company_id,
+                        'category_id' => $data['category_id'] ?? null,
                         'unit_of_measure' => $data['unit_of_measure'] ?? 'piece',
-                        'notes'           => $data['notes'] ?? null,
+                        'notes' => $data['notes'] ?? null,
                         // code يتولّد تلقائياً من Product::booted()
                     ])->id;
                 }),
@@ -118,8 +119,7 @@ class PriceListItemsRelationManager extends RelationManager
                     ->sortable()
                     ->searchable()
                     ->limit(50)
-                    ->tooltip(fn (Tables\Columns\TextColumn $column): ?string =>
-                        strlen($column->getState()) > 50 ? $column->getState() : null
+                    ->tooltip(fn (Tables\Columns\TextColumn $column): ?string => strlen($column->getState()) > 50 ? $column->getState() : null
                     ),
 
                 Tables\Columns\TextColumn::make('price')
@@ -129,8 +129,7 @@ class PriceListItemsRelationManager extends RelationManager
 
                 Tables\Columns\TextColumn::make('product.unit_of_measure')
                     ->label('الوحدة')
-                    ->formatStateUsing(fn (?string $state): string =>
-                        LookupType::getLabel('unit_of_measure', $state) ?? ($state ?? '—')
+                    ->formatStateUsing(fn (?string $state): string => LookupType::getLabel('unit_of_measure', $state) ?? ($state ?? '—')
                     ),
 
             ])
@@ -144,18 +143,16 @@ class PriceListItemsRelationManager extends RelationManager
                             ->label('بحث بالاسم')
                             ->placeholder('اكتب جزء من اسم الصنف…'),
                     ])
-                    ->query(fn ($query, array $data) =>
-                        $query->when(
-                            $data['product_name'] ?? null,
-                            fn ($q, $name) => $q->whereHas(
-                                'product',
-                                fn ($pq) => $pq->where('name', 'ILIKE', "%{$name}%")
-                            )
+                    ->query(fn ($query, array $data) => $query->when(
+                        $data['product_name'] ?? null,
+                        fn ($q, $name) => $q->whereHas(
+                            'product',
+                            fn ($pq) => $pq->where('name', 'ILIKE', "%{$name}%")
                         )
                     )
-                    ->indicateUsing(fn (array $data): ?string =>
-                        filled($data['product_name'] ?? null)
-                            ? 'اسم: ' . $data['product_name']
+                    )
+                    ->indicateUsing(fn (array $data): ?string => filled($data['product_name'] ?? null)
+                            ? 'اسم: '.$data['product_name']
                             : null
                     ),
 

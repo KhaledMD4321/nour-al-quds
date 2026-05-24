@@ -14,11 +14,11 @@ class CustomField extends Model
     ];
 
     protected $casts = [
-        'options'       => 'array',
-        'is_required'   => 'boolean',
+        'options' => 'array',
+        'is_required' => 'boolean',
         'is_searchable' => 'boolean',
-        'is_printable'  => 'boolean',
-        'is_active'     => 'boolean',
+        'is_printable' => 'boolean',
+        'is_active' => 'boolean',
     ];
 
     public function values(): HasMany
@@ -31,8 +31,8 @@ class CustomField extends Model
     public function scopeForEntity($query, string $entityType)
     {
         return $query->where('entity_type', $entityType)
-                     ->where('is_active', true)
-                     ->orderBy('sort_order');
+            ->where('is_active', true)
+            ->orderBy('sort_order');
     }
 
     // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -42,9 +42,9 @@ class CustomField extends Model
         return [
             'customer' => 'العملاء',
             'supplier' => 'الموردين',
-            'product'  => 'الأصناف',
-            'company'  => 'المصنّعين',
-            'invoice'  => 'الفواتير',
+            'product' => 'الأصناف',
+            'company' => 'المصنّعين',
+            'invoice' => 'الفواتير',
         ];
     }
 
@@ -56,13 +56,13 @@ class CustomField extends Model
     public function getTypeLabelAttribute(): string
     {
         return match ($this->field_type) {
-            'text'     => 'نص',
-            'number'   => 'رقم',
-            'date'     => 'تاريخ',
-            'select'   => 'قائمة اختيار',
-            'toggle'   => 'تفعيل/تعطيل',
+            'text' => 'نص',
+            'number' => 'رقم',
+            'date' => 'تاريخ',
+            'select' => 'قائمة اختيار',
+            'toggle' => 'تفعيل/تعطيل',
             'textarea' => 'نص طويل',
-            default    => $this->field_type,
+            default => $this->field_type,
         };
     }
 }

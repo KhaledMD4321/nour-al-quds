@@ -7,6 +7,7 @@ use App\Modules\Inventory\InventoryService;
 use Filament\Actions\Action;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\EditAction;
+use Filament\Notifications\Notification;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
@@ -47,16 +48,16 @@ class StockAdjustmentsTable
                     ->label('الحالة')
                     ->badge()
                     ->color(fn (StockAdjustment $record): string => match ($record->status) {
-                        'draft'     => 'warning',
+                        'draft' => 'warning',
                         'confirmed' => 'success',
-                        default     => 'gray',
+                        default => 'gray',
                     }),
             ])
             ->filters([
                 SelectFilter::make('status')
                     ->label('الحالة')
                     ->options([
-                        'draft'     => 'مسودة',
+                        'draft' => 'مسودة',
                         'confirmed' => 'مؤكد',
                     ]),
 
@@ -75,7 +76,7 @@ class StockAdjustmentsTable
                     ->modalDescription('هل أنت متأكد؟ سيتم تعديل أرصدة المخزون ولا يمكن التراجع.')
                     ->action(function (StockAdjustment $record): void {
                         app(InventoryService::class)->confirmAdjustment($record);
-                        \Filament\Notifications\Notification::make()
+                        Notification::make()
                             ->title('تم تأكيد التسوية بنجاح')
                             ->success()
                             ->send();

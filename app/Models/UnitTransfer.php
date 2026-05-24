@@ -3,9 +3,9 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class UnitTransfer extends Model
 {
@@ -27,7 +27,7 @@ class UnitTransfer extends Model
 
     protected $casts = [
         'transfer_date' => 'date',
-        'total_amount'  => 'decimal:2',
+        'total_amount' => 'decimal:2',
     ];
 
     // ── Relations ────────────────────────────────────────────────────────────────
@@ -78,12 +78,12 @@ class UnitTransfer extends Model
     {
         $last = self::withTrashed()
             ->whereRaw("reference_number ~ '^UTR-[0-9]+$'")
-            ->orderByRaw("CAST(SUBSTRING(reference_number FROM 5) AS INTEGER) DESC")
+            ->orderByRaw('CAST(SUBSTRING(reference_number FROM 5) AS INTEGER) DESC')
             ->value('reference_number');
 
         $num = $last ? ((int) substr($last, 4)) + 1 : 1;
 
-        return 'UTR-' . str_pad($num, 5, '0', STR_PAD_LEFT);
+        return 'UTR-'.str_pad($num, 5, '0', STR_PAD_LEFT);
     }
 
     public function isDraft(): bool

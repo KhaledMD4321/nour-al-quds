@@ -5,7 +5,6 @@ namespace App\Livewire;
 use App\Models\BusinessUnit;
 use App\Models\PriceListItem;
 use App\Models\Product;
-use App\Models\QuickSale;
 use App\Models\Stock;
 use App\Models\Warehouse;
 use App\Modules\Sales\QuickSaleService;
@@ -15,14 +14,18 @@ use Livewire\Component;
 class QuickSaleForm extends Component
 {
     // ── إعدادات الجلسة ──────────────────────────────────────────────────────
-    public int    $businessUnitId = 0;
-    public int    $warehouseId    = 0;
-    public string $customerName   = '';
-    public string $notes          = '';
+    public int $businessUnitId = 0;
+
+    public int $warehouseId = 0;
+
+    public string $customerName = '';
+
+    public string $notes = '';
 
     // ── البحث ───────────────────────────────────────────────────────────────
-    public string $searchQuery   = '';
-    public array  $searchResults = [];
+    public string $searchQuery = '';
+
+    public array $searchResults = [];
 
     // ── السلة ───────────────────────────────────────────────────────────────
     // كل item: ['product_id', 'name', 'quantity', 'unit_price', 'total', 'available']
@@ -32,20 +35,22 @@ class QuickSaleForm extends Component
     public float $totalAmount = 0;
 
     // ── حالة الـ UI ─────────────────────────────────────────────────────────
-    public bool   $saleCompleted = false;
-    public ?int   $lastSaleId    = null;
-    public string $errorMessage  = '';
+    public bool $saleCompleted = false;
+
+    public ?int $lastSaleId = null;
+
+    public string $errorMessage = '';
 
     // ── Validation ──────────────────────────────────────────────────────────
     protected function rules(): array
     {
         return [
-            'businessUnitId'         => 'required|exists:business_units,id',
-            'warehouseId'            => 'required|exists:warehouses,id',
-            'items'                  => 'required|array|min:1',
-            'items.*.product_id'     => 'required|integer',
-            'items.*.quantity'       => 'required|numeric|min:0.001',
-            'items.*.unit_price'     => 'required|numeric|min:0',
+            'businessUnitId' => 'required|exists:business_units,id',
+            'warehouseId' => 'required|exists:warehouses,id',
+            'items' => 'required|array|min:1',
+            'items.*.product_id' => 'required|integer',
+            'items.*.quantity' => 'required|numeric|min:0.001',
+            'items.*.unit_price' => 'required|numeric|min:0',
         ];
     }
 
@@ -53,7 +58,7 @@ class QuickSaleForm extends Component
     {
         return [
             'items.required' => 'لازم تضيف صنف واحد على الأقل',
-            'items.min'      => 'لازم تضيف صنف واحد على الأقل',
+            'items.min' => 'لازم تضيف صنف واحد على الأقل',
         ];
     }
 
@@ -78,12 +83,13 @@ class QuickSaleForm extends Component
 
         if (mb_strlen($this->searchQuery) < 2) {
             $this->searchResults = [];
+
             return;
         }
 
         $warehouseId = $this->warehouseId ?: (Warehouse::first()?->id ?? 0);
 
-        $this->searchResults = Product::where('name', 'ilike', '%' . $this->searchQuery . '%')
+        $this->searchResults = Product::where('name', 'ilike', '%'.$this->searchQuery.'%')
             ->where('is_active', true)
             ->orderBy('name')
             ->limit(8)
@@ -96,10 +102,10 @@ class QuickSaleForm extends Component
                 $available = $stock ? (float) $stock->quantity : 0;
 
                 return [
-                    'id'        => $product->id,
-                    'name'      => $product->name,
-                    'code'      => $product->code ?? '',
-                    'price'     => $price,
+                    'id' => $product->id,
+                    'name' => $product->name,
+                    'code' => $product->code ?? '',
+                    'price' => $price,
                     'available' => $available,
                 ];
             })
@@ -115,43 +121,51 @@ class QuickSaleForm extends Component
         foreach ($this->items as $index => $item) {
             if ($item['product_id'] === $productId) {
                 $this->increaseQuantity($index);
-                $this->searchQuery   = '';
+                $this->searchQuery = '';
                 $this->searchResults = [];
+
                 return;
             }
         }
 
         // صنف جديد
         $result = collect($this->searchResults)->firstWhere('id', $productId);
-        if (! $result) return;
+        if (! $result) {
+            return;
+        }
 
         $this->items[] = [
             'product_id' => $productId,
-            'name'       => $result['name'],
-            'quantity'   => 1,
+            'name' => $result['name'],
+            'quantity' => 1,
             'unit_price' => $result['price'],
-            'total'      => $result['price'],
-            'available'  => $result['available'],
+            'total' => $result['price'],
+            'available' => $result['available'],
         ];
 
         $this->recalcTotal();
-        $this->searchQuery   = '';
+        $this->searchQuery = '';
         $this->searchResults = [];
     }
 
     // ── تعديل الكمية ────────────────────────────────────────────────────────
     public function increaseQuantity(int $index): void
     {
-        if (! isset($this->items[$index])) return;
+        if (! isset($this->items[$index])) {
+            return;
+        }
         $this->items[$index]['quantity']++;
         $this->recalcItem($index);
     }
 
     public function decreaseQuantity(int $index): void
     {
-        if (! isset($this->items[$index])) return;
+        if (! isset($this->items[$index])) {
+            return;
+        }
         if ($this->items[$index]['quantity'] <= 1) {
             $this->removeItem($index);
+
             return;
         }
         $this->items[$index]['quantity']--;
@@ -184,22 +198,22 @@ class QuickSaleForm extends Component
         try {
             $sale = app(QuickSaleService::class)->process([
                 'business_unit_id' => $this->businessUnitId,
-                'warehouse_id'     => $this->warehouseId,
-                'customer_name'    => $this->customerName ?: null,
-                'notes'            => $this->notes ?: null,
-                'items'            => collect($this->items)->map(fn ($item) => [
+                'warehouse_id' => $this->warehouseId,
+                'customer_name' => $this->customerName ?: null,
+                'notes' => $this->notes ?: null,
+                'items' => collect($this->items)->map(fn ($item) => [
                     'product_id' => $item['product_id'],
-                    'quantity'   => $item['quantity'],
+                    'quantity' => $item['quantity'],
                     'unit_price' => $item['unit_price'],
                 ])->toArray(),
             ]);
 
-            $this->lastSaleId    = $sale->id;
+            $this->lastSaleId = $sale->id;
             $this->saleCompleted = true;
-            $this->items         = [];
-            $this->totalAmount   = 0;
-            $this->customerName  = '';
-            $this->notes         = '';
+            $this->items = [];
+            $this->totalAmount = 0;
+            $this->customerName = '';
+            $this->notes = '';
 
         } catch (Exception $e) {
             $this->errorMessage = $e->getMessage();
@@ -218,8 +232,8 @@ class QuickSaleForm extends Component
     public function newSale(): void
     {
         $this->saleCompleted = false;
-        $this->lastSaleId    = null;
-        $this->errorMessage  = '';
+        $this->lastSaleId = null;
+        $this->errorMessage = '';
     }
 
     // ── Helpers ─────────────────────────────────────────────────────────────

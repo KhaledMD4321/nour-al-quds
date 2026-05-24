@@ -10,35 +10,50 @@ use Filament\Forms\Components\Select;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Filament\Schemas\Schema;
+use Illuminate\Support\Collection;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class ExportCenterPage extends Page
 {
-    protected static string|\BackedEnum|null $navigationIcon  = 'heroicon-o-arrow-down-tray';
-    protected static string|\UnitEnum|null   $navigationGroup = 'إدارة البيانات';
-    protected static ?int                    $navigationSort  = 30;
-    protected static ?string                 $title           = 'مركز التصدير';
-    protected static ?string                 $navigationLabel = 'مركز التصدير';
-    protected string                         $view            = 'filament.pages.export-center';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-arrow-down-tray';
 
-    public string  $data_type        = 'customers';
-    public ?string $from_date        = null;
-    public ?string $to_date          = null;
-    public ?int    $business_unit_id = null;
-    public ?string $direction        = null;
+    protected static string|\UnitEnum|null $navigationGroup = 'إدارة البيانات';
+
+    protected static ?int $navigationSort = 30;
+
+    protected static ?string $title = 'مركز التصدير';
+
+    protected static ?string $navigationLabel = 'مركز التصدير';
+
+    protected string $view = 'filament.pages.export-center';
+
+    public string $data_type = 'customers';
+
+    public ?string $from_date = null;
+
+    public ?string $to_date = null;
+
+    public ?int $business_unit_id = null;
+
+    public ?string $direction = null;
 
     public static function canAccess(): bool
     {
         $user = auth()->user();
-        if (! $user) return false;
-        if ($user->isSuperAdmin()) return true;
+        if (! $user) {
+            return false;
+        }
+        if ($user->isSuperAdmin()) {
+            return true;
+        }
+
         return $user->can('data.export');
     }
 
     public function mount(): void
     {
         $this->from_date = today()->startOfYear()->toDateString();
-        $this->to_date   = today()->toDateString();
+        $this->to_date = today()->toDateString();
 
         if (! auth()->user()?->isSuperAdmin()) {
             $this->business_unit_id = auth()->user()?->business_unit_id;
@@ -54,15 +69,15 @@ class ExportCenterPage extends Page
                     'بيانات أساسية' => [
                         'customers' => 'العملاء',
                         'suppliers' => 'الموردين',
-                        'products'  => 'الأصناف',
-                        'stock'     => 'أرصدة المخزون',
+                        'products' => 'الأصناف',
+                        'stock' => 'أرصدة المخزون',
                     ],
                     'بيانات مالية' => [
-                        'invoices'  => 'فواتير المبيعات',
+                        'invoices' => 'فواتير المبيعات',
                         'purchases' => 'فواتير المشتريات',
-                        'receipts'  => 'سندات القبض',
-                        'payments'  => 'سندات الصرف',
-                        'cheques'   => 'الشيكات المؤجلة',
+                        'receipts' => 'سندات القبض',
+                        'payments' => 'سندات الصرف',
+                        'cheques' => 'الشيكات المؤجلة',
                     ],
                     'تقارير' => [
                         'aging_customers' => 'أعمار ديون العملاء',
@@ -115,15 +130,15 @@ class ExportCenterPage extends Page
     {
         $service = app(ExportService::class);
         $filters = [
-            'from_date'        => $this->from_date,
-            'to_date'          => $this->to_date,
+            'from_date' => $this->from_date,
+            'to_date' => $this->to_date,
             'business_unit_id' => $this->business_unit_id ?: null,
-            'direction'        => $this->direction ?: null,
+            'direction' => $this->direction ?: null,
         ];
 
         try {
-            $path     = $service->exportToExcel($this->data_type, $filters);
-            $fileName = 'export_' . $this->data_type . '_' . now()->format('Ymd') . '.xlsx';
+            $path = $service->exportToExcel($this->data_type, $filters);
+            $fileName = 'export_'.$this->data_type.'_'.now()->format('Ymd').'.xlsx';
 
             return response()->streamDownload(function () use ($path) {
                 echo file_get_contents($path);
@@ -142,14 +157,14 @@ class ExportCenterPage extends Page
         }
     }
 
-    public function getPreviewData(): \Illuminate\Support\Collection
+    public function getPreviewData(): Collection
     {
         $service = app(ExportService::class);
         $filters = [
-            'from_date'        => $this->from_date,
-            'to_date'          => $this->to_date,
+            'from_date' => $this->from_date,
+            'to_date' => $this->to_date,
             'business_unit_id' => $this->business_unit_id ?: null,
-            'direction'        => $this->direction ?: null,
+            'direction' => $this->direction ?: null,
         ];
 
         return $service->getData($this->data_type, $filters)->take(10);

@@ -7,8 +7,9 @@ use Filament\Resources\Pages\EditRecord;
 
 class EditTreasury extends EditRecord
 {
-    protected static string  $resource = TreasuryResource::class;
-    protected static ?string $title    = 'تعديل بيانات الخزينة';
+    protected static string $resource = TreasuryResource::class;
+
+    protected static ?string $title = 'تعديل بيانات الخزينة';
 
     protected function getHeaderActions(): array
     {
@@ -24,6 +25,7 @@ class EditTreasury extends EditRecord
     protected function mutateFormDataBeforeSave(array $data): array
     {
         unset($data['current_balance']);
+
         return $data;
     }
 }

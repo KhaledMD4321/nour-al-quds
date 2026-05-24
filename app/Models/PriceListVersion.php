@@ -68,8 +68,8 @@ class PriceListVersion extends Model
     public function getPriceFor(int $productId): ?float
     {
         $price = $this->items()
-                      ->where('product_id', $productId)
-                      ->value('price');
+            ->where('product_id', $productId)
+            ->value('price');
 
         return $price !== null ? (float) $price : null;
     }

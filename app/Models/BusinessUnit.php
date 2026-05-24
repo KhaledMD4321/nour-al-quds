@@ -8,7 +8,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class BusinessUnit extends Model
 {
-    const TYPE_SHOWROOM     = 'showroom';
+    const TYPE_SHOWROOM = 'showroom';
+
     const TYPE_DISTRIBUTION = 'distribution';
 
     protected $fillable = [

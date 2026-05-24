@@ -7,12 +7,15 @@ use Filament\Widgets\Widget;
 
 class QuickAccessBar extends Widget
 {
-    protected static ?int        $sort       = 0;
-    protected int|string|array  $columnSpan = 'full';
-    protected string             $view       = 'filament.widgets.quick-access-bar';
+    protected static ?int $sort = 0;
 
-    public bool  $showCustomizer = false;
-    public array $tempSelection  = [];
+    protected int|string|array $columnSpan = 'full';
+
+    protected string $view = 'filament.widgets.quick-access-bar';
+
+    public bool $showCustomizer = false;
+
+    public array $tempSelection = [];
 
     public function getActiveActions(): array
     {
@@ -30,19 +33,20 @@ class QuickAccessBar extends Widget
         if ($user->quick_access === null) {
             return array_keys(array_slice(QuickAccessRegistry::forUser($user), 0, 8, true));
         }
+
         return $user->quick_access;
     }
 
     public function openCustomizer(): void
     {
         $this->showCustomizer = true;
-        $this->tempSelection  = $this->getCurrentSelection();
+        $this->tempSelection = $this->getCurrentSelection();
     }
 
     public function closeCustomizer(): void
     {
         $this->showCustomizer = false;
-        $this->tempSelection  = [];
+        $this->tempSelection = [];
     }
 
     public function toggleShortcut(string $key): void

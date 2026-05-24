@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use App\Models\SystemSetting;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -23,42 +22,94 @@ class Cheque extends Model
     ];
 
     protected $casts = [
-        'amount'       => 'decimal:2',
-        'issue_date'   => 'date',
-        'due_date'     => 'date',
+        'amount' => 'decimal:2',
+        'issue_date' => 'date',
+        'due_date' => 'date',
         'deposited_at' => 'datetime',
         'collected_at' => 'datetime',
-        'bounced_at'   => 'datetime',
+        'bounced_at' => 'datetime',
     ];
 
     // ─── Relations ────────────────────────────────────────────────────────────
 
-    public function treasury(): BelongsTo     { return $this->belongsTo(Treasury::class); }
-    public function customer(): BelongsTo     { return $this->belongsTo(Customer::class); }
-    public function supplier(): BelongsTo     { return $this->belongsTo(Supplier::class); }
-    public function businessUnit(): BelongsTo { return $this->belongsTo(BusinessUnit::class); }
-    public function receipt(): BelongsTo      { return $this->belongsTo(Receipt::class); }
-    public function payment(): BelongsTo      { return $this->belongsTo(Payment::class); }
-    public function journalEntry(): BelongsTo { return $this->belongsTo(JournalEntry::class); }
-    public function createdBy(): BelongsTo    { return $this->belongsTo(User::class, 'created_by'); }
+    public function treasury(): BelongsTo
+    {
+        return $this->belongsTo(Treasury::class);
+    }
+
+    public function customer(): BelongsTo
+    {
+        return $this->belongsTo(Customer::class);
+    }
+
+    public function supplier(): BelongsTo
+    {
+        return $this->belongsTo(Supplier::class);
+    }
+
+    public function businessUnit(): BelongsTo
+    {
+        return $this->belongsTo(BusinessUnit::class);
+    }
+
+    public function receipt(): BelongsTo
+    {
+        return $this->belongsTo(Receipt::class);
+    }
+
+    public function payment(): BelongsTo
+    {
+        return $this->belongsTo(Payment::class);
+    }
+
+    public function journalEntry(): BelongsTo
+    {
+        return $this->belongsTo(JournalEntry::class);
+    }
+
+    public function createdBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'created_by');
+    }
 
     /** الشيك البديل (الجديد الذي حلّ محلّ هذا الشيك) */
-    public function replacedBy(): BelongsTo   { return $this->belongsTo(self::class, 'replaced_by_id'); }
+    public function replacedBy(): BelongsTo
+    {
+        return $this->belongsTo(self::class, 'replaced_by_id');
+    }
 
     /** الشيك المُستبدَل (القديم الذي هذا الشيك يُحلّ محلّه) */
-    public function replaces(): HasOne        { return $this->hasOne(self::class, 'replaced_by_id'); }
+    public function replaces(): HasOne
+    {
+        return $this->hasOne(self::class, 'replaced_by_id');
+    }
 
     // ─── Scopes ───────────────────────────────────────────────────────────────
 
-    public function scopeIncoming($q)  { return $q->where('direction', 'incoming'); }
-    public function scopeOutgoing($q)  { return $q->where('direction', 'outgoing'); }
-    public function scopePending($q)   { return $q->where('status', 'pending'); }
-    public function scopeDeposited($q) { return $q->where('status', 'deposited'); }
+    public function scopeIncoming($q)
+    {
+        return $q->where('direction', 'incoming');
+    }
+
+    public function scopeOutgoing($q)
+    {
+        return $q->where('direction', 'outgoing');
+    }
+
+    public function scopePending($q)
+    {
+        return $q->where('status', 'pending');
+    }
+
+    public function scopeDeposited($q)
+    {
+        return $q->where('status', 'deposited');
+    }
 
     public function scopeDueSoon($q, int $days = 3)
     {
         return $q->whereIn('status', ['pending', 'deposited'])
-                 ->whereBetween('due_date', [today(), today()->addDays($days)]);
+            ->whereBetween('due_date', [today(), today()->addDays($days)]);
     }
 
     public function scopeForUnit($q, int $unitId)
@@ -68,13 +119,40 @@ class Cheque extends Model
 
     // ─── State Checks ─────────────────────────────────────────────────────────
 
-    public function isIncoming(): bool  { return $this->direction === 'incoming'; }
-    public function isOutgoing(): bool  { return $this->direction === 'outgoing'; }
-    public function isPending(): bool   { return $this->status === 'pending'; }
-    public function isDeposited(): bool { return $this->status === 'deposited'; }
-    public function isCollected(): bool { return $this->status === 'collected'; }
-    public function isBounced(): bool   { return $this->status === 'bounced'; }
-    public function isReplaced(): bool  { return $this->status === 'replaced'; }
+    public function isIncoming(): bool
+    {
+        return $this->direction === 'incoming';
+    }
+
+    public function isOutgoing(): bool
+    {
+        return $this->direction === 'outgoing';
+    }
+
+    public function isPending(): bool
+    {
+        return $this->status === 'pending';
+    }
+
+    public function isDeposited(): bool
+    {
+        return $this->status === 'deposited';
+    }
+
+    public function isCollected(): bool
+    {
+        return $this->status === 'collected';
+    }
+
+    public function isBounced(): bool
+    {
+        return $this->status === 'bounced';
+    }
+
+    public function isReplaced(): bool
+    {
+        return $this->status === 'replaced';
+    }
 
     // ─── Valid Transitions ────────────────────────────────────────────────────
 
@@ -108,12 +186,12 @@ class Cheque extends Model
     public function getStatusLabelAttribute(): string
     {
         return match ($this->status) {
-            'pending'   => 'قيد الانتظار',
+            'pending' => 'قيد الانتظار',
             'deposited' => 'مودع بالبنك',
             'collected' => 'تم التحصيل',
-            'bounced'   => 'مرفوض',
-            'replaced'  => 'تم الاستبدال',
-            default     => $this->status,
+            'bounced' => 'مرفوض',
+            'replaced' => 'تم الاستبدال',
+            default => $this->status,
         };
     }
 
@@ -128,15 +206,15 @@ class Cheque extends Model
     {
         $prefix = SystemSetting::get('numbering.cheque_prefix', 'CHQ-');
         $digits = (int) SystemSetting::get('numbering.digits', 5);
-        $len    = strlen($prefix);
+        $len = strlen($prefix);
 
         $last = self::withTrashed()
-            ->where('cheque_number', 'like', $prefix . '%')
+            ->where('cheque_number', 'like', $prefix.'%')
             ->orderByDesc('id')
             ->value('cheque_number');
 
         $next = $last ? ((int) substr($last, $len)) + 1 : 1;
 
-        return $prefix . str_pad($next, $digits, '0', STR_PAD_LEFT);
+        return $prefix.str_pad($next, $digits, '0', STR_PAD_LEFT);
     }
 }

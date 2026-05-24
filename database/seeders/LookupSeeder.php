@@ -14,11 +14,11 @@ class LookupSeeder extends Seeder
 
             // ── 1. وحدات القياس ── products ────────────────────────────────────
             [
-                'code'        => 'unit_of_measure',
-                'name'        => 'وحدة القياس',
+                'code' => 'unit_of_measure',
+                'name' => 'وحدة القياس',
                 'description' => 'وحدات قياس الأصناف',
-                'is_system'   => true,
-                'values'      => [
+                'is_system' => true,
+                'values' => [
                     ['code' => 'piece',  'label' => 'قطعة',   'sort_order' => 1, 'is_default' => true],
                     ['code' => 'meter',  'label' => 'متر',    'sort_order' => 2],
                     ['code' => 'box',    'label' => 'علبة',   'sort_order' => 3],
@@ -33,11 +33,11 @@ class LookupSeeder extends Seeder
 
             // ── 2. نوع العميل ── customers ─────────────────────────────────────
             [
-                'code'        => 'customer_type',
-                'name'        => 'نوع العميل',
+                'code' => 'customer_type',
+                'name' => 'نوع العميل',
                 'description' => 'تصنيف العملاء',
-                'is_system'   => true,
-                'values'      => [
+                'is_system' => true,
+                'values' => [
                     ['code' => 'individual', 'label' => 'فرد',           'sort_order' => 1, 'is_default' => true],
                     ['code' => 'company',    'label' => 'شركة',          'sort_order' => 2],
                     ['code' => 'trader',     'label' => 'تاجر',          'sort_order' => 3],
@@ -48,26 +48,26 @@ class LookupSeeder extends Seeder
 
             // ── 3. طريقة الدفع ── receipts, payments ──────────────────────────
             [
-                'code'        => 'payment_method',
-                'name'        => 'طريقة الدفع',
+                'code' => 'payment_method',
+                'name' => 'طريقة الدفع',
                 'description' => 'وسائل الدفع المتاحة',
-                'is_system'   => true,
-                'values'      => [
+                'is_system' => true,
+                'values' => [
                     ['code' => 'cash',         'label' => 'كاش',         'sort_order' => 1, 'is_default' => true],
                     ['code' => 'cheque',        'label' => 'شيك',        'sort_order' => 2],
                     ['code' => 'bank_transfer', 'label' => 'تحويل بنكي', 'sort_order' => 3],
                     ['code' => 'instapay',      'label' => 'إنستاباي',   'sort_order' => 4],
-                    ['code' => 'vodafone_cash', 'label' => 'فودافون كاش','sort_order' => 5],
+                    ['code' => 'vodafone_cash', 'label' => 'فودافون كاش', 'sort_order' => 5],
                 ],
             ],
 
             // ── 4. نوع دفع الفاتورة ── invoices, quick_sales ──────────────────
             [
-                'code'        => 'invoice_payment_type',
-                'name'        => 'نوع دفع الفاتورة',
+                'code' => 'invoice_payment_type',
+                'name' => 'نوع دفع الفاتورة',
                 'description' => 'طريقة سداد الفاتورة',
-                'is_system'   => true,
-                'values'      => [
+                'is_system' => true,
+                'values' => [
                     ['code' => 'cash',   'label' => 'نقدي',  'sort_order' => 1, 'is_default' => true],
                     ['code' => 'credit', 'label' => 'آجل',   'sort_order' => 2],
                     ['code' => 'cheque', 'label' => 'شيك',   'sort_order' => 3],
@@ -77,11 +77,11 @@ class LookupSeeder extends Seeder
 
             // ── 5. تصنيف المصروفات ── payments ────────────────────────────────
             [
-                'code'        => 'expense_category',
-                'name'        => 'تصنيف المصروفات',
+                'code' => 'expense_category',
+                'name' => 'تصنيف المصروفات',
                 'description' => 'أنواع المصروفات في سندات الصرف',
-                'is_system'   => false,
-                'values'      => [
+                'is_system' => false,
+                'values' => [
                     ['code' => 'supplier_payment', 'label' => 'دفعة مورد',        'sort_order' => 1, 'is_default' => true],
                     ['code' => 'rent',             'label' => 'إيجار',             'sort_order' => 2],
                     ['code' => 'salary',           'label' => 'مرتبات',           'sort_order' => 3],
@@ -98,11 +98,11 @@ class LookupSeeder extends Seeder
 
             // ── 6. مصاريف إضافية ── landed_costs ─────────────────────────────
             [
-                'code'        => 'landed_cost_type',
-                'name'        => 'نوع المصاريف الإضافية',
+                'code' => 'landed_cost_type',
+                'name' => 'نوع المصاريف الإضافية',
                 'description' => 'أنواع المصاريف المضافة على فاتورة المشتريات',
-                'is_system'   => false,
-                'values'      => [
+                'is_system' => false,
+                'values' => [
                     ['code' => 'transport', 'label' => 'نقل وشحن',     'sort_order' => 1, 'is_default' => true],
                     ['code' => 'loading',   'label' => 'تحميل وتنزيل', 'sort_order' => 2],
                     ['code' => 'customs',   'label' => 'جمارك',         'sort_order' => 3],
@@ -113,11 +113,11 @@ class LookupSeeder extends Seeder
 
             // ── 7. نوع الخزينة ── treasuries ──────────────────────────────────
             [
-                'code'        => 'treasury_type',
-                'name'        => 'نوع الخزينة',
+                'code' => 'treasury_type',
+                'name' => 'نوع الخزينة',
                 'description' => 'تصنيف الخزائن',
-                'is_system'   => true,
-                'values'      => [
+                'is_system' => true,
+                'values' => [
                     ['code' => 'cash', 'label' => 'خزينة نقدية', 'sort_order' => 1, 'is_default' => true],
                     ['code' => 'bank', 'label' => 'حساب بنكي',   'sort_order' => 2],
                 ],
@@ -125,11 +125,11 @@ class LookupSeeder extends Seeder
 
             // ── 8. سبب تسوية المخزون ── stock_adjustment_items ────────────────
             [
-                'code'        => 'adjustment_reason',
-                'name'        => 'سبب تسوية المخزون',
+                'code' => 'adjustment_reason',
+                'name' => 'سبب تسوية المخزون',
                 'description' => 'أسباب فروقات الجرد',
-                'is_system'   => false,
-                'values'      => [
+                'is_system' => false,
+                'values' => [
                     ['code' => 'damaged',  'label' => 'تالف',             'sort_order' => 1],
                     ['code' => 'shortage', 'label' => 'عجز',              'sort_order' => 2, 'is_default' => true],
                     ['code' => 'surplus',  'label' => 'زيادة',            'sort_order' => 3],
@@ -142,11 +142,11 @@ class LookupSeeder extends Seeder
 
             // ── 9. بلد المنشأ ── companies ────────────────────────────────────
             [
-                'code'        => 'country',
-                'name'        => 'بلد المنشأ',
+                'code' => 'country',
+                'name' => 'بلد المنشأ',
                 'description' => 'الدول المتاحة للاختيار',
-                'is_system'   => false,
-                'values'      => [
+                'is_system' => false,
+                'values' => [
                     ['code' => 'egypt',   'label' => 'مصر',      'sort_order' => 1, 'is_default' => true],
                     ['code' => 'turkey',  'label' => 'تركيا',    'sort_order' => 2],
                     ['code' => 'china',   'label' => 'الصين',    'sort_order' => 3],

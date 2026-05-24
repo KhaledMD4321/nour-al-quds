@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\UnitTransfers;
 
+use App\Filament\Concerns\HasModuleGuard;
 use App\Filament\Resources\UnitTransfers\Pages\CreateUnitTransfer;
 use App\Filament\Resources\UnitTransfers\Pages\EditUnitTransfer;
 use App\Filament\Resources\UnitTransfers\Pages\ListUnitTransfers;
@@ -11,33 +12,39 @@ use App\Models\Warehouse;
 use App\Modules\Sales\UnitTransferService;
 use Filament\Actions\Action;
 use Filament\Forms\Components\DatePicker;
-use Filament\Schemas\Components\Grid;
-use Filament\Schemas\Components\Section;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
+use Filament\Schemas\Components\Grid;
+use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
-use App\Filament\Concerns\HasModuleGuard;
 use Throwable;
 
 class UnitTransferResource extends Resource
 {
     use HasModuleGuard;
+
     protected static string $module = 'internal_ops';
 
     protected static ?string $model = UnitTransfer::class;
 
-    protected static string|\BackedEnum|null $navigationIcon  = 'heroicon-o-arrows-right-left';
-    protected static string|\UnitEnum|null   $navigationGroup = 'العمليات الداخلية';
-    protected static ?int                    $navigationSort  = 1;
-    protected static ?string                 $navigationLabel  = 'التحويلات بين الوحدات';
-    protected static ?string                 $modelLabel       = 'تحويل داخلي';
-    protected static ?string                 $pluralModelLabel = 'التحويلات الداخلية';
-    protected static ?string                 $recordTitleAttribute = 'reference_number';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-arrows-right-left';
+
+    protected static string|\UnitEnum|null $navigationGroup = 'العمليات الداخلية';
+
+    protected static ?int $navigationSort = 1;
+
+    protected static ?string $navigationLabel = 'التحويلات بين الوحدات';
+
+    protected static ?string $modelLabel = 'تحويل داخلي';
+
+    protected static ?string $pluralModelLabel = 'التحويلات الداخلية';
+
+    protected static ?string $recordTitleAttribute = 'reference_number';
 
     // ── Form ─────────────────────────────────────────────────────────────────────
 
@@ -63,9 +70,9 @@ class UnitTransferResource extends Resource
                         Select::make('transfer_price_type')
                             ->label('أساس التسعير')
                             ->options([
-                                'avg_cost'   => 'متوسط التكلفة',
+                                'avg_cost' => 'متوسط التكلفة',
                                 'list_price' => 'سعر القائمة',
-                                'custom'     => 'سعر مخصص',
+                                'custom' => 'سعر مخصص',
                             ])
                             ->required()
                             ->default('avg_cost'),
@@ -90,7 +97,9 @@ class UnitTransferResource extends Resource
                             ->required()
                             ->options(function (callable $get): array {
                                 $unitId = $get('from_business_unit_id');
-                                if (! $unitId) return [];
+                                if (! $unitId) {
+                                    return [];
+                                }
 
                                 return Warehouse::where('business_unit_id', $unitId)
                                     ->where('is_active', true)
@@ -119,7 +128,9 @@ class UnitTransferResource extends Resource
                             ->required()
                             ->options(function (callable $get): array {
                                 $unitId = $get('to_business_unit_id');
-                                if (! $unitId) return [];
+                                if (! $unitId) {
+                                    return [];
+                                }
 
                                 return Warehouse::where('business_unit_id', $unitId)
                                     ->where('is_active', true)
@@ -170,10 +181,10 @@ class UnitTransferResource extends Resource
                 TextColumn::make('transfer_price_type')
                     ->label('أساس التسعير')
                     ->formatStateUsing(fn (string $state): string => match ($state) {
-                        'avg_cost'   => 'متوسط التكلفة',
+                        'avg_cost' => 'متوسط التكلفة',
                         'list_price' => 'سعر القائمة',
-                        'custom'     => 'مخصص',
-                        default      => $state,
+                        'custom' => 'مخصص',
+                        default => $state,
                     })
                     ->badge()
                     ->color('info'),
@@ -187,14 +198,14 @@ class UnitTransferResource extends Resource
                     ->label('الحالة')
                     ->badge()
                     ->formatStateUsing(fn (string $state): string => match ($state) {
-                        'draft'     => 'مسودة',
+                        'draft' => 'مسودة',
                         'confirmed' => 'مؤكد',
-                        default     => $state,
+                        default => $state,
                     })
                     ->color(fn (string $state): string => match ($state) {
-                        'draft'     => 'warning',
+                        'draft' => 'warning',
                         'confirmed' => 'success',
-                        default     => 'gray',
+                        default => 'gray',
                     }),
 
                 TextColumn::make('createdBy.name')
@@ -231,8 +242,7 @@ class UnitTransferResource extends Resource
                     ->icon('heroicon-o-pencil')
                     ->color('gray')
                     ->visible(fn (UnitTransfer $record): bool => $record->isDraft())
-                    ->url(fn (UnitTransfer $record): string =>
-                        static::getUrl('edit', ['record' => $record])
+                    ->url(fn (UnitTransfer $record): string => static::getUrl('edit', ['record' => $record])
                     ),
             ])
             ->defaultSort('id', 'desc')
@@ -256,9 +266,9 @@ class UnitTransferResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index'  => ListUnitTransfers::route('/'),
+            'index' => ListUnitTransfers::route('/'),
             'create' => CreateUnitTransfer::route('/create'),
-            'edit'   => EditUnitTransfer::route('/{record}/edit'),
+            'edit' => EditUnitTransfer::route('/{record}/edit'),
         ];
     }
 }

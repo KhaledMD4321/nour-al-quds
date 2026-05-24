@@ -19,15 +19,15 @@ return [
     */
 
     'defaults' => [
-        'sales'        => true,
-        'purchases'    => true,
-        'inventory'    => true,
-        'customers'    => true,
-        'finance'      => true,
-        'accounting'   => true,
-        'reports'      => true,
-        'catalog'      => true,
-        'data_mgmt'    => true,
+        'sales' => true,
+        'purchases' => true,
+        'inventory' => true,
+        'customers' => true,
+        'finance' => true,
+        'accounting' => true,
+        'reports' => true,
+        'catalog' => true,
+        'data_mgmt' => true,
         'internal_ops' => true,
     ],
 

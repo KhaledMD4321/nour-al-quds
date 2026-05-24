@@ -23,8 +23,8 @@ class LookupType extends Model
     public function activeValues(): HasMany
     {
         return $this->hasMany(LookupValue::class)
-                    ->where('is_active', true)
-                    ->orderBy('sort_order');
+            ->where('is_active', true)
+            ->orderBy('sort_order');
     }
 
     // ─── Static helpers — used across all Resources & Services ─────────────────
@@ -43,8 +43,8 @@ class LookupType extends Model
         }
 
         return $type->activeValues()
-                    ->pluck('label', 'code')
-                    ->toArray();
+            ->pluck('label', 'code')
+            ->toArray();
     }
 
     /**
@@ -60,9 +60,9 @@ class LookupType extends Model
         }
 
         return $type->activeValues()
-                    ->where('is_default', true)
-                    ->first()
-                    ?->code;
+            ->where('is_default', true)
+            ->first()
+            ?->code;
     }
 
     /**
@@ -77,10 +77,10 @@ class LookupType extends Model
         }
 
         return static::where('code', $typeCode)
-                     ->first()
-                     ?->values()
-                     ->where('code', $valueCode)
-                     ->first()
-                     ?->label;
+            ->first()
+            ?->values()
+            ->where('code', $valueCode)
+            ->first()
+            ?->label;
     }
 }

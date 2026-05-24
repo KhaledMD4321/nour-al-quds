@@ -15,8 +15,8 @@ return new class extends Migration
             $table->id();
 
             $table->foreignId('treasury_id')
-                  ->constrained('treasuries')
-                  ->restrictOnDelete();
+                ->constrained('treasuries')
+                ->restrictOnDelete();
 
             $table->enum('type', ['receipt', 'payment', 'transfer_in', 'transfer_out']);
             $table->decimal('amount', 15, 2);
@@ -30,8 +30,8 @@ return new class extends Migration
             $table->unsignedBigInteger('reference_id')->nullable();
 
             $table->foreignId('created_by')
-                  ->constrained('users')
-                  ->restrictOnDelete();
+                ->constrained('users')
+                ->restrictOnDelete();
 
             // بدون updated_at — السجل لا يتعدّل
             // بدون softDeletes — السجل أبدي

@@ -11,8 +11,8 @@ return new class extends Migration
         Schema::create('lookup_values', function (Blueprint $table) {
             $table->id();
             $table->foreignId('lookup_type_id')
-                  ->constrained('lookup_types')
-                  ->cascadeOnDelete();
+                ->constrained('lookup_types')
+                ->cascadeOnDelete();
             $table->string('code');
             $table->string('label');
             $table->integer('sort_order')->default(0);

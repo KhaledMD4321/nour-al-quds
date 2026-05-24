@@ -6,12 +6,13 @@ use App\Filament\Resources\Cheques\ChequeResource;
 use App\Modules\Finance\ChequeService;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\CreateRecord;
+use Illuminate\Database\Eloquent\Model;
 
 class CreateCheque extends CreateRecord
 {
     protected static string $resource = ChequeResource::class;
 
-    protected function handleRecordCreation(array $data): \Illuminate\Database\Eloquent\Model
+    protected function handleRecordCreation(array $data): Model
     {
         $data['created_by'] = auth()->id();
 

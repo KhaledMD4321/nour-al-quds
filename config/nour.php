@@ -18,14 +18,14 @@ return [
     // Used on products.unit_of_measure
 
     'units_of_measure' => [
-        'piece'  => 'قطعة',
-        'meter'  => 'متر',
-        'box'    => 'علبة',
-        'set'    => 'طقم',
+        'piece' => 'قطعة',
+        'meter' => 'متر',
+        'box' => 'علبة',
+        'set' => 'طقم',
         'carton' => 'كرتونة',
-        'roll'   => 'رول',
-        'kg'     => 'كيلو',
-        'liter'  => 'لتر',
+        'roll' => 'رول',
+        'kg' => 'كيلو',
+        'liter' => 'لتر',
     ],
 
     // ─── Currencies ────────────────────────────────────────────────────────────
@@ -33,8 +33,8 @@ return [
 
     'currencies' => [
         'EGP' => [
-            'name'           => 'جنيه مصري',
-            'symbol'         => 'ج.م.',
+            'name' => 'جنيه مصري',
+            'symbol' => 'ج.م.',
             'decimal_places' => 2,
         ],
     ],
@@ -45,8 +45,8 @@ return [
     // Used on invoices.payment_type, receipts.payment_method, payments.payment_method
 
     'payment_methods' => [
-        'cash'          => 'نقدي',
-        'cheque'        => 'شيك',
+        'cash' => 'نقدي',
+        'cheque' => 'شيك',
         'bank_transfer' => 'تحويل بنكي',
     ],
 
@@ -54,37 +54,37 @@ return [
 
     'customer_types' => [
         'individual' => 'فرد',
-        'company'    => 'شركة',
-        'trader'     => 'تاجر',
+        'company' => 'شركة',
+        'trader' => 'تاجر',
     ],
 
     // ─── Invoice Statuses ──────────────────────────────────────────────────────
 
     'invoice_statuses' => [
-        'draft'     => 'مسودة',
+        'draft' => 'مسودة',
         'confirmed' => 'مؤكدة',
-        'returned'  => 'مرتجعة',
+        'returned' => 'مرتجعة',
         'cancelled' => 'ملغاة',
     ],
 
     // ─── Cheque Statuses ───────────────────────────────────────────────────────
 
     'cheque_statuses' => [
-        'pending'   => 'قيد الانتظار',
+        'pending' => 'قيد الانتظار',
         'deposited' => 'مودع بالبنك',
         'collected' => 'تم التحصيل',
-        'bounced'   => 'مرتجع',
-        'replaced'  => 'مستبدل',
+        'bounced' => 'مرتجع',
+        'replaced' => 'مستبدل',
     ],
 
     // ─── Stock Adjustment Reasons ──────────────────────────────────────────────
 
     'adjustment_reasons' => [
-        'damaged'  => 'تالف',
-        'missing'  => 'عجز',
-        'surplus'  => 'زيادة',
-        'expired'  => 'منتهي الصلاحية',
-        'other'    => 'أخرى',
+        'damaged' => 'تالف',
+        'missing' => 'عجز',
+        'surplus' => 'زيادة',
+        'expired' => 'منتهي الصلاحية',
+        'other' => 'أخرى',
     ],
 
     // ─── Expense Categories ────────────────────────────────────────────────────
@@ -92,11 +92,11 @@ return [
 
     'expense_categories' => [
         'supplier_payment' => 'دفع مورد',
-        'rent'             => 'إيجار',
-        'salary'           => 'رواتب وأجور',
-        'transport'        => 'نقل ومواصلات',
-        'electricity'      => 'كهرباء ومياه',
-        'other'            => 'أخرى',
+        'rent' => 'إيجار',
+        'salary' => 'رواتب وأجور',
+        'transport' => 'نقل ومواصلات',
+        'electricity' => 'كهرباء ومياه',
+        'other' => 'أخرى',
     ],
 
 ];

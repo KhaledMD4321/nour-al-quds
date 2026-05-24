@@ -9,34 +9,51 @@ use Filament\Forms\Components\Select;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Filament\Schemas\Schema;
-use Illuminate\Support\Collection;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class ImportCenterPage extends Page
 {
-    protected static string|\BackedEnum|null $navigationIcon  = 'heroicon-o-arrow-up-tray';
-    protected static string|\UnitEnum|null   $navigationGroup = 'إدارة البيانات';
-    protected static ?int                    $navigationSort  = 31;
-    protected static ?string                 $title           = 'مركز الاستيراد';
-    protected static ?string                 $navigationLabel = 'مركز الاستيراد';
-    protected string                         $view            = 'filament.pages.import-center';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-arrow-up-tray';
 
-    public string  $import_type   = 'customers';
+    protected static string|\UnitEnum|null $navigationGroup = 'إدارة البيانات';
+
+    protected static ?int $navigationSort = 31;
+
+    protected static ?string $title = 'مركز الاستيراد';
+
+    protected static ?string $navigationLabel = 'مركز الاستيراد';
+
+    protected string $view = 'filament.pages.import-center';
+
+    public string $import_type = 'customers';
+
     public ?string $uploaded_file = null;
 
     // نتيجة التحقق
-    public array $valid_rows   = [];
+    public array $valid_rows = [];
+
     public array $invalid_rows = [];
-    public bool  $validated    = false;
-    public bool  $imported     = false;
-    public int   $imported_count = 0;
-    public int   $updated_count  = 0;
+
+    public bool $validated = false;
+
+    public bool $imported = false;
+
+    public int $imported_count = 0;
+
+    public int $updated_count = 0;
 
     public static function canAccess(): bool
     {
         $user = auth()->user();
-        if (! $user) return false;
-        if ($user->isSuperAdmin()) return true;
+        if (! $user) {
+            return false;
+        }
+        if ($user->isSuperAdmin()) {
+            return true;
+        }
+
         return $user->can('data.import');
     }
 
@@ -48,7 +65,7 @@ class ImportCenterPage extends Page
                 ->options([
                     'customers' => 'العملاء',
                     'suppliers' => 'الموردين',
-                    'products'  => 'الأصناف',
+                    'products' => 'الأصناف',
                 ])
                 ->default('customers')
                 ->live(),
@@ -70,7 +87,7 @@ class ImportCenterPage extends Page
                 ->icon('heroicon-o-shield-check')
                 ->color('warning')
                 ->action(fn () => $this->doValidate())
-                ->visible(fn () => !empty($this->uploaded_file) && !$this->validated),
+                ->visible(fn () => ! empty($this->uploaded_file) && ! $this->validated),
 
             Action::make('confirm_import')
                 ->label('تأكيد الاستيراد ✓')
@@ -78,9 +95,9 @@ class ImportCenterPage extends Page
                 ->color('success')
                 ->requiresConfirmation()
                 ->modalHeading('تأكيد الاستيراد')
-                ->modalDescription('سيتم استيراد ' . count($this->valid_rows) . ' صف. هذا الإجراء لا يمكن التراجع عنه.')
+                ->modalDescription('سيتم استيراد '.count($this->valid_rows).' صف. هذا الإجراء لا يمكن التراجع عنه.')
                 ->action(fn () => $this->doImport())
-                ->visible(fn () => $this->validated && !empty($this->valid_rows) && !$this->imported),
+                ->visible(fn () => $this->validated && ! empty($this->valid_rows) && ! $this->imported),
 
             Action::make('reset')
                 ->label('بدء من جديد')
@@ -95,29 +112,31 @@ class ImportCenterPage extends Page
     {
         if (empty($this->uploaded_file)) {
             Notification::make()->warning()->title('الرجاء رفع ملف Excel أولاً')->send();
+
             return;
         }
 
         $service = app(ImportService::class);
-        $path    = Storage::disk('local')->path('imports/temp/' . basename($this->uploaded_file));
+        $path = Storage::disk('local')->path('imports/temp/'.basename($this->uploaded_file));
 
-        if (!file_exists($path)) {
+        if (! file_exists($path)) {
             Notification::make()->danger()->title('لم يتم العثور على الملف')->send();
+
             return;
         }
 
         try {
-            $uploadedFile = new \Illuminate\Http\UploadedFile($path, basename($path));
-            $parsed       = $service->parseFile($uploadedFile);
-            $result       = $service->validate($this->import_type, $parsed['rows']);
+            $uploadedFile = new UploadedFile($path, basename($path));
+            $parsed = $service->parseFile($uploadedFile);
+            $result = $service->validate($this->import_type, $parsed['rows']);
 
-            $this->valid_rows   = $result['valid'];
+            $this->valid_rows = $result['valid'];
             $this->invalid_rows = $result['invalid'];
-            $this->validated    = true;
+            $this->validated = true;
 
             Notification::make()
                 ->success()
-                ->title('تم التحقق: ' . count($this->valid_rows) . ' صف صحيح، ' . count($this->invalid_rows) . ' صف برسائل')
+                ->title('تم التحقق: '.count($this->valid_rows).' صف صحيح، '.count($this->invalid_rows).' صف برسائل')
                 ->send();
         } catch (\Exception $e) {
             Notification::make()->danger()->title('خطأ في قراءة الملف')->body($e->getMessage())->send();
@@ -126,21 +145,23 @@ class ImportCenterPage extends Page
 
     public function doImport(): void
     {
-        if (empty($this->valid_rows)) return;
+        if (empty($this->valid_rows)) {
+            return;
+        }
 
         $service = app(ImportService::class);
 
         try {
             $result = $service->import($this->import_type, $this->valid_rows, auth()->id());
 
-            $this->imported       = true;
+            $this->imported = true;
             $this->imported_count = $result['imported'];
-            $this->updated_count  = $result['updated'];
+            $this->updated_count = $result['updated'];
 
             Notification::make()
                 ->success()
                 ->title('تم الاستيراد بنجاح')
-                ->body('مُضاف: ' . $result['imported'] . ' | مُحدَّث: ' . $result['updated'])
+                ->body('مُضاف: '.$result['imported'].' | مُحدَّث: '.$result['updated'])
                 ->persistent()
                 ->send();
         } catch (\Exception $e) {
@@ -150,23 +171,23 @@ class ImportCenterPage extends Page
 
     public function resetImport(): void
     {
-        $this->uploaded_file  = null;
-        $this->valid_rows     = [];
-        $this->invalid_rows   = [];
-        $this->validated      = false;
-        $this->imported       = false;
+        $this->uploaded_file = null;
+        $this->valid_rows = [];
+        $this->invalid_rows = [];
+        $this->validated = false;
+        $this->imported = false;
         $this->imported_count = 0;
-        $this->updated_count  = 0;
+        $this->updated_count = 0;
     }
 
-    public function getTemplate(): \Symfony\Component\HttpFoundation\StreamedResponse
+    public function getTemplate(): StreamedResponse
     {
         $headers = ImportService::getTemplate($this->import_type);
         // \xEF\xBB\xBF = UTF-8 BOM — ضروري لكي يعرف Excel إن الملف عربي
-        $csv     = "\xEF\xBB\xBF" . implode(',', $headers) . "\n";
-        $name    = 'template_' . $this->import_type . '.csv';
+        $csv = "\xEF\xBB\xBF".implode(',', $headers)."\n";
+        $name = 'template_'.$this->import_type.'.csv';
 
-        return response()->streamDownload(fn () => print($csv), $name, [
+        return response()->streamDownload(fn () => print ($csv), $name, [
             'Content-Type' => 'text/csv; charset=utf-8-sig',
         ]);
     }

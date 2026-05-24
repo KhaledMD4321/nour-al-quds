@@ -17,14 +17,16 @@ use Filament\Tables\Table;
 
 class ItemsRelationManager extends RelationManager
 {
-    protected static string  $relationship = 'items';
-    protected static ?string $title        = 'بنود المرتجع';
+    protected static string $relationship = 'items';
+
+    protected static ?string $title = 'بنود المرتجع';
 
     // ── للقراءة فقط لو المرتجع مؤكد ─────────────────────────────────────────────
     public function isReadOnly(): bool
     {
         /** @var PurchaseReturn $return */
         $return = $this->getOwnerRecord();
+
         return $return->isConfirmed();
     }
 
@@ -43,10 +45,14 @@ class ItemsRelationManager extends RelationManager
                     /** @var PurchaseReturn $return */
                     $return = $this->getOwnerRecord();
 
-                    if (! $return->purchase_invoice_id) return [];
+                    if (! $return->purchase_invoice_id) {
+                        return [];
+                    }
 
                     $invoice = PurchaseInvoice::with('items.product')->find($return->purchase_invoice_id);
-                    if (! $invoice) return [];
+                    if (! $invoice) {
+                        return [];
+                    }
 
                     return $invoice->items
                         ->pluck('product.name', 'product_id')
@@ -54,12 +60,16 @@ class ItemsRelationManager extends RelationManager
                         ->toArray();
                 })
                 ->afterStateUpdated(function ($state, callable $set): void {
-                    if (! $state) return;
+                    if (! $state) {
+                        return;
+                    }
 
                     /** @var PurchaseReturn $return */
-                    $return  = $this->getOwnerRecord();
+                    $return = $this->getOwnerRecord();
                     $invoice = PurchaseInvoice::with('items')->find($return->purchase_invoice_id);
-                    if (! $invoice) return;
+                    if (! $invoice) {
+                        return;
+                    }
 
                     $originalItem = $invoice->items()->where('product_id', $state)->first();
                     if ($originalItem) {
@@ -150,6 +160,7 @@ class ItemsRelationManager extends RelationManager
             (float) ($data['quantity'] ?? 0) * (float) ($data['unit_cost'] ?? 0),
             2
         );
+
         return $data;
     }
 
@@ -159,6 +170,7 @@ class ItemsRelationManager extends RelationManager
             (float) ($data['quantity'] ?? 0) * (float) ($data['unit_cost'] ?? 0),
             2
         );
+
         return $data;
     }
 

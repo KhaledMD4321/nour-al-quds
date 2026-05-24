@@ -3,8 +3,8 @@
 namespace App\Filament\Resources\PurchaseInvoices\Pages;
 
 use App\Filament\Resources\PurchaseInvoices\PurchaseInvoiceResource;
-use App\Models\PurchaseInvoice;
 use Filament\Actions\DeleteAction;
+use Filament\Notifications\Notification;
 use Filament\Resources\Pages\EditRecord;
 
 class EditPurchaseInvoice extends EditRecord
@@ -38,7 +38,7 @@ class EditPurchaseInvoice extends EditRecord
 
         // منع تعديل الفواتير المؤكدة (الحقول الحساسة)
         if ($this->getRecord()->isConfirmed()) {
-            \Filament\Notifications\Notification::make()
+            Notification::make()
                 ->title('الفاتورة مؤكدة — لا يمكن تعديل البنود')
                 ->warning()
                 ->send();

@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Payments;
 
+use App\Filament\Concerns\HasModuleGuard;
 use App\Filament\Resources\Payments\Pages\CreatePayment;
 use App\Filament\Resources\Payments\Pages\ListPayments;
 use App\Filament\Resources\Payments\Pages\ViewPayment;
@@ -22,7 +23,6 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Resources\Resource;
-use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Components\Utilities\Set;
@@ -31,31 +31,42 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
-use App\Filament\Concerns\HasModuleGuard;
 use Illuminate\Support\HtmlString;
 
 class PaymentResource extends Resource
 {
     use HasModuleGuard;
+
     protected static string $module = 'finance';
 
     protected static ?string $model = Payment::class;
 
-    protected static string|\BackedEnum|null $navigationIcon  = 'heroicon-o-banknotes';
-    protected static string|\UnitEnum|null   $navigationGroup = 'الخزينة والمالية';
-    protected static ?int                    $navigationSort  = 11;
-    protected static ?string                 $navigationLabel  = 'سندات الصرف';
-    protected static ?string                 $modelLabel       = 'سند صرف';
-    protected static ?string                 $pluralModelLabel = 'سندات الصرف';
-    protected static ?string                 $recordTitleAttribute = 'payment_number';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-banknotes';
+
+    protected static string|\UnitEnum|null $navigationGroup = 'الخزينة والمالية';
+
+    protected static ?int $navigationSort = 11;
+
+    protected static ?string $navigationLabel = 'سندات الصرف';
+
+    protected static ?string $modelLabel = 'سند صرف';
+
+    protected static ?string $pluralModelLabel = 'سندات الصرف';
+
+    protected static ?string $recordTitleAttribute = 'payment_number';
 
     // ── RBAC ──────────────────────────────────────────────────────────────────
 
     public static function canAccess(): bool
     {
         $user = auth()->user();
-        if (! $user) return false;
-        if ($user->isSuperAdmin()) return true;
+        if (! $user) {
+            return false;
+        }
+        if ($user->isSuperAdmin()) {
+            return true;
+        }
+
         return $user->can('finance.payment.view');
     }
 
@@ -67,8 +78,13 @@ class PaymentResource extends Resource
     public static function canCreate(): bool
     {
         $user = auth()->user();
-        if (! $user) return false;
-        if ($user->isSuperAdmin()) return true;
+        if (! $user) {
+            return false;
+        }
+        if ($user->isSuperAdmin()) {
+            return true;
+        }
+
         return $user->can('finance.payment.create');
     }
 
@@ -141,9 +157,9 @@ class PaymentResource extends Resource
                     Select::make('payment_method')
                         ->label('طريقة الدفع')
                         ->options([
-                            'cash'          => 'كاش',
+                            'cash' => 'كاش',
                             'bank_transfer' => 'تحويل بنكي',
-                            'cheque'        => 'شيك',
+                            'cheque' => 'شيك',
                         ])
                         ->required()
                         ->default('cash')
@@ -163,7 +179,7 @@ class PaymentResource extends Resource
                         ->options(
                             Supplier::active()->orderBy('name')
                                 ->get()
-                                ->mapWithKeys(fn ($s) => [$s->id => $s->code . ' — ' . $s->name])
+                                ->mapWithKeys(fn ($s) => [$s->id => $s->code.' — '.$s->name])
                                 ->toArray()
                         )
                         ->required(fn (Get $get) => $get('category') === 'supplier_payment')
@@ -175,16 +191,21 @@ class PaymentResource extends Resource
                         ->label('رصيد المورد الحالي')
                         ->content(function (Get $get) {
                             $id = $get('supplier_id');
-                            if (! $id) return new HtmlString('<span style="color:#9ca3af">اختر مورداً أولاً</span>');
+                            if (! $id) {
+                                return new HtmlString('<span style="color:#9ca3af">اختر مورداً أولاً</span>');
+                            }
                             $supplier = Supplier::find($id);
-                            if (! $supplier) return '—';
+                            if (! $supplier) {
+                                return '—';
+                            }
                             $balance = $supplier->current_balance;
                             $color = $balance > 0 ? '#dc2626' : '#059669';
                             $label = $balance > 0 ? 'مستحق للمورد' : ($balance < 0 ? 'دائن لنا' : 'متعادل');
+
                             return new HtmlString(
-                                '<span style="color:' . $color . '; font-weight:bold; font-size:16px">'
-                                . number_format(abs($balance), 2) . ' ج.م</span>'
-                                . '<span style="color:#6b7280; margin-right:8px">(' . $label . ')</span>'
+                                '<span style="color:'.$color.'; font-weight:bold; font-size:16px">'
+                                .number_format(abs($balance), 2).' ج.م</span>'
+                                .'<span style="color:#6b7280; margin-right:8px">('.$label.')</span>'
                             );
                         }),
 
@@ -194,7 +215,10 @@ class PaymentResource extends Resource
                         ->nullable()
                         ->options(function (Get $get) {
                             $supplierId = $get('supplier_id');
-                            if (! $supplierId) return [];
+                            if (! $supplierId) {
+                                return [];
+                            }
+
                             return PurchaseInvoice::where('supplier_id', $supplierId)
                                 ->whereIn('status', ['confirmed'])
                                 ->whereRaw('total_amount > paid_amount')
@@ -202,7 +226,8 @@ class PaymentResource extends Resource
                                 ->get()
                                 ->mapWithKeys(function ($i) {
                                     $rem = round((float) $i->total_amount - (float) $i->paid_amount, 2);
-                                    return [$i->id => $i->reference_number . ' — متبقي: ' . number_format($rem, 2) . ' ج.م'];
+
+                                    return [$i->id => $i->reference_number.' — متبقي: '.number_format($rem, 2).' ج.م'];
                                 })
                                 ->toArray();
                         })
@@ -233,7 +258,7 @@ class PaymentResource extends Resource
                             ->where('is_active', true)
                             ->orderBy('code')
                             ->get()
-                            ->mapWithKeys(fn ($a) => [$a->id => $a->code . ' — ' . $a->name])
+                            ->mapWithKeys(fn ($a) => [$a->id => $a->code.' — '.$a->name])
                             ->toArray()
                         )
                         ->required(fn (Get $get) => ($get('category') ?? 'supplier_payment') !== 'supplier_payment')
@@ -259,12 +284,15 @@ class PaymentResource extends Resource
                         ->options(function (Get $get) {
                             $unitId = $get('business_unit_id') ?: auth()->user()?->business_unit_id;
                             $method = $get('payment_method');
-                            $type   = match ($method) {
-                                'cash'          => 'cash',
+                            $type = match ($method) {
+                                'cash' => 'cash',
                                 'bank_transfer' => 'bank',
-                                default         => null,
+                                default => null,
                             };
-                            if (! $type || ! $unitId) return [];
+                            if (! $type || ! $unitId) {
+                                return [];
+                            }
+
                             return Treasury::active()
                                 ->where('type', $type)
                                 ->where('business_unit_id', $unitId)
@@ -364,16 +392,16 @@ class PaymentResource extends Resource
                     ->label('الطريقة')
                     ->badge()
                     ->formatStateUsing(fn ($state) => match ($state) {
-                        'cash'          => 'كاش',
+                        'cash' => 'كاش',
                         'bank_transfer' => 'تحويل بنكي',
-                        'cheque'        => 'شيك',
-                        default         => $state,
+                        'cheque' => 'شيك',
+                        default => $state,
                     })
                     ->color(fn ($state) => match ($state) {
-                        'cash'          => 'success',
+                        'cash' => 'success',
                         'bank_transfer' => 'info',
-                        'cheque'        => 'warning',
-                        default         => 'gray',
+                        'cheque' => 'warning',
+                        default => 'gray',
                     }),
 
                 TextColumn::make('treasury.name')
@@ -393,9 +421,9 @@ class PaymentResource extends Resource
                 SelectFilter::make('payment_method')
                     ->label('طريقة الدفع')
                     ->options([
-                        'cash'          => 'كاش',
+                        'cash' => 'كاش',
                         'bank_transfer' => 'تحويل بنكي',
-                        'cheque'        => 'شيك',
+                        'cheque' => 'شيك',
                     ]),
 
                 SelectFilter::make('business_unit_id')
@@ -433,9 +461,9 @@ class PaymentResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index'  => ListPayments::route('/'),
+            'index' => ListPayments::route('/'),
             'create' => CreatePayment::route('/create'),
-            'view'   => ViewPayment::route('/{record}'),
+            'view' => ViewPayment::route('/{record}'),
         ];
     }
 }

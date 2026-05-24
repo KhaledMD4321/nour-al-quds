@@ -16,7 +16,7 @@ class CreatePriceListVersion extends CreateRecord
     {
         // حساب رقم الإصدار التالي لهذا المصنّع
         $data['version_number'] = (PriceListVersion::where('company_id', $data['company_id'])
-                                       ->max('version_number') ?? 0) + 1;
+            ->max('version_number') ?? 0) + 1;
 
         $data['created_by'] = auth()->id();
 

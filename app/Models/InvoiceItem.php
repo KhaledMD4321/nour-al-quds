@@ -21,13 +21,13 @@ class InvoiceItem extends Model
     ];
 
     protected $casts = [
-        'quantity'   => 'decimal:3',
+        'quantity' => 'decimal:3',
         'list_price' => 'decimal:2',
         'discount_1' => 'decimal:2',
         'discount_2' => 'decimal:2',
         'discount_3' => 'decimal:2',
         'unit_price' => 'decimal:2',
-        'total'      => 'decimal:2',
+        'total' => 'decimal:2',
     ];
 
     // ── Relations ────────────────────────────────────────────────────────────────

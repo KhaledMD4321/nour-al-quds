@@ -12,31 +12,43 @@ use Filament\Schemas\Schema;
 
 class GeneralLedger extends Page
 {
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-book-open';
 
-    protected static string|\BackedEnum|null $navigationIcon  = 'heroicon-o-book-open';
-    protected static string|\UnitEnum|null   $navigationGroup = 'المحاسبة';
-    protected static ?int                    $navigationSort  = 10;
-    protected static ?string                 $title           = 'دفتر الأستاذ';
-    protected static ?string                 $navigationLabel = 'دفتر الأستاذ';
-    protected string         $view            = 'filament.pages.general-ledger';
+    protected static string|\UnitEnum|null $navigationGroup = 'المحاسبة';
 
-    public ?int    $account_id      = null;
-    public ?string $from_date       = null;
-    public ?string $to_date         = null;
-    public ?int    $business_unit_id = null;
+    protected static ?int $navigationSort = 10;
+
+    protected static ?string $title = 'دفتر الأستاذ';
+
+    protected static ?string $navigationLabel = 'دفتر الأستاذ';
+
+    protected string $view = 'filament.pages.general-ledger';
+
+    public ?int $account_id = null;
+
+    public ?string $from_date = null;
+
+    public ?string $to_date = null;
+
+    public ?int $business_unit_id = null;
 
     public static function canAccess(): bool
     {
         $user = auth()->user();
-        if (! $user) return false;
-        if ($user->isSuperAdmin()) return true;
+        if (! $user) {
+            return false;
+        }
+        if ($user->isSuperAdmin()) {
+            return true;
+        }
+
         return $user->can('accounting.ledger.view');
     }
 
     public function mount(): void
     {
         $this->from_date = today()->startOfMonth()->toDateString();
-        $this->to_date   = today()->toDateString();
+        $this->to_date = today()->toDateString();
 
         if (! auth()->user()?->isSuperAdmin()) {
             $this->business_unit_id = auth()->user()?->business_unit_id;
@@ -51,7 +63,7 @@ class GeneralLedger extends Page
                 ->options(fn () => ChartOfAccount::where('is_active', true)
                     ->orderBy('code')
                     ->get()
-                    ->mapWithKeys(fn ($a) => [$a->id => $a->code . ' — ' . $a->name])
+                    ->mapWithKeys(fn ($a) => [$a->id => $a->code.' — '.$a->name])
                     ->toArray()
                 )
                 ->searchable()
@@ -77,13 +89,15 @@ class GeneralLedger extends Page
 
     public function getLines()
     {
-        if (! $this->account_id) return collect();
+        if (! $this->account_id) {
+            return collect();
+        }
 
         return JournalEntryLine::with(['journalEntry', 'account'])
             ->where('account_id', $this->account_id)
             ->whereHas('journalEntry', function ($q) {
                 $q->when($this->from_date, fn ($q, $d) => $q->whereDate('entry_date', '>=', $d))
-                  ->when($this->to_date,   fn ($q, $d) => $q->whereDate('entry_date', '<=', $d));
+                    ->when($this->to_date, fn ($q, $d) => $q->whereDate('entry_date', '<=', $d));
             })
             ->when($this->business_unit_id, fn ($q) => $q->where('business_unit_id', $this->business_unit_id))
             ->join('journal_entries', 'journal_entries.id', '=', 'journal_entry_lines.journal_entry_id')
@@ -95,19 +109,23 @@ class GeneralLedger extends Page
 
     public function getAccountName(): string
     {
-        if (! $this->account_id) return '';
+        if (! $this->account_id) {
+            return '';
+        }
         $a = ChartOfAccount::find($this->account_id);
+
         return $a ? "{$a->code} — {$a->name}" : '';
     }
 
     public function getTotals(): array
     {
         $lines = $this->getLines();
-        $debit  = (float) $lines->sum('debit');
+        $debit = (float) $lines->sum('debit');
         $credit = (float) $lines->sum('credit');
+
         return [
-            'debit'   => $debit,
-            'credit'  => $credit,
+            'debit' => $debit,
+            'credit' => $credit,
             'balance' => $debit - $credit,
         ];
     }

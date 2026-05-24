@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\PurchaseReturns;
 
+use App\Filament\Concerns\HasModuleGuard;
 use App\Filament\Resources\PurchaseReturns\Pages\CreatePurchaseReturn;
 use App\Filament\Resources\PurchaseReturns\Pages\EditPurchaseReturn;
 use App\Filament\Resources\PurchaseReturns\Pages\ListPurchaseReturns;
@@ -11,33 +12,39 @@ use App\Models\PurchaseReturn;
 use App\Modules\Sales\ReturnService;
 use Filament\Actions\Action;
 use Filament\Forms\Components\DatePicker;
-use Filament\Schemas\Components\Grid;
-use Filament\Schemas\Components\Section;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
+use Filament\Schemas\Components\Grid;
+use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
-use App\Filament\Concerns\HasModuleGuard;
 use Throwable;
 
 class PurchaseReturnResource extends Resource
 {
     use HasModuleGuard;
+
     protected static string $module = 'purchases';
 
     protected static ?string $model = PurchaseReturn::class;
 
-    protected static string|\BackedEnum|null $navigationIcon  = 'heroicon-o-arrow-uturn-left';
-    protected static string|\UnitEnum|null   $navigationGroup = 'المشتريات';
-    protected static ?int                    $navigationSort  = 2;
-    protected static ?string                 $navigationLabel  = 'مرتجعات المشتريات';
-    protected static ?string                 $modelLabel       = 'مرتجع مشتريات';
-    protected static ?string                 $pluralModelLabel = 'مرتجعات المشتريات';
-    protected static ?string                 $recordTitleAttribute = 'reference_number';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-arrow-uturn-left';
+
+    protected static string|\UnitEnum|null $navigationGroup = 'المشتريات';
+
+    protected static ?int $navigationSort = 2;
+
+    protected static ?string $navigationLabel = 'مرتجعات المشتريات';
+
+    protected static ?string $modelLabel = 'مرتجع مشتريات';
+
+    protected static ?string $pluralModelLabel = 'مرتجعات المشتريات';
+
+    protected static ?string $recordTitleAttribute = 'reference_number';
 
     // ── Form ─────────────────────────────────────────────────────────────────────
 
@@ -69,8 +76,8 @@ class PurchaseReturnResource extends Resource
                                 if ($state) {
                                     $inv = PurchaseInvoice::find($state);
                                     if ($inv) {
-                                        $set('supplier_id',      $inv->supplier_id);
-                                        $set('warehouse_id',     $inv->warehouse_id);
+                                        $set('supplier_id', $inv->supplier_id);
+                                        $set('warehouse_id', $inv->warehouse_id);
                                         $set('business_unit_id', $inv->business_unit_id);
                                     }
                                 }
@@ -142,14 +149,14 @@ class PurchaseReturnResource extends Resource
                     ->label('الحالة')
                     ->badge()
                     ->formatStateUsing(fn (string $state): string => match ($state) {
-                        'draft'     => 'مسودة',
+                        'draft' => 'مسودة',
                         'confirmed' => 'مؤكد',
-                        default     => $state,
+                        default => $state,
                     })
                     ->color(fn (string $state): string => match ($state) {
-                        'draft'     => 'warning',
+                        'draft' => 'warning',
                         'confirmed' => 'danger',
-                        default     => 'gray',
+                        default => 'gray',
                     }),
 
                 TextColumn::make('createdBy.name')
@@ -186,8 +193,7 @@ class PurchaseReturnResource extends Resource
                     ->icon('heroicon-o-pencil')
                     ->color('gray')
                     ->visible(fn (PurchaseReturn $record): bool => $record->isDraft())
-                    ->url(fn (PurchaseReturn $record): string =>
-                        static::getUrl('edit', ['record' => $record])
+                    ->url(fn (PurchaseReturn $record): string => static::getUrl('edit', ['record' => $record])
                     ),
             ])
             ->defaultSort('id', 'desc')
@@ -211,9 +217,9 @@ class PurchaseReturnResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index'  => ListPurchaseReturns::route('/'),
+            'index' => ListPurchaseReturns::route('/'),
             'create' => CreatePurchaseReturn::route('/create'),
-            'edit'   => EditPurchaseReturn::route('/{record}/edit'),
+            'edit' => EditPurchaseReturn::route('/{record}/edit'),
         ];
     }
 }

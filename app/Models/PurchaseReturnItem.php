@@ -16,9 +16,9 @@ class PurchaseReturnItem extends Model
     ];
 
     protected $casts = [
-        'quantity'  => 'decimal:3',
+        'quantity' => 'decimal:3',
         'unit_cost' => 'decimal:4',
-        'total'     => 'decimal:2',
+        'total' => 'decimal:2',
     ];
 
     // ── Relations ────────────────────────────────────────────────────────────────

@@ -9,9 +9,12 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Company extends Model
 {
-    use SoftDeletes, HasCustomFields;
+    use HasCustomFields, SoftDeletes;
 
-    protected function getCustomFieldEntityType(): string { return 'company'; }
+    protected function getCustomFieldEntityType(): string
+    {
+        return 'company';
+    }
 
     protected $fillable = [
         'name',
@@ -44,8 +47,8 @@ class Company extends Model
     public function activePriceList(): ?PriceListVersion
     {
         return $this->priceListVersions()
-                    ->where('status', 'active')
-                    ->latest('effective_date')
-                    ->first();
+            ->where('status', 'active')
+            ->latest('effective_date')
+            ->first();
     }
 }

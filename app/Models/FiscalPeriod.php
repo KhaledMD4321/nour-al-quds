@@ -11,15 +11,15 @@ class FiscalPeriod extends Model
     // ─── Arabic month names ────────────────────────────────────────────────────
 
     const MONTHS = [
-        1  => 'يناير',
-        2  => 'فبراير',
-        3  => 'مارس',
-        4  => 'أبريل',
-        5  => 'مايو',
-        6  => 'يونيو',
-        7  => 'يوليو',
-        8  => 'أغسطس',
-        9  => 'سبتمبر',
+        1 => 'يناير',
+        2 => 'فبراير',
+        3 => 'مارس',
+        4 => 'أبريل',
+        5 => 'مايو',
+        6 => 'يونيو',
+        7 => 'يوليو',
+        8 => 'أغسطس',
+        9 => 'سبتمبر',
         10 => 'أكتوبر',
         11 => 'نوفمبر',
         12 => 'ديسمبر',
@@ -39,11 +39,11 @@ class FiscalPeriod extends Model
 
     protected $casts = [
         'start_date' => 'date',
-        'end_date'   => 'date',
-        'locked_at'  => 'datetime',
-        'is_locked'  => 'boolean',
-        'year'       => 'integer',
-        'month'      => 'integer',
+        'end_date' => 'date',
+        'locked_at' => 'datetime',
+        'is_locked' => 'boolean',
+        'year' => 'integer',
+        'month' => 'integer',
     ];
 
     // ─── Relations ─────────────────────────────────────────────────────────────
@@ -105,6 +105,7 @@ class FiscalPeriod extends Model
     public function isCurrentPeriod(): bool
     {
         $today = now()->toDateString();
+
         return $today >= $this->start_date->toDateString()
             && $today <= $this->end_date->toDateString();
     }
@@ -114,7 +115,7 @@ class FiscalPeriod extends Model
      */
     public function getDisplayName(): string
     {
-        return (self::MONTHS[$this->month] ?? $this->month) . ' ' . $this->year;
+        return (self::MONTHS[$this->month] ?? $this->month).' '.$this->year;
     }
 
     // ─── Static helpers ────────────────────────────────────────────────────────

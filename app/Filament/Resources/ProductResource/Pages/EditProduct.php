@@ -33,6 +33,7 @@ class EditProduct extends EditRecord
     protected function mutateFormDataBeforeFill(array $data): array
     {
         $data['custom_fields'] = CustomFieldRenderer::loadValues($this->getRecord());
+
         return $data;
     }
 

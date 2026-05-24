@@ -4,7 +4,8 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration {
+return new class extends Migration
+{
     public function up(): void
     {
         Schema::create('cheques', function (Blueprint $table) {
@@ -18,40 +19,40 @@ return new class extends Migration {
 
             $table->enum('direction', ['incoming', 'outgoing']);
             $table->enum('status', ['pending', 'deposited', 'collected', 'bounced', 'replaced'])
-                  ->default('pending');
+                ->default('pending');
 
             // الخزينة المستهدفة (البنك اللي هيتحصل فيه / هيتخصم منه)
             $table->foreignId('treasury_id')
-                  ->nullable()
-                  ->constrained('treasuries')
-                  ->restrictOnDelete();
+                ->nullable()
+                ->constrained('treasuries')
+                ->restrictOnDelete();
 
             // العميل (للواردة)
             $table->foreignId('customer_id')
-                  ->nullable()
-                  ->constrained('customers')
-                  ->restrictOnDelete();
+                ->nullable()
+                ->constrained('customers')
+                ->restrictOnDelete();
 
             // المورد (للصادرة)
             $table->foreignId('supplier_id')
-                  ->nullable()
-                  ->constrained('suppliers')
-                  ->restrictOnDelete();
+                ->nullable()
+                ->constrained('suppliers')
+                ->restrictOnDelete();
 
             $table->foreignId('business_unit_id')
-                  ->constrained('business_units')
-                  ->restrictOnDelete();
+                ->constrained('business_units')
+                ->restrictOnDelete();
 
             // ربط بسند القبض أو الصرف الأصلي
             $table->foreignId('receipt_id')
-                  ->nullable()
-                  ->constrained('receipts')
-                  ->nullOnDelete();
+                ->nullable()
+                ->constrained('receipts')
+                ->nullOnDelete();
 
             $table->foreignId('payment_id')
-                  ->nullable()
-                  ->constrained('payments')
-                  ->nullOnDelete();
+                ->nullable()
+                ->constrained('payments')
+                ->nullOnDelete();
 
             // ربط بشيك بديل (لو bounced واتعوّض)
             $table->unsignedBigInteger('replaced_by_id')->nullable();
@@ -66,13 +67,13 @@ return new class extends Migration {
 
             // القيد المحاسبي المرتبط بهذا الشيك
             $table->foreignId('journal_entry_id')
-                  ->nullable()
-                  ->constrained('journal_entries')
-                  ->nullOnDelete();
+                ->nullable()
+                ->constrained('journal_entries')
+                ->nullOnDelete();
 
             $table->foreignId('created_by')
-                  ->constrained('users')
-                  ->restrictOnDelete();
+                ->constrained('users')
+                ->restrictOnDelete();
 
             $table->timestamps();
             $table->softDeletes();
@@ -87,8 +88,8 @@ return new class extends Migration {
 
             // foreign key للشيك البديل (self-referential)
             $table->foreign('replaced_by_id')
-                  ->references('id')->on('cheques')
-                  ->nullOnDelete();
+                ->references('id')->on('cheques')
+                ->nullOnDelete();
         });
     }
 

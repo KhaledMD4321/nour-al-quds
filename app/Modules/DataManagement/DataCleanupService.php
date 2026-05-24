@@ -2,12 +2,16 @@
 
 namespace App\Modules\DataManagement;
 
+use App\Models\Cheque;
 use App\Models\Customer;
-use App\Models\Supplier;
-use App\Models\Product;
 use App\Models\Invoice;
+use App\Models\Payment;
+use App\Models\Product;
+use App\Models\PurchaseInvoice;
+use App\Models\Receipt;
 use App\Models\Stock;
 use App\Models\StockMovement;
+use App\Models\Supplier;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -66,7 +70,7 @@ class DataCleanupService
             ->pluck('name');
 
         return $byName->map(fn ($name) => [
-            'name'     => $name,
+            'name' => $name,
             'products' => Product::where('name', $name)->whereNull('deleted_at')->get(),
         ]);
     }
@@ -89,10 +93,10 @@ class DataCleanupService
             Invoice::where('customer_id', $mergeId)->update(['customer_id' => $keepId]);
 
             // نقل سندات القبض
-            \App\Models\Receipt::where('customer_id', $mergeId)->update(['customer_id' => $keepId]);
+            Receipt::where('customer_id', $mergeId)->update(['customer_id' => $keepId]);
 
             // نقل الشيكات الواردة
-            \App\Models\Cheque::where('customer_id', $mergeId)->update(['customer_id' => $keepId]);
+            Cheque::where('customer_id', $mergeId)->update(['customer_id' => $keepId]);
 
             // أرشفة المكرر
             Customer::find($mergeId)?->delete();
@@ -111,9 +115,9 @@ class DataCleanupService
         }
 
         DB::transaction(function () use ($keepId, $mergeId) {
-            \App\Models\PurchaseInvoice::where('supplier_id', $mergeId)->update(['supplier_id' => $keepId]);
-            \App\Models\Payment::where('supplier_id', $mergeId)->update(['supplier_id' => $keepId]);
-            \App\Models\Cheque::where('supplier_id', $mergeId)->update(['supplier_id' => $keepId]);
+            PurchaseInvoice::where('supplier_id', $mergeId)->update(['supplier_id' => $keepId]);
+            Payment::where('supplier_id', $mergeId)->update(['supplier_id' => $keepId]);
+            Cheque::where('supplier_id', $mergeId)->update(['supplier_id' => $keepId]);
 
             Supplier::find($mergeId)?->delete();
 
@@ -192,14 +196,14 @@ class DataCleanupService
                 ->havingRaw('COUNT(*) > 1')
                 ->count(),
 
-            'duplicate_products'  => Product::select('name')
+            'duplicate_products' => Product::select('name')
                 ->groupBy('name')
                 ->havingRaw('COUNT(*) > 1')
                 ->count(),
 
-            'archived_customers'  => Customer::onlyTrashed()->count(),
-            'archived_products'   => Product::onlyTrashed()->count(),
-            'archived_suppliers'  => Supplier::onlyTrashed()->count(),
+            'archived_customers' => Customer::onlyTrashed()->count(),
+            'archived_products' => Product::onlyTrashed()->count(),
+            'archived_suppliers' => Supplier::onlyTrashed()->count(),
 
             'zero_stock_products' => Stock::where('quantity', '<=', 0)->count(),
         ];

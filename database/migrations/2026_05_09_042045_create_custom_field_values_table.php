@@ -14,8 +14,8 @@ return new class extends Migration
         Schema::create('custom_field_values', function (Blueprint $table) {
             $table->id();
             $table->foreignId('custom_field_id')
-                  ->constrained('custom_fields')
-                  ->cascadeOnDelete();
+                ->constrained('custom_fields')
+                ->cascadeOnDelete();
             $table->unsignedBigInteger('entity_id'); // ID الكيان (customer.id, product.id...)
             $table->text('value')->nullable();
             $table->timestamps();

@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\PurchaseInvoices\RelationManagers;
 
+use App\Models\Product;
 use App\Models\PurchaseInvoice;
 use App\Models\Stock;
 use App\Modules\Purchases\PurchaseService;
@@ -23,6 +24,7 @@ use Illuminate\Support\Facades\Storage;
 class ItemsRelationManager extends RelationManager
 {
     protected static string $relationship = 'items';
+
     protected static ?string $title = 'بنود الفاتورة';
 
     // ── Form ───────────────────────────────────────────────────────────────────
@@ -139,7 +141,7 @@ class ItemsRelationManager extends RelationManager
                     ->form([
                         Select::make('product_id')
                             ->label('الصنف')
-                            ->options(fn () => \App\Models\Product::orderBy('name')->pluck('name', 'id'))
+                            ->options(fn () => Product::orderBy('name')->pluck('name', 'id'))
                             ->searchable()
                             ->required()
                             ->live()
@@ -188,28 +190,28 @@ class ItemsRelationManager extends RelationManager
                             ->dehydrated(false),
                     ])
                     ->action(function (array $data): void {
-                        $invoice    = $this->getOwnerRecord();
-                        $quantity   = (float) ($data['quantity'] ?? 0);
-                        $unitCost   = (float) ($data['unit_cost'] ?? 0);
-                        $productId  = $data['product_id'];
+                        $invoice = $this->getOwnerRecord();
+                        $quantity = (float) ($data['quantity'] ?? 0);
+                        $unitCost = (float) ($data['unit_cost'] ?? 0);
+                        $productId = $data['product_id'];
 
                         // دمج مع بند موجود بنفس المنتج
                         $existing = $invoice->items()->where('product_id', $productId)->first();
 
                         if ($existing) {
-                            $newQty   = (float) $existing->quantity + $quantity;
+                            $newQty = (float) $existing->quantity + $quantity;
                             $newTotal = round($newQty * $unitCost, 2);
                             $existing->update([
-                                'quantity'  => $newQty,
+                                'quantity' => $newQty,
                                 'unit_cost' => $unitCost,
-                                'total'     => $newTotal,
+                                'total' => $newTotal,
                             ]);
                         } else {
                             $invoice->items()->create([
                                 'product_id' => $productId,
-                                'quantity'   => $quantity,
-                                'unit_cost'  => $unitCost,
-                                'total'      => round($quantity * $unitCost, 2),
+                                'quantity' => $quantity,
+                                'unit_cost' => $unitCost,
+                                'total' => round($quantity * $unitCost, 2),
                             ]);
                         }
 
@@ -243,21 +245,22 @@ class ItemsRelationManager extends RelationManager
                             ->helperText('الأعمدة: اسم الصنف | الكمية | سعر الوحدة (ج.م.)'),
                     ])
                     ->action(function (array $data): void {
-                        $invoice  = $this->getOwnerRecord();
+                        $invoice = $this->getOwnerRecord();
                         $filePath = $data['file'];
 
                         if (! $filePath) {
                             Notification::make()->danger()->title('لم يتم اختيار ملف')->send();
+
                             return;
                         }
 
                         try {
                             $fullPath = Storage::disk('local')->path($filePath);
-                            $result   = app(PurchaseItemsImporter::class)->importFromFile($invoice, $fullPath);
+                            $result = app(PurchaseItemsImporter::class)->importFromFile($invoice, $fullPath);
 
                             $msg = "تم استيراد {$result['imported']} بند بنجاح";
                             if (! empty($result['skipped'])) {
-                                $msg .= ' — تم تخطي ' . count($result['skipped']) . ' سطر';
+                                $msg .= ' — تم تخطي '.count($result['skipped']).' سطر';
                             }
 
                             Notification::make()
@@ -309,13 +312,14 @@ class ItemsRelationManager extends RelationManager
                             ->label('اختر الفاتورة المصدر')
                             ->options(function (): array {
                                 $currentId = $this->getOwnerRecord()->id;
+
                                 return PurchaseInvoice::where('id', '!=', $currentId)
                                     ->orderByDesc('invoice_date')
                                     ->limit(50)
                                     ->get()
                                     ->mapWithKeys(fn ($inv) => [
-                                        $inv->id => "{$inv->reference_number} — " .
-                                            ($inv->supplier->name ?? '—') . ' — ' .
+                                        $inv->id => "{$inv->reference_number} — ".
+                                            ($inv->supplier->name ?? '—').' — '.
                                             $inv->invoice_date,
                                     ])
                                     ->toArray();
@@ -326,10 +330,11 @@ class ItemsRelationManager extends RelationManager
                     ])
                     ->action(function (array $data): void {
                         $invoice = $this->getOwnerRecord();
-                        $source  = PurchaseInvoice::find($data['source_invoice_id']);
+                        $source = PurchaseInvoice::find($data['source_invoice_id']);
 
                         if (! $source) {
                             Notification::make()->danger()->title('الفاتورة غير موجودة')->send();
+
                             return;
                         }
 
@@ -372,6 +377,7 @@ class ItemsRelationManager extends RelationManager
             (float) ($data['quantity'] ?? 0) * (float) ($data['unit_cost'] ?? 0),
             2
         );
+
         return $data;
     }
 
@@ -381,6 +387,7 @@ class ItemsRelationManager extends RelationManager
             (float) ($data['quantity'] ?? 0) * (float) ($data['unit_cost'] ?? 0),
             2
         );
+
         return $data;
     }
 

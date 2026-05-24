@@ -2,13 +2,12 @@
 
 namespace App\Filament\Resources\LookupTypeResource\RelationManagers;
 
-use App\Models\LookupValue;
-use Filament\Forms\Components\TextInput;
-use Filament\Forms\Components\Toggle;
-use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Actions\CreateAction;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\EditAction;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Toggle;
+use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
@@ -16,7 +15,8 @@ use Filament\Tables\Table;
 class LookupValuesRelationManager extends RelationManager
 {
     protected static string $relationship = 'values';
-    protected static ?string $title       = 'القيم';
+
+    protected static ?string $title = 'القيم';
 
     public function table(Table $table): Table
     {

@@ -29,52 +29,52 @@ class AccountingService
         return DB::transaction(function () use ($data, $createdBy, $date) {
             $entry = JournalEntry::create([
                 'entry_number' => JournalEntry::generateEntryNumber(),
-                'entry_date'   => $date->toDateString(),
-                'description'  => $data['description'],
-                'source_type'  => null,
-                'source_id'    => null,
-                'is_manual'    => true,
-                'is_posted'    => true,
-                'total_debit'  => 0,
+                'entry_date' => $date->toDateString(),
+                'description' => $data['description'],
+                'source_type' => null,
+                'source_id' => null,
+                'is_manual' => true,
+                'is_posted' => true,
+                'total_debit' => 0,
                 'total_credit' => 0,
-                'notes'        => $data['notes'] ?? null,
-                'created_by'   => $createdBy,
+                'notes' => $data['notes'] ?? null,
+                'created_by' => $createdBy,
             ]);
 
             // لو السطور جاية مع الـ data (من Tinker أو API)
             if (! empty($data['lines'])) {
-                $totalDebit  = 0.0;
+                $totalDebit = 0.0;
                 $totalCredit = 0.0;
 
                 foreach ($data['lines'] as $line) {
-                    $debit  = (float) ($line['debit']  ?? 0);
+                    $debit = (float) ($line['debit'] ?? 0);
                     $credit = (float) ($line['credit'] ?? 0);
 
                     JournalEntryLine::create([
                         'journal_entry_id' => $entry->id,
-                        'account_id'       => $line['account_id'],
+                        'account_id' => $line['account_id'],
                         'business_unit_id' => $line['business_unit_id']
                             ?? $data['business_unit_id']
                             ?? auth()->user()?->business_unit_id,
-                        'debit'            => $debit,
-                        'credit'           => $credit,
-                        'description'      => $line['description'] ?? $data['description'],
+                        'debit' => $debit,
+                        'credit' => $credit,
+                        'description' => $line['description'] ?? $data['description'],
                     ]);
 
-                    $totalDebit  += $debit;
+                    $totalDebit += $debit;
                     $totalCredit += $credit;
                 }
 
                 // فحص التوازن
                 if (abs($totalDebit - $totalCredit) > 0.01) {
                     throw new InvalidArgumentException(
-                        'القيد غير متوازن! مدين: ' . number_format($totalDebit, 2)
-                        . ' ≠ دائن: ' . number_format($totalCredit, 2)
+                        'القيد غير متوازن! مدين: '.number_format($totalDebit, 2)
+                        .' ≠ دائن: '.number_format($totalCredit, 2)
                     );
                 }
 
                 $entry->update([
-                    'total_debit'  => round($totalDebit, 2),
+                    'total_debit' => round($totalDebit, 2),
                     'total_credit' => round($totalCredit, 2),
                 ]);
             }
@@ -104,25 +104,25 @@ class AccountingService
         return DB::transaction(function () use ($original, $createdBy) {
             $reverse = JournalEntry::create([
                 'entry_number' => JournalEntry::generateEntryNumber(),
-                'entry_date'   => today()->toDateString(),
-                'description'  => 'عكس قيد #' . $original->entry_number . ': ' . $original->description,
-                'source_type'  => $original->source_type,
-                'source_id'    => $original->source_id,
-                'is_manual'    => true,
-                'is_posted'    => true,
-                'total_debit'  => $original->total_credit, // مُعكَّس
+                'entry_date' => today()->toDateString(),
+                'description' => 'عكس قيد #'.$original->entry_number.': '.$original->description,
+                'source_type' => $original->source_type,
+                'source_id' => $original->source_id,
+                'is_manual' => true,
+                'is_posted' => true,
+                'total_debit' => $original->total_credit, // مُعكَّس
                 'total_credit' => $original->total_debit,  // مُعكَّس
-                'created_by'   => $createdBy,
+                'created_by' => $createdBy,
             ]);
 
             foreach ($original->lines as $line) {
                 JournalEntryLine::create([
                     'journal_entry_id' => $reverse->id,
-                    'account_id'       => $line->account_id,
+                    'account_id' => $line->account_id,
                     'business_unit_id' => $line->business_unit_id,
-                    'debit'            => $line->credit, // مُعكَّس
-                    'credit'           => $line->debit,  // مُعكَّس
-                    'description'      => 'عكس: ' . ($line->description ?? ''),
+                    'debit' => $line->credit, // مُعكَّس
+                    'credit' => $line->debit,  // مُعكَّس
+                    'description' => 'عكس: '.($line->description ?? ''),
                 ]);
             }
 
@@ -138,7 +138,7 @@ class AccountingService
     {
         $entry = JournalEntry::findOrFail($entryId);
         $entry->update([
-            'total_debit'  => round((float) $entry->lines()->sum('debit'), 2),
+            'total_debit' => round((float) $entry->lines()->sum('debit'), 2),
             'total_credit' => round((float) $entry->lines()->sum('credit'), 2),
         ]);
     }
@@ -160,8 +160,8 @@ class AccountingService
         if ($period && $period->is_locked) {
             throw new RuntimeException(
                 'الفترة المالية مقفولة ('
-                . $period->getDisplayName()
-                . '). تواصل مع المحاسب لفتحها.'
+                .$period->getDisplayName()
+                .'). تواصل مع المحاسب لفتحها.'
             );
         }
     }

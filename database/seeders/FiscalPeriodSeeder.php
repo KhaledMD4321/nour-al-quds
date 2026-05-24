@@ -14,16 +14,16 @@ class FiscalPeriodSeeder extends Seeder
         foreach ([2025, 2026] as $year) {
             for ($month = 1; $month <= 12; $month++) {
                 $start = Carbon::create($year, $month, 1)->startOfMonth();
-                $end   = $start->copy()->endOfMonth();
+                $end = $start->copy()->endOfMonth();
 
                 FiscalPeriod::updateOrCreate(
                     ['year' => $year, 'month' => $month],
                     [
                         'start_date' => $start->toDateString(),
-                        'end_date'   => $end->toDateString(),
-                        'is_locked'  => false,
-                        'locked_by'  => null,
-                        'locked_at'  => null,
+                        'end_date' => $end->toDateString(),
+                        'is_locked' => false,
+                        'locked_by' => null,
+                        'locked_at' => null,
                     ]
                 );
             }

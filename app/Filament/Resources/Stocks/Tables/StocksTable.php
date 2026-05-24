@@ -3,11 +3,11 @@
 namespace App\Filament\Resources\Stocks\Tables;
 
 use App\Models\LookupType;
+use Filament\Forms\Components\TextInput as FormTextInput;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
-use Filament\Forms\Components\TextInput as FormTextInput;
 
 class StocksTable
 {
@@ -54,14 +54,12 @@ class StocksTable
                     ->label('القيمة الإجمالية')
                     ->getStateUsing(fn ($record) => $record->total_value)
                     ->money('EGP')
-                    ->sortable(query: fn ($query, string $direction) =>
-                        $query->orderByRaw("quantity * avg_cost {$direction}")
+                    ->sortable(query: fn ($query, string $direction) => $query->orderByRaw("quantity * avg_cost {$direction}")
                     ),
 
                 TextColumn::make('product.unit_of_measure')
                     ->label('الوحدة')
-                    ->formatStateUsing(fn (?string $state): string =>
-                        LookupType::getLabel('unit_of_measure', $state) ?? ($state ?? '—')
+                    ->formatStateUsing(fn (?string $state): string => LookupType::getLabel('unit_of_measure', $state) ?? ($state ?? '—')
                     ),
 
                 TextColumn::make('last_updated')
@@ -91,15 +89,13 @@ class StocksTable
                             ->label('اسم الصنف')
                             ->placeholder('اكتب جزء من الاسم…'),
                     ])
-                    ->query(fn ($query, array $data) =>
-                        $query->when($data['name'] ?? null,
-                            fn ($q, $name) => $q->whereHas('product',
-                                fn ($pq) => $pq->where('name', 'ILIKE', "%{$name}%")
-                            )
+                    ->query(fn ($query, array $data) => $query->when($data['name'] ?? null,
+                        fn ($q, $name) => $q->whereHas('product',
+                            fn ($pq) => $pq->where('name', 'ILIKE', "%{$name}%")
                         )
                     )
-                    ->indicateUsing(fn (array $data): ?string =>
-                        filled($data['name'] ?? null) ? 'صنف: ' . $data['name'] : null
+                    )
+                    ->indicateUsing(fn (array $data): ?string => filled($data['name'] ?? null) ? 'صنف: '.$data['name'] : null
                     ),
 
             ])

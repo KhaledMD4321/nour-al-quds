@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Invoices\Tables;
 
+use App\Filament\Pages\SaleReturn;
 use App\Models\Invoice;
 use Filament\Actions\Action;
 use Filament\Actions\BulkActionGroup;
@@ -54,16 +55,16 @@ class InvoicesTable
                     ->label('الدفع')
                     ->badge()
                     ->formatStateUsing(fn (string $state): string => match ($state) {
-                        'cash'   => 'نقدي',
+                        'cash' => 'نقدي',
                         'credit' => 'آجل',
                         'cheque' => 'شيك',
-                        default  => $state,
+                        default => $state,
                     })
                     ->color(fn (string $state): string => match ($state) {
-                        'cash'   => 'success',
+                        'cash' => 'success',
                         'credit' => 'warning',
                         'cheque' => 'info',
-                        default  => 'gray',
+                        default => 'gray',
                     }),
 
                 TextColumn::make('status')
@@ -93,18 +94,18 @@ class InvoicesTable
                 SelectFilter::make('status')
                     ->label('الحالة')
                     ->options([
-                        'draft'          => 'مسودة',
-                        'confirmed'      => 'مؤكدة',
-                        'delivered'      => 'مسلّمة',
+                        'draft' => 'مسودة',
+                        'confirmed' => 'مؤكدة',
+                        'delivered' => 'مسلّمة',
                         'partially_paid' => 'مدفوعة جزئياً',
-                        'paid'           => 'مدفوعة',
-                        'cancelled'      => 'ملغاة',
+                        'paid' => 'مدفوعة',
+                        'cancelled' => 'ملغاة',
                     ]),
 
                 SelectFilter::make('payment_type')
                     ->label('طريقة الدفع')
                     ->options([
-                        'cash'   => 'نقدي',
+                        'cash' => 'نقدي',
                         'credit' => 'آجل',
                         'cheque' => 'شيك',
                     ]),
@@ -118,12 +119,10 @@ class InvoicesTable
                     ->label('مرتجع')
                     ->icon('heroicon-o-arrow-uturn-right')
                     ->color('warning')
-                    ->visible(fn (Invoice $record): bool =>
-                        $record->type === 'sale' &&
+                    ->visible(fn (Invoice $record): bool => $record->type === 'sale' &&
                         in_array($record->status, ['confirmed', 'delivered', 'partially_paid', 'paid'])
                     )
-                    ->url(fn (Invoice $record): string =>
-                        \App\Filament\Pages\SaleReturn::getUrl(['invoice' => $record->id])
+                    ->url(fn (Invoice $record): string => SaleReturn::getUrl(['invoice' => $record->id])
                     ),
 
                 ViewAction::make()->label('تفاصيل'),

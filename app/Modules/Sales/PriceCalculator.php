@@ -12,10 +12,10 @@ class PriceCalculator
      *      = 837.90
      *
      * @param  float  $listPrice  سعر اللستة
-     * @param  float  $d1         خصم 1 (%)
-     * @param  float  $d2         خصم 2 (%)
-     * @param  float  $d3         خصم 3 (%)
-     * @return float              سعر الوحدة بعد الخصم
+     * @param  float  $d1  خصم 1 (%)
+     * @param  float  $d2  خصم 2 (%)
+     * @param  float  $d3  خصم 3 (%)
+     * @return float سعر الوحدة بعد الخصم
      */
     public static function calculateUnitPrice(
         float $listPrice,

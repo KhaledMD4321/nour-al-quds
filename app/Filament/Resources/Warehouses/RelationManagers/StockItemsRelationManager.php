@@ -7,14 +7,16 @@ use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Schemas\Schema;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\Filter;
-use Filament\Forms\Components\TextInput;
 use Filament\Tables\Table;
 
 class StockItemsRelationManager extends RelationManager
 {
-    protected static string  $relationship     = 'stockItems';
-    protected static ?string $title            = 'أرصدة المخزن';
-    protected static ?string $modelLabel       = 'رصيد';
+    protected static string $relationship = 'stockItems';
+
+    protected static ?string $title = 'أرصدة المخزن';
+
+    protected static ?string $modelLabel = 'رصيد';
+
     protected static ?string $pluralModelLabel = 'الأرصدة';
 
     // ─── Form — غير مستخدم (قراءة فقط) ────────────────────────────────────────
@@ -62,8 +64,7 @@ class StockItemsRelationManager extends RelationManager
 
                 TextColumn::make('product.unit_of_measure')
                     ->label('الوحدة')
-                    ->formatStateUsing(fn (?string $state): string =>
-                        LookupType::getLabel('unit_of_measure', $state) ?? ($state ?? '—')
+                    ->formatStateUsing(fn (?string $state): string => LookupType::getLabel('unit_of_measure', $state) ?? ($state ?? '—')
                     ),
 
                 TextColumn::make('last_updated')

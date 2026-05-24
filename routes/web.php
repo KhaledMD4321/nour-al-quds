@@ -4,8 +4,8 @@ use App\Http\Controllers\CustomerStatementPrintController;
 use App\Http\Controllers\InvoicePdfController;
 use App\Http\Controllers\PaymentPrintController;
 use App\Http\Controllers\PurchaseInvoicePrintController;
-use App\Http\Controllers\QuotationPdfController;
 use App\Http\Controllers\QuickSaleReceiptController;
+use App\Http\Controllers\QuotationPdfController;
 use App\Http\Controllers\ReceiptPrintController;
 use App\Http\Controllers\SupplierStatementPrintController;
 use App\Services\PurchaseItemsImporter;
@@ -42,8 +42,9 @@ Route::middleware(['auth'])->group(function () {
 
     Route::get('/purchase-invoices/items-template', function () {
         $csv = PurchaseItemsImporter::templateCsv();
+
         return response($csv, 200, [
-            'Content-Type'        => 'text/csv; charset=UTF-8',
+            'Content-Type' => 'text/csv; charset=UTF-8',
             'Content-Disposition' => 'attachment; filename="purchase-items-template.csv"',
         ]);
     })->name('purchase-invoices.items-template');

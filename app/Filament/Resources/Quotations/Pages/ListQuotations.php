@@ -7,6 +7,7 @@ use Filament\Resources\Pages\ListRecords;
 
 class ListQuotations extends ListRecords
 {
-    protected static string  $resource = QuotationResource::class;
-    protected static ?string $title    = 'عروض الأسعار';
+    protected static string $resource = QuotationResource::class;
+
+    protected static ?string $title = 'عروض الأسعار';
 }

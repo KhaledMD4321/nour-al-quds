@@ -8,7 +8,6 @@ use Filament\Actions\ForceDeleteAction;
 use Filament\Actions\RestoreAction;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\EditRecord;
-use App\Models\Category;
 
 class EditCategory extends EditRecord
 {

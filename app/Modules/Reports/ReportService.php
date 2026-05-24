@@ -5,13 +5,10 @@ namespace App\Modules\Reports;
 use App\Models\BusinessUnit;
 use App\Models\Customer;
 use App\Models\Invoice;
-use App\Models\PurchaseInvoice;
-use App\Models\Receipt;
 use App\Models\Payment;
+use App\Models\PurchaseInvoice;
 use App\Models\Stock;
 use App\Models\StockMovement;
-use App\Models\JournalEntryLine;
-use App\Models\ChartOfAccount;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -46,32 +43,38 @@ class ReportService
             ->groupBy('customer_id')
             ->map(function ($group) use ($asOf) {
                 $customer = $group->first()->customer;
-                $buckets  = ['current' => 0, 'days_30' => 0, 'days_60' => 0, 'days_90' => 0, 'over_90' => 0];
+                $buckets = ['current' => 0, 'days_30' => 0, 'days_60' => 0, 'days_90' => 0, 'over_90' => 0];
 
                 foreach ($group as $inv) {
-                    $due     = $inv->due_date ?? $inv->invoice_date;
+                    $due = $inv->due_date ?? $inv->invoice_date;
                     $overdue = (int) $due->diffInDays($asOf, false);
                     $balance = (float) $inv->total_amount - (float) $inv->paid_amount;
 
-                    if ($overdue <= 0)       $buckets['current']  += $balance;
-                    elseif ($overdue <= 30)  $buckets['days_30']  += $balance;
-                    elseif ($overdue <= 60)  $buckets['days_60']  += $balance;
-                    elseif ($overdue <= 90)  $buckets['days_90']  += $balance;
-                    else                     $buckets['over_90']  += $balance;
+                    if ($overdue <= 0) {
+                        $buckets['current'] += $balance;
+                    } elseif ($overdue <= 30) {
+                        $buckets['days_30'] += $balance;
+                    } elseif ($overdue <= 60) {
+                        $buckets['days_60'] += $balance;
+                    } elseif ($overdue <= 90) {
+                        $buckets['days_90'] += $balance;
+                    } else {
+                        $buckets['over_90'] += $balance;
+                    }
                 }
 
                 $total = array_sum($buckets);
 
                 return (object) [
-                    'customer_id'   => $customer->id,
+                    'customer_id' => $customer->id,
                     'customer_code' => $customer->code,
                     'customer_name' => $customer->name,
-                    'current'       => $buckets['current'],
-                    'days_30'       => $buckets['days_30'],
-                    'days_60'       => $buckets['days_60'],
-                    'days_90'       => $buckets['days_90'],
-                    'over_90'       => $buckets['over_90'],
-                    'total'         => $total,
+                    'current' => $buckets['current'],
+                    'days_30' => $buckets['days_30'],
+                    'days_60' => $buckets['days_60'],
+                    'days_90' => $buckets['days_90'],
+                    'over_90' => $buckets['over_90'],
+                    'total' => $total,
                 ];
             })
             ->filter(fn ($r) => $r->total > 0.01)
@@ -101,32 +104,38 @@ class ReportService
             ->groupBy('supplier_id')
             ->map(function ($group) use ($asOf) {
                 $supplier = $group->first()->supplier;
-                $buckets  = ['current' => 0, 'days_30' => 0, 'days_60' => 0, 'days_90' => 0, 'over_90' => 0];
+                $buckets = ['current' => 0, 'days_30' => 0, 'days_60' => 0, 'days_90' => 0, 'over_90' => 0];
 
                 foreach ($group as $inv) {
-                    $due     = $inv->due_date ?? $inv->invoice_date;
+                    $due = $inv->due_date ?? $inv->invoice_date;
                     $overdue = (int) $due->diffInDays($asOf, false);
                     $balance = (float) $inv->total_amount - (float) $inv->paid_amount;
 
-                    if ($overdue <= 0)       $buckets['current']  += $balance;
-                    elseif ($overdue <= 30)  $buckets['days_30']  += $balance;
-                    elseif ($overdue <= 60)  $buckets['days_60']  += $balance;
-                    elseif ($overdue <= 90)  $buckets['days_90']  += $balance;
-                    else                     $buckets['over_90']  += $balance;
+                    if ($overdue <= 0) {
+                        $buckets['current'] += $balance;
+                    } elseif ($overdue <= 30) {
+                        $buckets['days_30'] += $balance;
+                    } elseif ($overdue <= 60) {
+                        $buckets['days_60'] += $balance;
+                    } elseif ($overdue <= 90) {
+                        $buckets['days_90'] += $balance;
+                    } else {
+                        $buckets['over_90'] += $balance;
+                    }
                 }
 
                 $total = array_sum($buckets);
 
                 return (object) [
-                    'supplier_id'   => $supplier->id,
+                    'supplier_id' => $supplier->id,
                     'supplier_code' => $supplier->code,
                     'supplier_name' => $supplier->name,
-                    'current'       => $buckets['current'],
-                    'days_30'       => $buckets['days_30'],
-                    'days_60'       => $buckets['days_60'],
-                    'days_90'       => $buckets['days_90'],
-                    'over_90'       => $buckets['over_90'],
-                    'total'         => $total,
+                    'current' => $buckets['current'],
+                    'days_30' => $buckets['days_30'],
+                    'days_60' => $buckets['days_60'],
+                    'days_90' => $buckets['days_90'],
+                    'over_90' => $buckets['over_90'],
+                    'total' => $total,
                 ];
             })
             ->filter(fn ($r) => $r->total > 0.01)
@@ -144,22 +153,26 @@ class ReportService
     public function profitLoss(?int $businessUnitId, string $fromDate, string $toDate): object
     {
         $from = Carbon::parse($fromDate)->startOfDay();
-        $to   = Carbon::parse($toDate)->endOfDay();
+        $to = Carbon::parse($toDate)->endOfDay();
 
         // ── الإيرادات من فواتير المبيعات المؤكدة ──
         $salesQuery = Invoice::where('type', 'sale')
             ->whereIn('status', ['confirmed', 'delivered', 'partial_paid', 'partially_paid', 'paid'])
             ->whereBetween('invoice_date', [$from, $to]);
-        if ($businessUnitId) $salesQuery->where('business_unit_id', $businessUnitId);
+        if ($businessUnitId) {
+            $salesQuery->where('business_unit_id', $businessUnitId);
+        }
 
-        $grossRevenue  = (float) $salesQuery->sum('total_amount');
-        $discounts     = (float) $salesQuery->sum('discount_amount');
+        $grossRevenue = (float) $salesQuery->sum('total_amount');
+        $discounts = (float) $salesQuery->sum('discount_amount');
 
         // ── مرتجعات المبيعات ──
         $returnQuery = Invoice::where('type', 'sale_return')
             ->whereIn('status', ['confirmed', 'delivered', 'paid'])
             ->whereBetween('invoice_date', [$from, $to]);
-        if ($businessUnitId) $returnQuery->where('business_unit_id', $businessUnitId);
+        if ($businessUnitId) {
+            $returnQuery->where('business_unit_id', $businessUnitId);
+        }
         $salesReturns = (float) $returnQuery->sum('total_amount');
 
         $netRevenue = $grossRevenue - $salesReturns;
@@ -173,30 +186,32 @@ class ReportService
         }
         $costOfGoods = (float) $cogQuery->join('stock', function ($j) {
             $j->on('stock_movements.warehouse_id', '=', 'stock.warehouse_id')
-              ->on('stock_movements.product_id',   '=', 'stock.product_id');
+                ->on('stock_movements.product_id', '=', 'stock.product_id');
         })->selectRaw('SUM(stock_movements.quantity * stock.avg_cost) as total_cost')
-          ->value('total_cost') ?? 0;
+            ->value('total_cost') ?? 0;
 
         $grossProfit = $netRevenue - $costOfGoods;
 
         // ── المصروفات من سندات الصرف ──
         $expenseQuery = Payment::whereBetween('payment_date', [$from, $to]);
-        if ($businessUnitId) $expenseQuery->where('business_unit_id', $businessUnitId);
+        if ($businessUnitId) {
+            $expenseQuery->where('business_unit_id', $businessUnitId);
+        }
         $totalExpenses = (float) $expenseQuery->sum('amount');
 
         $netProfit = $grossProfit - $totalExpenses;
 
         return (object) [
-            'gross_revenue'  => $grossRevenue,
-            'discounts'      => $discounts,
-            'sales_returns'  => $salesReturns,
-            'net_revenue'    => $netRevenue,
-            'cost_of_goods'  => $costOfGoods,
-            'gross_profit'   => $grossProfit,
+            'gross_revenue' => $grossRevenue,
+            'discounts' => $discounts,
+            'sales_returns' => $salesReturns,
+            'net_revenue' => $netRevenue,
+            'cost_of_goods' => $costOfGoods,
+            'gross_profit' => $grossProfit,
             'total_expenses' => $totalExpenses,
-            'net_profit'     => $netProfit,
-            'gross_margin'   => $netRevenue > 0 ? round(($grossProfit / $netRevenue) * 100, 2) : 0,
-            'net_margin'     => $netRevenue > 0 ? round(($netProfit / $netRevenue) * 100, 2) : 0,
+            'net_profit' => $netProfit,
+            'gross_margin' => $netRevenue > 0 ? round(($grossProfit / $netRevenue) * 100, 2) : 0,
+            'net_margin' => $netRevenue > 0 ? round(($netProfit / $netRevenue) * 100, 2) : 0,
         ];
     }
 
@@ -210,7 +225,7 @@ class ReportService
 
         foreach ($units as $unit) {
             $byUnit[$unit->id] = [
-                'unit'   => $unit,
+                'unit' => $unit,
                 'report' => $this->profitLoss($unit->id, $fromDate, $toDate),
             ];
         }
@@ -219,7 +234,7 @@ class ReportService
         $consolidated = $this->profitLoss(null, $fromDate, $toDate);
 
         return (object) [
-            'by_unit'      => $byUnit,
+            'by_unit' => $byUnit,
             'consolidated' => $consolidated,
         ];
     }
@@ -236,18 +251,22 @@ class ReportService
         $query = Stock::with(['product', 'warehouse.businessUnit'])
             ->where('quantity', '>', 0);
 
-        if ($warehouseId)    $query->where('warehouse_id', $warehouseId);
-        if ($businessUnitId) $query->whereHas('warehouse', fn ($q) => $q->where('business_unit_id', $businessUnitId));
+        if ($warehouseId) {
+            $query->where('warehouse_id', $warehouseId);
+        }
+        if ($businessUnitId) {
+            $query->whereHas('warehouse', fn ($q) => $q->where('business_unit_id', $businessUnitId));
+        }
 
         return $query->orderBy('warehouse_id')->get()->map(fn ($s) => (object) [
-            'warehouse_name'  => $s->warehouse->name,
-            'product_code'    => $s->product->code,
-            'product_name'    => $s->product->name,
-            'quantity'        => (float) $s->quantity,
-            'avg_cost'        => (float) $s->avg_cost,
-            'total_value'     => round((float) $s->quantity * (float) $s->avg_cost, 2),
+            'warehouse_name' => $s->warehouse->name,
+            'product_code' => $s->product->code,
+            'product_name' => $s->product->name,
+            'quantity' => (float) $s->quantity,
+            'avg_cost' => (float) $s->avg_cost,
+            'total_value' => round((float) $s->quantity * (float) $s->avg_cost, 2),
             'min_stock_level' => (float) $s->product->min_stock_level,
-            'below_min'       => $s->quantity < $s->product->min_stock_level,
+            'below_min' => $s->quantity < $s->product->min_stock_level,
         ]);
     }
 
@@ -266,15 +285,17 @@ class ReportService
             ->where('quantity', '>', 0)
             ->whereNotIn('product_id', $activeProductIds);
 
-        if ($warehouseId) $query->where('warehouse_id', $warehouseId);
+        if ($warehouseId) {
+            $query->where('warehouse_id', $warehouseId);
+        }
 
         return $query->get()->map(fn ($s) => (object) [
             'warehouse_name' => $s->warehouse->name,
-            'product_code'   => $s->product->code,
-            'product_name'   => $s->product->name,
-            'quantity'       => (float) $s->quantity,
-            'avg_cost'       => (float) $s->avg_cost,
-            'total_value'    => round((float) $s->quantity * (float) $s->avg_cost, 2),
+            'product_code' => $s->product->code,
+            'product_name' => $s->product->name,
+            'quantity' => (float) $s->quantity,
+            'avg_cost' => (float) $s->avg_cost,
+            'total_value' => round((float) $s->quantity * (float) $s->avg_cost, 2),
         ]);
     }
 
@@ -290,7 +311,9 @@ class ReportService
                 Carbon::parse($toDate)->endOfDay(),
             ]);
 
-        if ($warehouseId) $query->where('warehouse_id', $warehouseId);
+        if ($warehouseId) {
+            $query->where('warehouse_id', $warehouseId);
+        }
 
         return $query->orderBy('created_at')->get();
     }
@@ -305,19 +328,21 @@ class ReportService
     public function salesSummary(string $fromDate, string $toDate, ?int $businessUnitId = null): object
     {
         $from = Carbon::parse($fromDate)->startOfDay();
-        $to   = Carbon::parse($toDate)->endOfDay();
+        $to = Carbon::parse($toDate)->endOfDay();
 
         $query = Invoice::where('type', 'sale')
             ->whereIn('status', ['confirmed', 'delivered', 'partial_paid', 'partially_paid', 'paid'])
             ->whereBetween('invoice_date', [$from, $to]);
 
-        if ($businessUnitId) $query->where('business_unit_id', $businessUnitId);
+        if ($businessUnitId) {
+            $query->where('business_unit_id', $businessUnitId);
+        }
 
         return (object) [
-            'count'        => $query->count(),
+            'count' => $query->count(),
             'total_amount' => (float) $query->sum('total_amount'),
-            'paid_amount'  => (float) $query->sum('paid_amount'),
-            'outstanding'  => (float) $query->sum(DB::raw('total_amount - paid_amount')),
+            'paid_amount' => (float) $query->sum('paid_amount'),
+            'outstanding' => (float) $query->sum(DB::raw('total_amount - paid_amount')),
         ];
     }
 
@@ -327,7 +352,7 @@ class ReportService
     public function salesByCustomer(string $fromDate, string $toDate, ?int $businessUnitId = null): Collection
     {
         $from = Carbon::parse($fromDate)->startOfDay();
-        $to   = Carbon::parse($toDate)->endOfDay();
+        $to = Carbon::parse($toDate)->endOfDay();
 
         $query = Invoice::with('customer')
             ->select('customer_id', DB::raw('COUNT(*) as invoice_count'), DB::raw('SUM(total_amount) as total'), DB::raw('SUM(paid_amount) as paid'))
@@ -337,14 +362,16 @@ class ReportService
             ->groupBy('customer_id')
             ->orderByDesc('total');
 
-        if ($businessUnitId) $query->where('business_unit_id', $businessUnitId);
+        if ($businessUnitId) {
+            $query->where('business_unit_id', $businessUnitId);
+        }
 
         return $query->get()->map(fn ($r) => (object) [
-            'customer_name'  => $r->customer?->name ?? '—',
-            'invoice_count'  => $r->invoice_count,
-            'total'          => (float) $r->total,
-            'paid'           => (float) $r->paid,
-            'outstanding'    => (float) $r->total - (float) $r->paid,
+            'customer_name' => $r->customer?->name ?? '—',
+            'invoice_count' => $r->invoice_count,
+            'total' => (float) $r->total,
+            'paid' => (float) $r->paid,
+            'outstanding' => (float) $r->total - (float) $r->paid,
         ]);
     }
 
@@ -354,7 +381,7 @@ class ReportService
     public function salesByProduct(string $fromDate, string $toDate, ?int $businessUnitId = null): Collection
     {
         $from = Carbon::parse($fromDate)->startOfDay();
-        $to   = Carbon::parse($toDate)->endOfDay();
+        $to = Carbon::parse($toDate)->endOfDay();
 
         $query = DB::table('invoice_items')
             ->join('invoices', 'invoices.id', '=', 'invoice_items.invoice_id')
@@ -371,7 +398,9 @@ class ReportService
             ->groupBy('products.id', 'products.code', 'products.name')
             ->orderByDesc('total_revenue');
 
-        if ($businessUnitId) $query->where('invoices.business_unit_id', $businessUnitId);
+        if ($businessUnitId) {
+            $query->where('invoices.business_unit_id', $businessUnitId);
+        }
 
         return $query->get();
     }
@@ -386,18 +415,20 @@ class ReportService
     public function purchasesSummary(string $fromDate, string $toDate, ?int $businessUnitId = null): object
     {
         $from = Carbon::parse($fromDate)->startOfDay();
-        $to   = Carbon::parse($toDate)->endOfDay();
+        $to = Carbon::parse($toDate)->endOfDay();
 
         $query = PurchaseInvoice::whereIn('status', ['confirmed', 'paid'])
             ->whereBetween('invoice_date', [$from, $to]);
 
-        if ($businessUnitId) $query->where('business_unit_id', $businessUnitId);
+        if ($businessUnitId) {
+            $query->where('business_unit_id', $businessUnitId);
+        }
 
         return (object) [
-            'count'        => $query->count(),
+            'count' => $query->count(),
             'total_amount' => (float) $query->sum('total_amount'),
-            'paid_amount'  => (float) $query->sum('paid_amount'),
-            'outstanding'  => (float) $query->sum(DB::raw('total_amount - paid_amount')),
+            'paid_amount' => (float) $query->sum('paid_amount'),
+            'outstanding' => (float) $query->sum(DB::raw('total_amount - paid_amount')),
         ];
     }
 
@@ -407,7 +438,7 @@ class ReportService
     public function purchasesBySupplier(string $fromDate, string $toDate, ?int $businessUnitId = null): Collection
     {
         $from = Carbon::parse($fromDate)->startOfDay();
-        $to   = Carbon::parse($toDate)->endOfDay();
+        $to = Carbon::parse($toDate)->endOfDay();
 
         $query = PurchaseInvoice::with('supplier')
             ->select('supplier_id', DB::raw('COUNT(*) as invoice_count'), DB::raw('SUM(total_amount) as total'), DB::raw('SUM(paid_amount) as paid'))
@@ -416,14 +447,16 @@ class ReportService
             ->groupBy('supplier_id')
             ->orderByDesc('total');
 
-        if ($businessUnitId) $query->where('business_unit_id', $businessUnitId);
+        if ($businessUnitId) {
+            $query->where('business_unit_id', $businessUnitId);
+        }
 
         return $query->get()->map(fn ($r) => (object) [
-            'supplier_name'  => $r->supplier?->name ?? '—',
-            'invoice_count'  => $r->invoice_count,
-            'total'          => (float) $r->total,
-            'paid'           => (float) $r->paid,
-            'outstanding'    => (float) $r->total - (float) $r->paid,
+            'supplier_name' => $r->supplier?->name ?? '—',
+            'invoice_count' => $r->invoice_count,
+            'total' => (float) $r->total,
+            'paid' => (float) $r->paid,
+            'outstanding' => (float) $r->total - (float) $r->paid,
         ]);
     }
 
@@ -433,7 +466,7 @@ class ReportService
     public function purchasesByProduct(string $fromDate, string $toDate, ?int $businessUnitId = null): Collection
     {
         $from = Carbon::parse($fromDate)->startOfDay();
-        $to   = Carbon::parse($toDate)->endOfDay();
+        $to = Carbon::parse($toDate)->endOfDay();
 
         $query = DB::table('purchase_invoice_items')
             ->join('purchase_invoices', 'purchase_invoices.id', '=', 'purchase_invoice_items.purchase_invoice_id')
@@ -449,7 +482,9 @@ class ReportService
             ->groupBy('products.id', 'products.code', 'products.name')
             ->orderByDesc('total_cost');
 
-        if ($businessUnitId) $query->where('purchase_invoices.business_unit_id', $businessUnitId);
+        if ($businessUnitId) {
+            $query->where('purchase_invoices.business_unit_id', $businessUnitId);
+        }
 
         return $query->get();
     }

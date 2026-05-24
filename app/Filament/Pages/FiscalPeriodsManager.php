@@ -3,22 +3,29 @@
 namespace App\Filament\Pages;
 
 use App\Models\FiscalPeriod;
-use App\Models\JournalEntry;
 use App\Models\Invoice;
-use Filament\Pages\Page;
+use App\Models\JournalEntry;
 use Filament\Notifications\Notification;
+use Filament\Pages\Page;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Collection;
 
 class FiscalPeriodsManager extends Page
 {
-    protected static string|\BackedEnum|null $navigationIcon  = 'heroicon-o-calendar-days';
-    protected static string|\UnitEnum|null  $navigationGroup = 'المحاسبة';
-    protected static ?int                   $navigationSort  = 2;
-    protected static ?string                $title           = 'إدارة الفترات المالية';
-    protected static ?string                $navigationLabel = 'الفترات المالية';
-    protected string         $view            = 'filament.pages.fiscal-periods-manager';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-calendar-days';
+
+    protected static string|\UnitEnum|null $navigationGroup = 'المحاسبة';
+
+    protected static ?int $navigationSort = 2;
+
+    protected static ?string $title = 'إدارة الفترات المالية';
+
+    protected static ?string $navigationLabel = 'الفترات المالية';
+
+    protected string $view = 'filament.pages.fiscal-periods-manager';
 
     public int $selectedYear;
+
     public int $newYear;
 
     public static function canAccess(): bool
@@ -29,7 +36,7 @@ class FiscalPeriodsManager extends Page
     public function mount(): void
     {
         $this->selectedYear = (int) date('Y');
-        $this->newYear      = $this->selectedYear + 1;
+        $this->newYear = $this->selectedYear + 1;
     }
 
     public function getAvailableYears(): array
@@ -46,7 +53,7 @@ class FiscalPeriodsManager extends Page
         return $years;
     }
 
-    public function getPeriods(): \Illuminate\Support\Collection
+    public function getPeriods(): Collection
     {
         return FiscalPeriod::where('year', $this->selectedYear)
             ->orderBy('month')
@@ -70,19 +77,19 @@ class FiscalPeriodsManager extends Page
                     ->sum('total_amount');
 
                 return (object) [
-                    'id'            => $period->id,
-                    'year'          => $period->year,
-                    'month'         => $period->month,
-                    'month_name'    => $this->getArabicMonth($period->month),
-                    'start_date'    => $period->start_date,
-                    'end_date'      => $period->end_date,
-                    'is_locked'     => $period->is_locked,
-                    'locked_by'     => $period->locked_by,
-                    'locked_at'     => $period->locked_at,
+                    'id' => $period->id,
+                    'year' => $period->year,
+                    'month' => $period->month,
+                    'month_name' => $this->getArabicMonth($period->month),
+                    'start_date' => $period->start_date,
+                    'end_date' => $period->end_date,
+                    'is_locked' => $period->is_locked,
+                    'locked_by' => $period->locked_by,
+                    'locked_at' => $period->locked_at,
                     'journal_count' => $journalCount,
                     'invoice_count' => $invoiceCount,
-                    'total_sales'   => (float) $totalSales,
-                    'is_current'    => Carbon::now()->between(
+                    'total_sales' => (float) $totalSales,
+                    'is_current' => Carbon::now()->between(
                         Carbon::parse($period->start_date),
                         Carbon::parse($period->end_date)
                     ),
@@ -96,6 +103,7 @@ class FiscalPeriodsManager extends Page
 
         if ($period->is_locked) {
             Notification::make()->warning()->title('الفترة مقفولة بالفعل')->send();
+
             return;
         }
 
@@ -114,6 +122,7 @@ class FiscalPeriodsManager extends Page
     {
         if (! auth()->user()->isSuperAdmin()) {
             Notification::make()->danger()->title('فقط مدير النظام يمكنه فتح فترة مقفولة')->send();
+
             return;
         }
 
@@ -133,6 +142,7 @@ class FiscalPeriodsManager extends Page
     {
         if (! auth()->user()->isSuperAdmin()) {
             Notification::make()->danger()->title('فقط مدير النظام يمكنه إنشاء فترات جديدة')->send();
+
             return;
         }
 
@@ -141,17 +151,18 @@ class FiscalPeriodsManager extends Page
             Notification::make()->warning()
                 ->title("فترات سنة {$this->newYear} موجودة بالفعل ({$existing} فترة)")
                 ->send();
+
             return;
         }
 
         for ($m = 1; $m <= 12; $m++) {
             $start = Carbon::create($this->newYear, $m, 1);
             FiscalPeriod::create([
-                'year'       => $this->newYear,
-                'month'      => $m,
+                'year' => $this->newYear,
+                'month' => $m,
                 'start_date' => $start->toDateString(),
-                'end_date'   => $start->copy()->endOfMonth()->toDateString(),
-                'is_locked'  => false,
+                'end_date' => $start->copy()->endOfMonth()->toDateString(),
+                'is_locked' => false,
             ]);
         }
 
@@ -168,20 +179,20 @@ class FiscalPeriodsManager extends Page
         }
 
         $currentMonth = (int) date('m');
-        $currentYear  = (int) date('Y');
+        $currentYear = (int) date('Y');
 
         $count = FiscalPeriod::where(function ($q) use ($currentYear, $currentMonth) {
             $q->where('year', '<', $currentYear)
-              ->orWhere(function ($q2) use ($currentYear, $currentMonth) {
-                  $q2->where('year', $currentYear)->where('month', '<', $currentMonth);
-              });
+                ->orWhere(function ($q2) use ($currentYear, $currentMonth) {
+                    $q2->where('year', $currentYear)->where('month', '<', $currentMonth);
+                });
         })
-        ->where('is_locked', false)
-        ->update([
-            'is_locked' => true,
-            'locked_by' => auth()->id(),
-            'locked_at' => now(),
-        ]);
+            ->where('is_locked', false)
+            ->update([
+                'is_locked' => true,
+                'locked_by' => auth()->id(),
+                'locked_at' => now(),
+            ]);
 
         Notification::make()->success()->title("تم قفل {$count} فترة سابقة")->send();
     }
@@ -189,9 +200,9 @@ class FiscalPeriodsManager extends Page
     protected function getArabicMonth(int $month): string
     {
         return match ($month) {
-            1  => 'يناير',  2  => 'فبراير', 3  => 'مارس',
-            4  => 'أبريل',  5  => 'مايو',   6  => 'يونيو',
-            7  => 'يوليو',  8  => 'أغسطس',  9  => 'سبتمبر',
+            1 => 'يناير',  2 => 'فبراير', 3 => 'مارس',
+            4 => 'أبريل',  5 => 'مايو',   6 => 'يونيو',
+            7 => 'يوليو',  8 => 'أغسطس',  9 => 'سبتمبر',
             10 => 'أكتوبر', 11 => 'نوفمبر', 12 => 'ديسمبر',
             default => (string) $month,
         };

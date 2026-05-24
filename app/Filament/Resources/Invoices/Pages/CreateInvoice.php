@@ -3,17 +3,19 @@
 namespace App\Filament\Resources\Invoices\Pages;
 
 use App\Filament\Resources\Invoices\InvoiceResource;
-use Illuminate\Support\Facades\Auth;
 use Filament\Resources\Pages\CreateRecord;
+use Illuminate\Support\Facades\Auth;
 
 class CreateInvoice extends CreateRecord
 {
-    protected static string  $resource = InvoiceResource::class;
-    protected static ?string $title    = 'فاتورة بيع جديدة';
+    protected static string $resource = InvoiceResource::class;
+
+    protected static ?string $title = 'فاتورة بيع جديدة';
 
     protected function mutateFormDataBeforeCreate(array $data): array
     {
         $data['created_by'] = Auth::id();
+
         return $data;
     }
 

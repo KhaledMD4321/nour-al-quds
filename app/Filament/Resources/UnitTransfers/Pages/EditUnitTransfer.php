@@ -12,8 +12,9 @@ use Throwable;
 
 class EditUnitTransfer extends EditRecord
 {
-    protected static string  $resource = UnitTransferResource::class;
-    protected static ?string $title    = 'تعديل التحويل الداخلي';
+    protected static string $resource = UnitTransferResource::class;
+
+    protected static ?string $title = 'تعديل التحويل الداخلي';
 
     protected function getHeaderActions(): array
     {

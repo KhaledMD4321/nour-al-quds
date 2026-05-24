@@ -24,7 +24,9 @@ trait HasCustomFields
             ->where('field_key', $fieldKey)
             ->first();
 
-        if (! $field) return null;
+        if (! $field) {
+            return null;
+        }
 
         return CustomFieldValue::where('custom_field_id', $field->id)
             ->where('entity_id', $this->id)
@@ -40,7 +42,9 @@ trait HasCustomFields
             ->where('field_key', $fieldKey)
             ->first();
 
-        if (! $field) return;
+        if (! $field) {
+            return;
+        }
 
         CustomFieldValue::updateOrCreate(
             ['custom_field_id' => $field->id, 'entity_id' => $this->id],

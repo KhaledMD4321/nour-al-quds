@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\TreasuryTransactions;
 
+use App\Filament\Concerns\HasModuleGuard;
 use App\Filament\Resources\TreasuryTransactions\Pages\ListTreasuryTransactions;
 use App\Models\Treasury;
 use App\Models\TreasuryTransaction;
@@ -12,22 +13,27 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
-use App\Filament\Concerns\HasModuleGuard;
 use Illuminate\Database\Eloquent\Builder;
 
 class TreasuryTransactionResource extends Resource
 {
     use HasModuleGuard;
+
     protected static string $module = 'finance';
 
     protected static ?string $model = TreasuryTransaction::class;
 
-    protected static string|\BackedEnum|null $navigationIcon  = 'heroicon-o-arrows-right-left';
-    protected static string|\UnitEnum|null   $navigationGroup = 'الخزينة والمالية';
-    protected static ?int                    $navigationSort  = 2;
-    protected static ?string                 $navigationLabel  = 'حركات الخزائن';
-    protected static ?string                 $modelLabel       = 'حركة خزينة';
-    protected static ?string                 $pluralModelLabel = 'حركات الخزائن';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-arrows-right-left';
+
+    protected static string|\UnitEnum|null $navigationGroup = 'الخزينة والمالية';
+
+    protected static ?int $navigationSort = 2;
+
+    protected static ?string $navigationLabel = 'حركات الخزائن';
+
+    protected static ?string $modelLabel = 'حركة خزينة';
+
+    protected static ?string $pluralModelLabel = 'حركات الخزائن';
 
     // ── RBAC — قراءة فقط ─────────────────────────────────────────────────────────
 
@@ -36,9 +42,20 @@ class TreasuryTransactionResource extends Resource
         return auth()->user()?->can('finance.treasury.view') ?? false;
     }
 
-    public static function canCreate(): bool  { return false; }
-    public static function canEdit($r): bool  { return false; }
-    public static function canDelete($r): bool { return false; }
+    public static function canCreate(): bool
+    {
+        return false;
+    }
+
+    public static function canEdit($r): bool
+    {
+        return false;
+    }
+
+    public static function canDelete($r): bool
+    {
+        return false;
+    }
 
     // الموظف يشوف حركات خزائن وحدته فقط
     public static function getEloquentQuery(): Builder
@@ -48,8 +65,7 @@ class TreasuryTransactionResource extends Resource
 
         $user = auth()->user();
         if (! $user->isSuperAdmin() && $user->business_unit_id) {
-            $query->whereHas('treasury', fn ($q) =>
-                $q->where('business_unit_id', $user->business_unit_id)
+            $query->whereHas('treasury', fn ($q) => $q->where('business_unit_id', $user->business_unit_id)
             );
         }
 
@@ -89,29 +105,27 @@ class TreasuryTransactionResource extends Resource
                     ->label('نوع الحركة')
                     ->badge()
                     ->formatStateUsing(fn (string $state): string => match ($state) {
-                        'receipt'      => 'مقبوضات',
-                        'payment'      => 'مدفوعات',
-                        'transfer_in'  => 'تحويل وارد',
+                        'receipt' => 'مقبوضات',
+                        'payment' => 'مدفوعات',
+                        'transfer_in' => 'تحويل وارد',
                         'transfer_out' => 'تحويل صادر',
-                        default        => $state,
+                        default => $state,
                     })
                     ->color(fn (string $state): string => match ($state) {
-                        'receipt'      => 'success',
-                        'payment'      => 'danger',
-                        'transfer_in'  => 'info',
+                        'receipt' => 'success',
+                        'payment' => 'danger',
+                        'transfer_in' => 'info',
                         'transfer_out' => 'warning',
-                        default        => 'gray',
+                        default => 'gray',
                     }),
 
                 TextColumn::make('amount')
                     ->label('المبلغ')
                     ->money('EGP')
                     ->weight('bold')
-                    ->formatStateUsing(fn ($state, TreasuryTransaction $record): string =>
-                        ($record->is_inflow ? '+ ' : '- ') . number_format((float) $state, 2)
+                    ->formatStateUsing(fn ($state, TreasuryTransaction $record): string => ($record->is_inflow ? '+ ' : '- ').number_format((float) $state, 2)
                     )
-                    ->color(fn (TreasuryTransaction $record): string =>
-                        $record->is_inflow ? 'success' : 'danger'
+                    ->color(fn (TreasuryTransaction $record): string => $record->is_inflow ? 'success' : 'danger'
                     ),
 
                 TextColumn::make('balance_after')
@@ -129,12 +143,12 @@ class TreasuryTransactionResource extends Resource
                 TextColumn::make('reference_type')
                     ->label('المرجع')
                     ->formatStateUsing(fn ($state): string => match ($state) {
-                        'App\\Models\\QuickSale'        => 'بيع سريع',
-                        'App\\Models\\Receipt'          => 'سند قبض',
-                        'App\\Models\\Payment'          => 'سند صرف',
-                        'App\\Models\\Cheque'           => 'شيك',
+                        'App\\Models\\QuickSale' => 'بيع سريع',
+                        'App\\Models\\Receipt' => 'سند قبض',
+                        'App\\Models\\Payment' => 'سند صرف',
+                        'App\\Models\\Cheque' => 'شيك',
                         'App\\Models\\TreasuryTransaction' => 'تحويل بين خزائن',
-                        default                         => $state ?? '—',
+                        default => $state ?? '—',
                     })
                     ->badge()
                     ->color('gray'),
@@ -156,9 +170,9 @@ class TreasuryTransactionResource extends Resource
                 SelectFilter::make('type')
                     ->label('نوع الحركة')
                     ->options([
-                        'receipt'      => 'مقبوضات',
-                        'payment'      => 'مدفوعات',
-                        'transfer_in'  => 'تحويل وارد',
+                        'receipt' => 'مقبوضات',
+                        'payment' => 'مدفوعات',
+                        'transfer_in' => 'تحويل وارد',
                         'transfer_out' => 'تحويل صادر',
                     ]),
 

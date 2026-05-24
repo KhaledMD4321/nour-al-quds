@@ -32,11 +32,11 @@ return new class extends Migration
             $table->enum('payment_type', ['cash', 'credit', 'cheque'])->default('cash');
 
             // ── الأرقام ──────────────────────────────────────────────────────
-            $table->decimal('subtotal',        15, 2)->default(0);  // قبل الخصم والضريبة
+            $table->decimal('subtotal', 15, 2)->default(0);  // قبل الخصم والضريبة
             $table->decimal('discount_amount', 15, 2)->default(0);  // خصم إضافي على الفاتورة
-            $table->decimal('tax_amount',      15, 2)->default(0);  // ضريبة (للمستقبل)
-            $table->decimal('total_amount',    15, 2)->default(0);  // الإجمالي النهائي
-            $table->decimal('paid_amount',     15, 2)->default(0);  // المدفوع
+            $table->decimal('tax_amount', 15, 2)->default(0);  // ضريبة (للمستقبل)
+            $table->decimal('total_amount', 15, 2)->default(0);  // الإجمالي النهائي
+            $table->decimal('paid_amount', 15, 2)->default(0);  // المدفوع
 
             // ── للفواتير المصحَّحة ──────────────────────────────────────────
             $table->foreignId('original_invoice_id')->nullable()->constrained('invoices');

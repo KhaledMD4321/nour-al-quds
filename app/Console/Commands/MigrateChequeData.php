@@ -9,7 +9,8 @@ use Illuminate\Console\Command;
 
 class MigrateChequeData extends Command
 {
-    protected $signature   = 'cheques:migrate-data';
+    protected $signature = 'cheques:migrate-data';
+
     protected $description = 'ترحيل بيانات الشيكات من cheque_details في receipts/payments إلى جدول cheques';
 
     public function handle(): int
@@ -23,6 +24,7 @@ class MigrateChequeData extends Command
         foreach ($receipts as $r) {
             if (Cheque::where('receipt_id', $r->id)->exists()) {
                 $this->line("  ↷ تجاهل — مرحَّل مسبقاً: {$r->receipt_number}");
+
                 continue;
             }
 
@@ -31,17 +33,17 @@ class MigrateChequeData extends Command
                 : json_decode($r->cheque_details, true) ?? [];
 
             Cheque::create([
-                'cheque_number'    => $details['cheque_number'] ?? 'N/A',
-                'bank_name'        => $details['bank_name']     ?? 'N/A',
-                'amount'           => $r->amount,
-                'issue_date'       => $r->receipt_date,
-                'due_date'         => $details['due_date']      ?? $r->receipt_date,
-                'direction'        => 'incoming',
-                'status'           => 'pending',
-                'customer_id'      => $r->customer_id,
+                'cheque_number' => $details['cheque_number'] ?? 'N/A',
+                'bank_name' => $details['bank_name'] ?? 'N/A',
+                'amount' => $r->amount,
+                'issue_date' => $r->receipt_date,
+                'due_date' => $details['due_date'] ?? $r->receipt_date,
+                'direction' => 'incoming',
+                'status' => 'pending',
+                'customer_id' => $r->customer_id,
                 'business_unit_id' => $r->business_unit_id,
-                'receipt_id'       => $r->id,
-                'created_by'       => $r->created_by,
+                'receipt_id' => $r->id,
+                'created_by' => $r->created_by,
             ]);
 
             $this->line("  ← سند قبض {$r->receipt_number}");
@@ -60,6 +62,7 @@ class MigrateChequeData extends Command
         foreach ($payments as $p) {
             if (Cheque::where('payment_id', $p->id)->exists()) {
                 $this->line("  ↷ تجاهل — مرحَّل مسبقاً: {$p->payment_number}");
+
                 continue;
             }
 
@@ -68,17 +71,17 @@ class MigrateChequeData extends Command
                 : json_decode($p->cheque_details, true) ?? [];
 
             Cheque::create([
-                'cheque_number'    => $details['cheque_number'] ?? 'N/A',
-                'bank_name'        => $details['bank_name']     ?? 'N/A',
-                'amount'           => $p->amount,
-                'issue_date'       => $p->payment_date,
-                'due_date'         => $details['due_date']      ?? $p->payment_date,
-                'direction'        => 'outgoing',
-                'status'           => 'pending',
-                'supplier_id'      => $p->supplier_id,
+                'cheque_number' => $details['cheque_number'] ?? 'N/A',
+                'bank_name' => $details['bank_name'] ?? 'N/A',
+                'amount' => $p->amount,
+                'issue_date' => $p->payment_date,
+                'due_date' => $details['due_date'] ?? $p->payment_date,
+                'direction' => 'outgoing',
+                'status' => 'pending',
+                'supplier_id' => $p->supplier_id,
                 'business_unit_id' => $p->business_unit_id,
-                'payment_id'       => $p->id,
-                'created_by'       => $p->created_by,
+                'payment_id' => $p->id,
+                'created_by' => $p->created_by,
             ]);
 
             $this->line("  ← سند صرف {$p->payment_number}");
@@ -87,7 +90,7 @@ class MigrateChequeData extends Command
 
         $this->info("تم ترحيل {$paymentsCount} شيك صادر.");
         $this->newLine();
-        $this->info('إجمالي الشيكات في قاعدة البيانات: ' . Cheque::count());
+        $this->info('إجمالي الشيكات في قاعدة البيانات: '.Cheque::count());
 
         return self::SUCCESS;
     }

@@ -6,17 +6,16 @@ use App\Filament\Resources\CustomFieldResource\Pages\CreateCustomField;
 use App\Filament\Resources\CustomFieldResource\Pages\EditCustomField;
 use App\Filament\Resources\CustomFieldResource\Pages\ListCustomFields;
 use App\Models\CustomField;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\EditAction;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TagsInput;
-use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Resources\Resource;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
-use Filament\Actions\DeleteAction;
-use Filament\Actions\EditAction;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
@@ -26,12 +25,17 @@ class CustomFieldResource extends Resource
 {
     protected static ?string $model = CustomField::class;
 
-    protected static string|\BackedEnum|null $navigationIcon  = 'heroicon-o-squares-plus';
-    protected static string|\UnitEnum|null   $navigationGroup = 'الإعدادات';
-    protected static ?int                    $navigationSort  = 102;
-    protected static ?string                 $navigationLabel = 'الحقول المخصصة';
-    protected static ?string                 $modelLabel      = 'حقل مخصص';
-    protected static ?string                 $pluralModelLabel = 'الحقول المخصصة';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-squares-plus';
+
+    protected static string|\UnitEnum|null $navigationGroup = 'الإعدادات';
+
+    protected static ?int $navigationSort = 102;
+
+    protected static ?string $navigationLabel = 'الحقول المخصصة';
+
+    protected static ?string $modelLabel = 'حقل مخصص';
+
+    protected static ?string $pluralModelLabel = 'الحقول المخصصة';
 
     public static function canAccess(): bool
     {
@@ -70,11 +74,11 @@ class CustomFieldResource extends Resource
                     Select::make('field_type')
                         ->label('نوع الحقل')
                         ->options([
-                            'text'     => 'نص',
-                            'number'   => 'رقم',
-                            'date'     => 'تاريخ',
-                            'select'   => 'قائمة اختيار',
-                            'toggle'   => 'تفعيل/تعطيل',
+                            'text' => 'نص',
+                            'number' => 'رقم',
+                            'date' => 'تاريخ',
+                            'select' => 'قائمة اختيار',
+                            'toggle' => 'تفعيل/تعطيل',
                             'textarea' => 'نص طويل',
                         ])
                         ->required()
@@ -141,10 +145,10 @@ class CustomFieldResource extends Resource
                     ->color(fn ($state) => match ($state) {
                         'customer' => 'info',
                         'supplier' => 'warning',
-                        'product'  => 'success',
-                        'company'  => 'gray',
-                        'invoice'  => 'danger',
-                        default    => 'gray',
+                        'product' => 'success',
+                        'company' => 'gray',
+                        'invoice' => 'danger',
+                        default => 'gray',
                     })
                     ->sortable(),
 
@@ -197,9 +201,9 @@ class CustomFieldResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index'  => ListCustomFields::route('/'),
+            'index' => ListCustomFields::route('/'),
             'create' => CreateCustomField::route('/create'),
-            'edit'   => EditCustomField::route('/{record}/edit'),
+            'edit' => EditCustomField::route('/{record}/edit'),
         ];
     }
 }

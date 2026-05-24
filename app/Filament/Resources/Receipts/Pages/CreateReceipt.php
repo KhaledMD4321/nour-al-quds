@@ -7,12 +7,13 @@ use App\Models\Treasury;
 use App\Modules\Finance\ReceiptService;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\CreateRecord;
+use Illuminate\Database\Eloquent\Model;
 
 class CreateReceipt extends CreateRecord
 {
     protected static string $resource = ReceiptResource::class;
 
-    protected function handleRecordCreation(array $data): \Illuminate\Database\Eloquent\Model
+    protected function handleRecordCreation(array $data): Model
     {
         $data['created_by'] = auth()->id();
 

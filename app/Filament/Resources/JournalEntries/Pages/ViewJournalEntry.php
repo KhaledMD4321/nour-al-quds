@@ -28,15 +28,15 @@ class ViewJournalEntry extends ViewRecord
                 ->requiresConfirmation()
                 ->modalHeading('عكس القيد')
                 ->modalDescription(
-                    'سيتم إنشاء قيد عكسي لـ #' . $entry->entry_number
-                    . ' بنفس المبالغ مع عكس المدين والدائن. هل أنت متأكد؟'
+                    'سيتم إنشاء قيد عكسي لـ #'.$entry->entry_number
+                    .' بنفس المبالغ مع عكس المدين والدائن. هل أنت متأكد؟'
                 )
                 ->action(function () use ($entry) {
                     try {
                         $rev = app(AccountingService::class)->reverseEntry($entry->id, auth()->id());
                         Notification::make()
                             ->success()
-                            ->title('تم إنشاء القيد العكسي: ' . $rev->entry_number)
+                            ->title('تم إنشاء القيد العكسي: '.$rev->entry_number)
                             ->send();
                         $this->redirect(JournalEntryResource::getUrl('view', ['record' => $rev]));
                     } catch (\Exception $e) {

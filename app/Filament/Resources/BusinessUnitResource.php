@@ -49,7 +49,7 @@ class BusinessUnitResource extends Resource
                     Select::make('type')
                         ->label('النوع')
                         ->options([
-                            BusinessUnit::TYPE_SHOWROOM     => 'معرض',
+                            BusinessUnit::TYPE_SHOWROOM => 'معرض',
                             BusinessUnit::TYPE_DISTRIBUTION => 'توزيع',
                         ])
                         ->required()
@@ -76,14 +76,14 @@ class BusinessUnitResource extends Resource
                     ->label('النوع')
                     ->badge()
                     ->formatStateUsing(fn (string $state): string => match ($state) {
-                        BusinessUnit::TYPE_SHOWROOM     => 'معرض',
+                        BusinessUnit::TYPE_SHOWROOM => 'معرض',
                         BusinessUnit::TYPE_DISTRIBUTION => 'توزيع',
-                        default                         => $state,
+                        default => $state,
                     })
                     ->color(fn (string $state): string => match ($state) {
-                        BusinessUnit::TYPE_SHOWROOM     => 'info',
+                        BusinessUnit::TYPE_SHOWROOM => 'info',
                         BusinessUnit::TYPE_DISTRIBUTION => 'warning',
-                        default                         => 'gray',
+                        default => 'gray',
                     }),
 
                 ToggleColumn::make('is_active')
@@ -99,9 +99,9 @@ class BusinessUnitResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index'  => Pages\ListBusinessUnits::route('/'),
+            'index' => Pages\ListBusinessUnits::route('/'),
             'create' => Pages\CreateBusinessUnit::route('/create'),
-            'edit'   => Pages\EditBusinessUnit::route('/{record}/edit'),
+            'edit' => Pages\EditBusinessUnit::route('/{record}/edit'),
         ];
     }
 }

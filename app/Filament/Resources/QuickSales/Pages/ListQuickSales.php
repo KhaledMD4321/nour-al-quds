@@ -7,8 +7,9 @@ use Filament\Resources\Pages\ListRecords;
 
 class ListQuickSales extends ListRecords
 {
-    protected static string  $resource = QuickSaleResource::class;
-    protected static ?string $title    = 'سجل المبيعات السريعة';
+    protected static string $resource = QuickSaleResource::class;
+
+    protected static ?string $title = 'سجل المبيعات السريعة';
 
     protected function getHeaderActions(): array
     {

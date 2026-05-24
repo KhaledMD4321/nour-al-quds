@@ -25,8 +25,8 @@ class StockTransfer extends Model
     ];
 
     protected $casts = [
-        'transfer_date'  => 'date',
-        'confirmed_at'   => 'datetime',
+        'transfer_date' => 'date',
+        'confirmed_at' => 'datetime',
     ];
 
     // ── Auto-code ───────────────────────────────────────────────────────────
@@ -34,10 +34,11 @@ class StockTransfer extends Model
     public static function generateReference(): string
     {
         $last = self::withTrashed()
-            ->orderByRaw("CAST(SUBSTRING(reference_number FROM 5) AS INTEGER) DESC")
+            ->orderByRaw('CAST(SUBSTRING(reference_number FROM 5) AS INTEGER) DESC')
             ->value('reference_number');
         $num = $last ? ((int) substr($last, 4)) + 1 : 1;
-        return 'TRF-' . str_pad($num, 5, '0', STR_PAD_LEFT);
+
+        return 'TRF-'.str_pad($num, 5, '0', STR_PAD_LEFT);
     }
 
     // ── Status helpers ──────────────────────────────────────────────────────
@@ -55,9 +56,9 @@ class StockTransfer extends Model
     public function getStatusLabelAttribute(): string
     {
         return match ($this->status) {
-            'draft'     => 'مسودة',
+            'draft' => 'مسودة',
             'confirmed' => 'مؤكد',
-            default     => $this->status,
+            default => $this->status,
         };
     }
 

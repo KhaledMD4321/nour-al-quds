@@ -7,8 +7,9 @@ use Filament\Resources\Pages\CreateRecord;
 
 class CreateTreasury extends CreateRecord
 {
-    protected static string  $resource = TreasuryResource::class;
-    protected static ?string $title    = 'إنشاء خزينة جديدة';
+    protected static string $resource = TreasuryResource::class;
+
+    protected static ?string $title = 'إنشاء خزينة جديدة';
 
     protected function getCreatedNotificationTitle(): ?string
     {

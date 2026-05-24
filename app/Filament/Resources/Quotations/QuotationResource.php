@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Quotations;
 
+use App\Filament\Concerns\HasModuleGuard;
 use App\Filament\Resources\Quotations\Pages\ListQuotations;
 use App\Filament\Resources\Quotations\Pages\ViewQuotation;
 use App\Models\Invoice;
@@ -13,28 +14,44 @@ use Filament\Schemas\Schema;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\Filter;
 use Filament\Tables\Table;
-use App\Filament\Concerns\HasModuleGuard;
 use Illuminate\Database\Eloquent\Builder;
 use Throwable;
 
 class QuotationResource extends Resource
 {
     use HasModuleGuard;
+
     protected static string $module = 'sales';
 
     protected static ?string $model = Invoice::class;
 
-    protected static string|\BackedEnum|null $navigationIcon  = 'heroicon-o-document-magnifying-glass';
-    protected static string|\UnitEnum|null   $navigationGroup = 'المبيعات';
-    protected static ?int                    $navigationSort  = 5;
-    protected static ?string                 $navigationLabel = 'عروض الأسعار';
-    protected static ?string                 $modelLabel      = 'عرض سعر';
-    protected static ?string                 $pluralModelLabel = 'عروض الأسعار';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-document-magnifying-glass';
+
+    protected static string|\UnitEnum|null $navigationGroup = 'المبيعات';
+
+    protected static ?int $navigationSort = 5;
+
+    protected static ?string $navigationLabel = 'عروض الأسعار';
+
+    protected static ?string $modelLabel = 'عرض سعر';
+
+    protected static ?string $pluralModelLabel = 'عروض الأسعار';
 
     // ── Read-only (العرض ينشأ من صفحة عرض سعر جديد) ─────────────────────────────
-    public static function canCreate(): bool        { return false; }
-    public static function canEdit($record): bool   { return false; }
-    public static function canDelete($record): bool { return false; }
+    public static function canCreate(): bool
+    {
+        return false;
+    }
+
+    public static function canEdit($record): bool
+    {
+        return false;
+    }
+
+    public static function canDelete($record): bool
+    {
+        return false;
+    }
 
     // ── تصفية: عروض الأسعار فقط ─────────────────────────────────────────────────
     public static function getEloquentQuery(): Builder
@@ -78,30 +95,30 @@ class QuotationResource extends Resource
                     ->label('الدفع')
                     ->badge()
                     ->formatStateUsing(fn (string $state): string => match ($state) {
-                        'cash'   => 'نقدي',
+                        'cash' => 'نقدي',
                         'credit' => 'آجل',
                         'cheque' => 'شيك',
-                        default  => $state,
+                        default => $state,
                     })
                     ->color(fn (string $state): string => match ($state) {
-                        'cash'   => 'success',
+                        'cash' => 'success',
                         'credit' => 'warning',
                         'cheque' => 'info',
-                        default  => 'gray',
+                        default => 'gray',
                     }),
 
                 TextColumn::make('status')
                     ->label('الحالة')
                     ->badge()
                     ->formatStateUsing(fn (string $state): string => match ($state) {
-                        'draft'     => 'نشط',
+                        'draft' => 'نشط',
                         'cancelled' => 'ملغى',
-                        default     => $state,
+                        default => $state,
                     })
                     ->color(fn (string $state): string => match ($state) {
-                        'draft'     => 'success',
+                        'draft' => 'success',
                         'cancelled' => 'danger',
-                        default     => 'gray',
+                        default => 'gray',
                     }),
 
                 TextColumn::make('total_amount')
@@ -144,7 +161,7 @@ class QuotationResource extends Resource
                             $invoice = app(InvoiceService::class)->convertToInvoice($record);
                             Notification::make()
                                 ->title('تم التحويل بنجاح')
-                                ->body('تم إنشاء الفاتورة: ' . $invoice->reference_number)
+                                ->body('تم إنشاء الفاتورة: '.$invoice->reference_number)
                                 ->success()
                                 ->send();
                         } catch (Throwable $e) {
@@ -174,7 +191,7 @@ class QuotationResource extends Resource
     {
         return [
             'index' => ListQuotations::route('/'),
-            'view'  => ViewQuotation::route('/{record}'),
+            'view' => ViewQuotation::route('/{record}'),
         ];
     }
 }

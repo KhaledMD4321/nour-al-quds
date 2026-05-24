@@ -18,7 +18,8 @@ use Filament\Tables\Table;
 class ItemsRelationManager extends RelationManager
 {
     protected static string $relationship = 'items';
-    protected static ?string $title       = 'بنود التحويل';
+
+    protected static ?string $title = 'بنود التحويل';
 
     public function form(Schema $schema): Schema
     {
@@ -68,7 +69,7 @@ class ItemsRelationManager extends RelationManager
     {
         /** @var StockTransfer $transfer */
         $transfer = $this->getOwnerRecord();
-        $isDraft  = $transfer->isDraft();
+        $isDraft = $transfer->isDraft();
 
         return $table
             ->columns([

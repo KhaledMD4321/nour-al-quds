@@ -17,23 +17,23 @@ return new class extends Migration
 
             // الخزينة المستلمة (للكاش والتحويل البنكي — nullable للشيكات)
             $table->foreignId('treasury_id')
-                  ->nullable()
-                  ->constrained('treasuries')
-                  ->restrictOnDelete();
+                ->nullable()
+                ->constrained('treasuries')
+                ->restrictOnDelete();
 
             $table->foreignId('customer_id')
-                  ->constrained('customers')
-                  ->restrictOnDelete();
+                ->constrained('customers')
+                ->restrictOnDelete();
 
             // الفاتورة المرتبطة (اختياري — للتحصيل على الحساب)
             $table->foreignId('invoice_id')
-                  ->nullable()
-                  ->constrained('invoices')
-                  ->restrictOnDelete();
+                ->nullable()
+                ->constrained('invoices')
+                ->restrictOnDelete();
 
             $table->foreignId('business_unit_id')
-                  ->constrained('business_units')
-                  ->restrictOnDelete();
+                ->constrained('business_units')
+                ->restrictOnDelete();
 
             $table->decimal('amount', 15, 2);
             $table->enum('payment_method', ['cash', 'cheque', 'bank_transfer']);
@@ -50,13 +50,13 @@ return new class extends Migration
 
             // القيد المحاسبي المولَّد تلقائياً
             $table->foreignId('journal_entry_id')
-                  ->nullable()
-                  ->constrained('journal_entries')
-                  ->nullOnDelete();
+                ->nullable()
+                ->constrained('journal_entries')
+                ->nullOnDelete();
 
             $table->foreignId('created_by')
-                  ->constrained('users')
-                  ->restrictOnDelete();
+                ->constrained('users')
+                ->restrictOnDelete();
 
             $table->timestamps();
             $table->softDeletes();

@@ -3,8 +3,8 @@
 namespace App\Modules\Finance;
 
 use App\Models\BusinessUnit;
-use App\Models\Cheque;
 use App\Models\ChartOfAccount;
+use App\Models\Cheque;
 use App\Models\JournalEntry;
 use App\Models\JournalEntryLine;
 use App\Models\Treasury;
@@ -36,21 +36,21 @@ class ChequeService
 
         return DB::transaction(function () use ($data, $createdBy) {
             $cheque = Cheque::create([
-                'cheque_number'    => $data['cheque_number'],
-                'bank_name'        => $data['bank_name'],
-                'amount'           => $data['amount'],
-                'issue_date'       => $data['issue_date'] ?? today()->toDateString(),
-                'due_date'         => $data['due_date'],
-                'direction'        => $data['direction'],
-                'status'           => 'pending',
-                'treasury_id'      => $data['treasury_id'] ?? null,
-                'customer_id'      => $data['customer_id'] ?? null,
-                'supplier_id'      => $data['supplier_id'] ?? null,
+                'cheque_number' => $data['cheque_number'],
+                'bank_name' => $data['bank_name'],
+                'amount' => $data['amount'],
+                'issue_date' => $data['issue_date'] ?? today()->toDateString(),
+                'due_date' => $data['due_date'],
+                'direction' => $data['direction'],
+                'status' => 'pending',
+                'treasury_id' => $data['treasury_id'] ?? null,
+                'customer_id' => $data['customer_id'] ?? null,
+                'supplier_id' => $data['supplier_id'] ?? null,
                 'business_unit_id' => $data['business_unit_id'],
-                'receipt_id'       => $data['receipt_id'] ?? null,
-                'payment_id'       => $data['payment_id'] ?? null,
-                'notes'            => $data['notes'] ?? null,
-                'created_by'       => $createdBy,
+                'receipt_id' => $data['receipt_id'] ?? null,
+                'payment_id' => $data['payment_id'] ?? null,
+                'notes' => $data['notes'] ?? null,
+                'created_by' => $createdBy,
             ]);
 
             // لو تسجيل مستقل (مش من receipt/payment)، نولّد قيد التسجيل
@@ -69,7 +69,7 @@ class ChequeService
 
     public function deposit(int $chequeId, int $bankTreasuryId, int $userId): Cheque
     {
-        return DB::transaction(function () use ($chequeId, $bankTreasuryId, $userId) {
+        return DB::transaction(function () use ($chequeId, $bankTreasuryId) {
             $cheque = Cheque::lockForUpdate()->findOrFail($chequeId);
 
             if (! $cheque->canDeposit()) {
@@ -84,8 +84,8 @@ class ChequeService
             }
 
             $cheque->update([
-                'status'       => 'deposited',
-                'treasury_id'  => $bankTreasuryId,
+                'status' => 'deposited',
+                'treasury_id' => $bankTreasuryId,
                 'deposited_at' => now(),
             ]);
 
@@ -131,13 +131,13 @@ class ChequeService
             if ($cheque->isIncoming()) {
                 // شيك وارد: تحصيل → إضافة للبنك
                 $this->treasuryService->addFunds(
-                    treasuryId:    $cheque->treasury_id,
-                    amount:        (float) $cheque->amount,
-                    description:   "تحصيل شيك #{$cheque->cheque_number} - " . ($cheque->customer->name ?? ''),
+                    treasuryId: $cheque->treasury_id,
+                    amount: (float) $cheque->amount,
+                    description: "تحصيل شيك #{$cheque->cheque_number} - ".($cheque->customer->name ?? ''),
                     referenceType: Cheque::class,
-                    referenceId:   $cheque->id,
-                    createdBy:     $userId,
-                    type:          'receipt',
+                    referenceId: $cheque->id,
+                    createdBy: $userId,
+                    type: 'receipt',
                 );
 
                 // القيد: مدين البنك / دائن 1130
@@ -146,13 +146,13 @@ class ChequeService
             } else {
                 // شيك صادر: تحصيل → خصم من البنك
                 $this->treasuryService->deductFunds(
-                    treasuryId:    $cheque->treasury_id,
-                    amount:        (float) $cheque->amount,
-                    description:   "صرف شيك #{$cheque->cheque_number} - " . ($cheque->supplier->name ?? ''),
+                    treasuryId: $cheque->treasury_id,
+                    amount: (float) $cheque->amount,
+                    description: "صرف شيك #{$cheque->cheque_number} - ".($cheque->supplier->name ?? ''),
                     referenceType: Cheque::class,
-                    referenceId:   $cheque->id,
-                    createdBy:     $userId,
-                    type:          'payment',
+                    referenceId: $cheque->id,
+                    createdBy: $userId,
+                    type: 'payment',
                 );
 
                 // القيد: مدين 2120 / دائن البنك
@@ -160,8 +160,8 @@ class ChequeService
             }
 
             $cheque->update([
-                'status'           => 'collected',
-                'collected_at'     => now(),
+                'status' => 'collected',
+                'collected_at' => now(),
                 'journal_entry_id' => $entry->id,
             ]);
 
@@ -175,7 +175,7 @@ class ChequeService
 
     public function bounce(int $chequeId, string $reason, int $userId): Cheque
     {
-        return DB::transaction(function () use ($chequeId, $reason, $userId) {
+        return DB::transaction(function () use ($chequeId, $reason) {
             $cheque = Cheque::lockForUpdate()->findOrFail($chequeId);
 
             if (! $cheque->canBounce()) {
@@ -188,9 +188,9 @@ class ChequeService
             $entry = $this->generateBounceEntry($cheque);
 
             $cheque->update([
-                'status'           => 'bounced',
-                'bounced_at'       => now(),
-                'bounce_reason'    => $reason,
+                'status' => 'bounced',
+                'bounced_at' => now(),
+                'bounce_reason' => $reason,
                 'journal_entry_id' => $entry->id,
             ]);
 
@@ -212,8 +212,8 @@ class ChequeService
             }
 
             // تسجيل الشيك الجديد بنفس بيانات العميل والوحدة
-            $newData['direction']        = 'incoming';
-            $newData['customer_id']      = $old->customer_id;
+            $newData['direction'] = 'incoming';
+            $newData['customer_id'] = $old->customer_id;
             $newData['business_unit_id'] = $old->business_unit_id;
 
             // منع القيد التلقائي — سنولّده يدوياً
@@ -221,7 +221,7 @@ class ChequeService
 
             // ربط القديم بالجديد وتحديث حالته
             $old->update([
-                'status'         => 'replaced',
+                'status' => 'replaced',
                 'replaced_by_id' => $new->id,
             ]);
 
@@ -256,18 +256,18 @@ class ChequeService
     protected function generateRegistrationEntry(Cheque $cheque): JournalEntry
     {
         if ($cheque->isIncoming()) {
-            $debit  = ChartOfAccount::where('code', '1130')->firstOrFail();
+            $debit = ChartOfAccount::where('code', '1130')->firstOrFail();
             $credit = $this->resolveCustomerAccount($cheque);
         } else {
-            $debit  = $this->resolveSupplierAccount($cheque);
+            $debit = $this->resolveSupplierAccount($cheque);
             $credit = ChartOfAccount::where('code', '2120')->firstOrFail();
         }
 
         return $this->buildEntry(
             cheque: $cheque,
-            debit:  $debit,
+            debit: $debit,
             credit: $credit,
-            desc:   "قيد تسجيل شيك #{$cheque->cheque_number}",
+            desc: "قيد تسجيل شيك #{$cheque->cheque_number}",
         );
     }
 
@@ -283,14 +283,14 @@ class ChequeService
             throw new RuntimeException('الخزينة مش مرتبطة بحساب محاسبي');
         }
 
-        $debit  = $treasury->account;
+        $debit = $treasury->account;
         $credit = ChartOfAccount::where('code', '1130')->firstOrFail();
 
         return $this->buildEntry(
             cheque: $cheque,
-            debit:  $debit,
+            debit: $debit,
             credit: $credit,
-            desc:   "تحصيل شيك #{$cheque->cheque_number} — " . ($cheque->customer->name ?? ''),
+            desc: "تحصيل شيك #{$cheque->cheque_number} — ".($cheque->customer->name ?? ''),
         );
     }
 
@@ -300,7 +300,7 @@ class ChequeService
      */
     protected function generateOutgoingCollectionEntry(Cheque $cheque): JournalEntry
     {
-        $debit    = ChartOfAccount::where('code', '2120')->firstOrFail();
+        $debit = ChartOfAccount::where('code', '2120')->firstOrFail();
         $treasury = Treasury::with('account')->findOrFail($cheque->treasury_id);
 
         if (! $treasury->account) {
@@ -311,9 +311,9 @@ class ChequeService
 
         return $this->buildEntry(
             cheque: $cheque,
-            debit:  $debit,
+            debit: $debit,
             credit: $credit,
-            desc:   "صرف شيك #{$cheque->cheque_number} — " . ($cheque->supplier->name ?? ''),
+            desc: "صرف شيك #{$cheque->cheque_number} — ".($cheque->supplier->name ?? ''),
         );
     }
 
@@ -323,56 +323,56 @@ class ChequeService
      */
     protected function generateBounceEntry(Cheque $cheque): JournalEntry
     {
-        $debit  = $this->resolveCustomerAccount($cheque);
+        $debit = $this->resolveCustomerAccount($cheque);
         $credit = ChartOfAccount::where('code', '1130')->firstOrFail();
 
         return $this->buildEntry(
             cheque: $cheque,
-            debit:  $debit,
+            debit: $debit,
             credit: $credit,
-            desc:   "رفض شيك #{$cheque->cheque_number} — " . ($cheque->customer->name ?? ''),
+            desc: "رفض شيك #{$cheque->cheque_number} — ".($cheque->customer->name ?? ''),
         );
     }
 
     // ─── Helpers ──────────────────────────────────────────────────────────────
 
     protected function buildEntry(
-        Cheque        $cheque,
+        Cheque $cheque,
         ChartOfAccount $debit,
         ChartOfAccount $credit,
-        string         $desc
+        string $desc
     ): JournalEntry {
         $entry = JournalEntry::create([
             'entry_number' => JournalEntry::generateEntryNumber(),
-            'entry_date'   => today()->toDateString(),
-            'description'  => $desc,
-            'source_type'  => Cheque::class,
-            'source_id'    => $cheque->id,
-            'is_manual'    => false,
-            'is_posted'    => true,
-            'total_debit'  => $cheque->amount,
+            'entry_date' => today()->toDateString(),
+            'description' => $desc,
+            'source_type' => Cheque::class,
+            'source_id' => $cheque->id,
+            'is_manual' => false,
+            'is_posted' => true,
+            'total_debit' => $cheque->amount,
             'total_credit' => $cheque->amount,
-            'created_by'   => auth()->id() ?? $cheque->created_by,
+            'created_by' => auth()->id() ?? $cheque->created_by,
         ]);
 
         JournalEntryLine::insert([
             [
                 'journal_entry_id' => $entry->id,
-                'account_id'       => $debit->id,
+                'account_id' => $debit->id,
                 'business_unit_id' => $cheque->business_unit_id,
-                'debit'            => $cheque->amount,
-                'credit'           => 0,
-                'description'      => $desc . ' (مدين)',
-                'created_at'       => now(),
+                'debit' => $cheque->amount,
+                'credit' => 0,
+                'description' => $desc.' (مدين)',
+                'created_at' => now(),
             ],
             [
                 'journal_entry_id' => $entry->id,
-                'account_id'       => $credit->id,
+                'account_id' => $credit->id,
                 'business_unit_id' => $cheque->business_unit_id,
-                'debit'            => 0,
-                'credit'           => $cheque->amount,
-                'description'      => $desc . ' (دائن)',
-                'created_at'       => now(),
+                'debit' => 0,
+                'credit' => $cheque->amount,
+                'description' => $desc.' (دائن)',
+                'created_at' => now(),
             ],
         ]);
 

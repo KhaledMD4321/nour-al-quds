@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\PurchaseInvoices;
 
+use App\Filament\Concerns\HasModuleGuard;
 use App\Filament\Resources\PurchaseInvoices\Pages\CreatePurchaseInvoice;
 use App\Filament\Resources\PurchaseInvoices\Pages\EditPurchaseInvoice;
 use App\Filament\Resources\PurchaseInvoices\Pages\ListPurchaseInvoices;
@@ -13,30 +14,37 @@ use App\Models\PurchaseInvoice;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Tables\Table;
-use App\Filament\Concerns\HasModuleGuard;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class PurchaseInvoiceResource extends Resource
 {
     use HasModuleGuard;
+
     protected static string $module = 'purchases';
 
     protected static ?string $model = PurchaseInvoice::class;
 
-    protected static string|\BackedEnum|null $navigationIcon  = 'heroicon-o-shopping-cart';
-    protected static string|\UnitEnum|null   $navigationGroup = 'المشتريات';
-    protected static ?int                    $navigationSort   = 1;
-    protected static ?string                 $navigationLabel  = 'فواتير المشتريات';
-    protected static ?string                 $modelLabel       = 'فاتورة مشتريات';
-    protected static ?string                 $pluralModelLabel = 'فواتير المشتريات';
-    protected static ?string                 $recordTitleAttribute = 'reference_number';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-shopping-cart';
+
+    protected static string|\UnitEnum|null $navigationGroup = 'المشتريات';
+
+    protected static ?int $navigationSort = 1;
+
+    protected static ?string $navigationLabel = 'فواتير المشتريات';
+
+    protected static ?string $modelLabel = 'فاتورة مشتريات';
+
+    protected static ?string $pluralModelLabel = 'فواتير المشتريات';
+
+    protected static ?string $recordTitleAttribute = 'reference_number';
 
     // ─── Access ────────────────────────────────────────────────────────────────
 
     public static function canAccess(): bool
     {
         $user = auth()->user();
+
         return $user->hasRole('super_admin')
             || $user->hasRole('distribution_manager')
             || $user->hasRole('distribution_accountant');
@@ -69,9 +77,9 @@ class PurchaseInvoiceResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index'  => ListPurchaseInvoices::route('/'),
+            'index' => ListPurchaseInvoices::route('/'),
             'create' => CreatePurchaseInvoice::route('/create'),
-            'edit'   => EditPurchaseInvoice::route('/{record}/edit'),
+            'edit' => EditPurchaseInvoice::route('/{record}/edit'),
         ];
     }
 

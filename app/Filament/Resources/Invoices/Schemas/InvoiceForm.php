@@ -52,9 +52,13 @@ class InvoiceForm
                         ->placeholder('اختر العميل')
                         ->live()
                         ->afterStateUpdated(function ($state, callable $set) {
-                            if (! $state) return;
+                            if (! $state) {
+                                return;
+                            }
                             $customer = Customer::find($state);
-                            if (! $customer) return;
+                            if (! $customer) {
+                                return;
+                            }
                             $set('_default_discount_1', (float) $customer->default_discount_1);
                             $set('_default_discount_2', (float) $customer->default_discount_2);
                             $set('_default_discount_3', (float) $customer->default_discount_3);
@@ -63,7 +67,7 @@ class InvoiceForm
                     Select::make('payment_type')
                         ->label('طريقة الدفع')
                         ->options([
-                            'cash'   => 'نقدي',
+                            'cash' => 'نقدي',
                             'credit' => 'آجل',
                             'cheque' => 'شيك',
                         ])
@@ -73,12 +77,12 @@ class InvoiceForm
                     Select::make('status')
                         ->label('الحالة')
                         ->options([
-                            'draft'          => 'مسودة',
-                            'confirmed'      => 'مؤكدة',
-                            'delivered'      => 'مسلّمة',
+                            'draft' => 'مسودة',
+                            'confirmed' => 'مؤكدة',
+                            'delivered' => 'مسلّمة',
                             'partially_paid' => 'مدفوعة جزئياً',
-                            'paid'           => 'مدفوعة',
-                            'cancelled'      => 'ملغاة',
+                            'paid' => 'مدفوعة',
+                            'cancelled' => 'ملغاة',
                         ])
                         ->default('draft')
                         ->disabled()

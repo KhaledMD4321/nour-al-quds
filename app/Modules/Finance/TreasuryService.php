@@ -18,14 +18,14 @@ class TreasuryService
      * بيتنادى من: QuickSaleService, Receipts, Cheque collection, TreasuryTransfer
      */
     public function addFunds(
-        int     $treasuryId,
-        float   $amount,
-        string  $description,
-        ?string $referenceType   = null,
-        ?int    $referenceId     = null,
-        ?int    $createdBy       = null,
+        int $treasuryId,
+        float $amount,
+        string $description,
+        ?string $referenceType = null,
+        ?int $referenceId = null,
+        ?int $createdBy = null,
         ?string $transactionDate = null,
-        string  $type            = 'receipt'
+        string $type = 'receipt'
     ): TreasuryTransaction {
         if ($amount <= 0) {
             throw new InvalidArgumentException('المبلغ لازم يكون أكبر من صفر');
@@ -45,15 +45,15 @@ class TreasuryService
             $treasury->update(['current_balance' => round($newBalance, 2)]);
 
             return TreasuryTransaction::create([
-                'treasury_id'      => $treasury->id,
-                'type'             => $type,
-                'amount'           => $amount,
-                'balance_after'    => round($newBalance, 2),
+                'treasury_id' => $treasury->id,
+                'type' => $type,
+                'amount' => $amount,
+                'balance_after' => round($newBalance, 2),
                 'transaction_date' => $transactionDate ?? today()->toDateString(),
-                'description'      => $description,
-                'reference_type'   => $referenceType,
-                'reference_id'     => $referenceId,
-                'created_by'       => $createdBy ?? Auth::id(),
+                'description' => $description,
+                'reference_type' => $referenceType,
+                'reference_id' => $referenceId,
+                'created_by' => $createdBy ?? Auth::id(),
             ]);
         });
     }
@@ -64,14 +64,14 @@ class TreasuryService
      * بيتنادى من: Payments, Cheque issuance, TreasuryTransfer
      */
     public function deductFunds(
-        int     $treasuryId,
-        float   $amount,
-        string  $description,
-        ?string $referenceType   = null,
-        ?int    $referenceId     = null,
-        ?int    $createdBy       = null,
+        int $treasuryId,
+        float $amount,
+        string $description,
+        ?string $referenceType = null,
+        ?int $referenceId = null,
+        ?int $createdBy = null,
         ?string $transactionDate = null,
-        string  $type            = 'payment'
+        string $type = 'payment'
     ): TreasuryTransaction {
         if ($amount <= 0) {
             throw new InvalidArgumentException('المبلغ لازم يكون أكبر من صفر');
@@ -89,9 +89,9 @@ class TreasuryService
 
             if ((float) $treasury->current_balance < $amount) {
                 $action = SystemSetting::get('business_rules.negative_treasury_action', 'reject');
-                $msg = "رصيد الخزينة \"{$treasury->name}\" غير كافٍ. " .
-                    "الرصيد الحالي: " . number_format((float) $treasury->current_balance, 2) . " ج.م، " .
-                    "المطلوب: " . number_format($amount, 2) . " ج.م";
+                $msg = "رصيد الخزينة \"{$treasury->name}\" غير كافٍ. ".
+                    'الرصيد الحالي: '.number_format((float) $treasury->current_balance, 2).' ج.م، '.
+                    'المطلوب: '.number_format($amount, 2).' ج.م';
                 if ($action === 'reject') {
                     throw new RuntimeException($msg);
                 }
@@ -103,15 +103,15 @@ class TreasuryService
             $treasury->update(['current_balance' => round($newBalance, 2)]);
 
             return TreasuryTransaction::create([
-                'treasury_id'      => $treasury->id,
-                'type'             => $type,
-                'amount'           => $amount,
-                'balance_after'    => round($newBalance, 2),
+                'treasury_id' => $treasury->id,
+                'type' => $type,
+                'amount' => $amount,
+                'balance_after' => round($newBalance, 2),
                 'transaction_date' => $transactionDate ?? today()->toDateString(),
-                'description'      => $description,
-                'reference_type'   => $referenceType,
-                'reference_id'     => $referenceId,
-                'created_by'       => $createdBy ?? Auth::id(),
+                'description' => $description,
+                'reference_type' => $referenceType,
+                'reference_id' => $referenceId,
+                'created_by' => $createdBy ?? Auth::id(),
             ]);
         });
     }
@@ -125,11 +125,11 @@ class TreasuryService
      * @return array{out: TreasuryTransaction, in: TreasuryTransaction}
      */
     public function transfer(
-        int     $fromTreasuryId,
-        int     $toTreasuryId,
-        float   $amount,
-        string  $description,
-        ?int    $createdBy       = null,
+        int $fromTreasuryId,
+        int $toTreasuryId,
+        float $amount,
+        string $description,
+        ?int $createdBy = null,
         ?string $transactionDate = null
     ): array {
         if ($fromTreasuryId === $toTreasuryId) {
@@ -140,25 +140,25 @@ class TreasuryService
             $fromTreasuryId, $toTreasuryId, $amount, $description, $createdBy, $transactionDate
         ) {
             $out = $this->deductFunds(
-                treasuryId:      $fromTreasuryId,
-                amount:          $amount,
-                description:     'تحويل صادر: ' . $description,
-                referenceType:   TreasuryTransaction::class,
-                referenceId:     null, // هيتحدث بعد ما نعمل الـ in
-                createdBy:       $createdBy,
+                treasuryId: $fromTreasuryId,
+                amount: $amount,
+                description: 'تحويل صادر: '.$description,
+                referenceType: TreasuryTransaction::class,
+                referenceId: null, // هيتحدث بعد ما نعمل الـ in
+                createdBy: $createdBy,
                 transactionDate: $transactionDate,
-                type:            'transfer_out',
+                type: 'transfer_out',
             );
 
             $in = $this->addFunds(
-                treasuryId:      $toTreasuryId,
-                amount:          $amount,
-                description:     'تحويل وارد: ' . $description,
-                referenceType:   TreasuryTransaction::class,
-                referenceId:     $out->id, // ربط الواردة بالصادرة
-                createdBy:       $createdBy,
+                treasuryId: $toTreasuryId,
+                amount: $amount,
+                description: 'تحويل وارد: '.$description,
+                referenceType: TreasuryTransaction::class,
+                referenceId: $out->id, // ربط الواردة بالصادرة
+                createdBy: $createdBy,
                 transactionDate: $transactionDate,
-                type:            'transfer_in',
+                type: 'transfer_in',
             );
 
             // ربط الحركة الصادرة بالواردة (تحديث reference_id)

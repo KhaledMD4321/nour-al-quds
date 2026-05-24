@@ -3,7 +3,6 @@
 namespace App\Services;
 
 use App\Models\CustomField;
-use App\Models\CustomFieldValue;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
@@ -23,7 +22,9 @@ class CustomFieldRenderer
     {
         $fields = CustomField::forEntity($entityType)->get();
 
-        if ($fields->isEmpty()) return [];
+        if ($fields->isEmpty()) {
+            return [];
+        }
 
         $components = [];
 
@@ -103,7 +104,9 @@ class CustomFieldRenderer
     public static function saveValues(mixed $record, array $formData): void
     {
         $customData = $formData['custom_fields'] ?? [];
-        if (empty($customData)) return;
+        if (empty($customData)) {
+            return;
+        }
 
         $record->saveCustomFields($customData);
     }

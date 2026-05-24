@@ -24,8 +24,8 @@ class TreasuryTransaction extends Model
     ];
 
     protected $casts = [
-        'amount'           => 'decimal:2',
-        'balance_after'    => 'decimal:2',
+        'amount' => 'decimal:2',
+        'balance_after' => 'decimal:2',
         'transaction_date' => 'date',
     ];
 
@@ -51,11 +51,11 @@ class TreasuryTransaction extends Model
     public function getTypeLabelAttribute(): string
     {
         return match ($this->type) {
-            'receipt'      => 'مقبوضات',
-            'payment'      => 'مدفوعات',
-            'transfer_in'  => 'تحويل وارد',
+            'receipt' => 'مقبوضات',
+            'payment' => 'مدفوعات',
+            'transfer_in' => 'تحويل وارد',
             'transfer_out' => 'تحويل صادر',
-            default        => $this->type,
+            default => $this->type,
         };
     }
 

@@ -12,8 +12,9 @@ use Throwable;
 
 class EditPurchaseReturn extends EditRecord
 {
-    protected static string  $resource = PurchaseReturnResource::class;
-    protected static ?string $title    = 'تعديل مرتجع مشتريات';
+    protected static string $resource = PurchaseReturnResource::class;
+
+    protected static ?string $title = 'تعديل مرتجع مشتريات';
 
     protected function getHeaderActions(): array
     {

@@ -6,28 +6,40 @@ use App\Models\BusinessUnit;
 use App\Modules\Reports\ReportService;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
-use Filament\Forms\Components\Toggle;
 use Filament\Pages\Page;
 use Filament\Schemas\Schema;
+use Illuminate\Support\Collection;
 
 class AgingReport extends Page
 {
-    protected static string|\BackedEnum|null $navigationIcon  = 'heroicon-o-clock';
-    protected static string|\UnitEnum|null   $navigationGroup = 'التقارير';
-    protected static ?int                    $navigationSort  = 20;
-    protected static ?string                 $title           = 'أعمار الديون';
-    protected static ?string                 $navigationLabel = 'أعمار الديون';
-    protected string                         $view            = 'filament.pages.aging-report';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-clock';
 
-    public ?string $as_of_date      = null;
-    public ?int    $business_unit_id = null;
-    public string  $report_type     = 'customers';  // customers | suppliers
+    protected static string|\UnitEnum|null $navigationGroup = 'التقارير';
+
+    protected static ?int $navigationSort = 20;
+
+    protected static ?string $title = 'أعمار الديون';
+
+    protected static ?string $navigationLabel = 'أعمار الديون';
+
+    protected string $view = 'filament.pages.aging-report';
+
+    public ?string $as_of_date = null;
+
+    public ?int $business_unit_id = null;
+
+    public string $report_type = 'customers';  // customers | suppliers
 
     public static function canAccess(): bool
     {
         $user = auth()->user();
-        if (! $user) return false;
-        if ($user->isSuperAdmin()) return true;
+        if (! $user) {
+            return false;
+        }
+        if ($user->isSuperAdmin()) {
+            return true;
+        }
+
         return $user->can('reports.aging.view');
     }
 
@@ -65,7 +77,7 @@ class AgingReport extends Page
         ])->columns(3);
     }
 
-    public function getData(): \Illuminate\Support\Collection
+    public function getData(): Collection
     {
         $service = app(ReportService::class);
 

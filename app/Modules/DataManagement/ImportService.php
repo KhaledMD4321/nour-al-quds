@@ -2,17 +2,17 @@
 
 namespace App\Modules\DataManagement;
 
-use App\Models\Customer;
-use App\Models\Supplier;
-use App\Models\Product;
 use App\Models\Company;
+use App\Models\Customer;
+use App\Models\Product;
+use App\Models\Supplier;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use Maatwebsite\Excel\Facades\Excel;
 use Maatwebsite\Excel\Concerns\ToCollection;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
+use Maatwebsite\Excel\Facades\Excel;
 
 class ImportService
 {
@@ -21,10 +21,10 @@ class ImportService
      */
     public function parseFile(UploadedFile $file): array
     {
-        $rows = Excel::toCollection(new RawImport(), $file)->first() ?? collect();
+        $rows = Excel::toCollection(new RawImport, $file)->first() ?? collect();
 
         return [
-            'rows'  => $rows,
+            'rows' => $rows,
             'count' => $rows->count(),
         ];
     }
@@ -34,13 +34,13 @@ class ImportService
      */
     public function validate(string $type, Collection $rows): array
     {
-        $valid   = [];
+        $valid = [];
         $invalid = [];
 
         foreach ($rows as $index => $row) {
-            $rowNum  = $index + 2; // +2 لأن الصف 1 هو العنوان
-            $rowArr  = $row->toArray();
-            $errors  = $this->validateRow($type, $rowArr);
+            $rowNum = $index + 2; // +2 لأن الصف 1 هو العنوان
+            $rowArr = $row->toArray();
+            $errors = $this->validateRow($type, $rowArr);
 
             if (empty($errors)) {
                 $valid[] = ['row' => $rowNum, 'data' => $rowArr];
@@ -58,31 +58,35 @@ class ImportService
     public function import(string $type, array $validRows, int $userId): array
     {
         $imported = 0;
-        $updated  = 0;
-        $batchId  = uniqid('import_');
+        $updated = 0;
+        $batchId = uniqid('import_');
 
         DB::transaction(function () use ($type, $validRows, $userId, $batchId, &$imported, &$updated) {
             foreach ($validRows as $item) {
                 $data = $item['data'];
                 $data['_import_batch'] = $batchId;
 
-                $result = match($type) {
+                $result = match ($type) {
                     'customers' => $this->importCustomerRow($data, $userId),
                     'suppliers' => $this->importSupplierRow($data, $userId),
-                    'products'  => $this->importProductRow($data, $userId),
-                    default     => null,
+                    'products' => $this->importProductRow($data, $userId),
+                    default => null,
                 };
 
-                if ($result === 'created') $imported++;
-                if ($result === 'updated') $updated++;
+                if ($result === 'created') {
+                    $imported++;
+                }
+                if ($result === 'updated') {
+                    $updated++;
+                }
             }
         });
 
         Log::info('Import completed', [
-            'type'     => $type,
+            'type' => $type,
             'imported' => $imported,
-            'updated'  => $updated,
-            'user_id'  => $userId,
+            'updated' => $updated,
+            'user_id' => $userId,
         ]);
 
         return compact('imported', 'updated');
@@ -92,11 +96,11 @@ class ImportService
 
     public static function getTemplate(string $type): array
     {
-        return match($type) {
+        return match ($type) {
             'customers' => ['الكود', 'الاسم', 'التليفون', 'العنوان', 'النوع (individual/company/trader)', 'حد الائتمان', 'الرصيد الافتتاحي', 'خصم1%', 'خصم2%', 'خصم3%'],
             'suppliers' => ['الكود', 'الاسم', 'التليفون', 'العنوان', 'الرصيد الافتتاحي'],
-            'products'  => ['الكود', 'الاسم', 'الاسم بالإنجليزي', 'كود المصنّع', 'وحدة القياس (piece/meter/box/set/carton)', 'الحد الأدنى للمخزون'],
-            default     => [],
+            'products' => ['الكود', 'الاسم', 'الاسم بالإنجليزي', 'كود المصنّع', 'وحدة القياس (piece/meter/box/set/carton)', 'الحد الأدنى للمخزون'],
+            default => [],
         };
     }
 
@@ -108,23 +112,35 @@ class ImportService
 
         switch ($type) {
             case 'customers':
-                if (empty($row[0])) $errors[] = 'الكود مطلوب';
-                if (empty($row[1])) $errors[] = 'الاسم مطلوب';
-                if (!empty($row[4]) && !in_array($row[4], ['individual', 'company', 'trader'])) {
+                if (empty($row[0])) {
+                    $errors[] = 'الكود مطلوب';
+                }
+                if (empty($row[1])) {
+                    $errors[] = 'الاسم مطلوب';
+                }
+                if (! empty($row[4]) && ! in_array($row[4], ['individual', 'company', 'trader'])) {
                     $errors[] = 'النوع غير صحيح — يجب individual أو company أو trader';
                 }
                 break;
 
             case 'suppliers':
-                if (empty($row[0])) $errors[] = 'الكود مطلوب';
-                if (empty($row[1])) $errors[] = 'الاسم مطلوب';
+                if (empty($row[0])) {
+                    $errors[] = 'الكود مطلوب';
+                }
+                if (empty($row[1])) {
+                    $errors[] = 'الاسم مطلوب';
+                }
                 break;
 
             case 'products':
-                if (empty($row[0])) $errors[] = 'الكود مطلوب';
-                if (empty($row[1])) $errors[] = 'الاسم مطلوب';
+                if (empty($row[0])) {
+                    $errors[] = 'الكود مطلوب';
+                }
+                if (empty($row[1])) {
+                    $errors[] = 'الاسم مطلوب';
+                }
                 $validUnits = ['piece', 'meter', 'box', 'set', 'carton'];
-                if (!empty($row[4]) && !in_array($row[4], $validUnits)) {
+                if (! empty($row[4]) && ! in_array($row[4], $validUnits)) {
                     $errors[] = 'وحدة القياس غير صحيحة';
                 }
                 break;
@@ -140,25 +156,27 @@ class ImportService
         $existing = Customer::withTrashed()->where('code', $row[0])->first();
 
         $data = [
-            'code'              => $row[0],
-            'name'              => $row[1],
-            'phone'             => $row[2] ?? null,
-            'address'           => $row[3] ?? null,
-            'type'              => $row[4] ?? 'individual',
-            'credit_limit'      => (float) ($row[5] ?? 0),
-            'opening_balance'   => (float) ($row[6] ?? 0),
-            'default_discount_1'=> (float) ($row[7] ?? 0),
-            'default_discount_2'=> (float) ($row[8] ?? 0),
-            'default_discount_3'=> (float) ($row[9] ?? 0),
+            'code' => $row[0],
+            'name' => $row[1],
+            'phone' => $row[2] ?? null,
+            'address' => $row[3] ?? null,
+            'type' => $row[4] ?? 'individual',
+            'credit_limit' => (float) ($row[5] ?? 0),
+            'opening_balance' => (float) ($row[6] ?? 0),
+            'default_discount_1' => (float) ($row[7] ?? 0),
+            'default_discount_2' => (float) ($row[8] ?? 0),
+            'default_discount_3' => (float) ($row[9] ?? 0),
         ];
 
         if ($existing) {
             $existing->restore();
             $existing->update($data);
+
             return 'updated';
         }
 
         Customer::create($data);
+
         return 'created';
     }
 
@@ -167,20 +185,22 @@ class ImportService
         $existing = Supplier::withTrashed()->where('code', $row[0])->first();
 
         $data = [
-            'code'            => $row[0],
-            'name'            => $row[1],
-            'phone'           => $row[2] ?? null,
-            'address'         => $row[3] ?? null,
+            'code' => $row[0],
+            'name' => $row[1],
+            'phone' => $row[2] ?? null,
+            'address' => $row[3] ?? null,
             'opening_balance' => (float) ($row[4] ?? 0),
         ];
 
         if ($existing) {
             $existing->restore();
             $existing->update($data);
+
             return 'updated';
         }
 
         Supplier::create($data);
+
         return 'created';
     }
 
@@ -190,28 +210,30 @@ class ImportService
 
         // جلب company_id من كود المصنّع
         $companyId = null;
-        if (!empty($row[3])) {
-            $company   = Company::where('name', 'like', '%' . $row[3] . '%')->first();
+        if (! empty($row[3])) {
+            $company = Company::where('name', 'like', '%'.$row[3].'%')->first();
             $companyId = $company?->id;
         }
 
         $data = [
-            'code'            => $row[0],
-            'name'            => $row[1],
-            'name_en'         => $row[2] ?? null,
-            'company_id'      => $companyId,
+            'code' => $row[0],
+            'name' => $row[1],
+            'name_en' => $row[2] ?? null,
+            'company_id' => $companyId,
             'unit_of_measure' => $row[4] ?? 'piece',
             'min_stock_level' => (float) ($row[5] ?? 0),
-            'is_active'       => true,
+            'is_active' => true,
         ];
 
         if ($existing) {
             $existing->restore();
             $existing->update($data);
+
             return 'updated';
         }
 
         Product::create($data);
+
         return 'created';
     }
 }

@@ -67,16 +67,16 @@ class PurchaseInvoicesTable
                     ->label('الحالة')
                     ->badge()
                     ->formatStateUsing(fn (string $state): string => match ($state) {
-                        'draft'     => 'مسودة',
+                        'draft' => 'مسودة',
                         'confirmed' => 'مؤكدة',
-                        'paid'      => 'مدفوعة',
-                        default     => $state,
+                        'paid' => 'مدفوعة',
+                        default => $state,
                     })
                     ->color(fn (string $state): string => match ($state) {
-                        'draft'     => 'warning',
+                        'draft' => 'warning',
                         'confirmed' => 'success',
-                        'paid'      => 'primary',
-                        default     => 'gray',
+                        'paid' => 'primary',
+                        default => 'gray',
                     }),
 
                 TextColumn::make('created_at')
@@ -91,9 +91,9 @@ class PurchaseInvoicesTable
                 SelectFilter::make('status')
                     ->label('الحالة')
                     ->options([
-                        'draft'     => 'مسودة',
+                        'draft' => 'مسودة',
                         'confirmed' => 'مؤكدة',
-                        'paid'      => 'مدفوعة',
+                        'paid' => 'مدفوعة',
                     ]),
 
                 SelectFilter::make('supplier_id')

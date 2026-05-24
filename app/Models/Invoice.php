@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use App\Models\SystemSetting;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -33,13 +32,13 @@ class Invoice extends Model
     ];
 
     protected $casts = [
-        'subtotal'        => 'decimal:2',
+        'subtotal' => 'decimal:2',
         'discount_amount' => 'decimal:2',
-        'tax_amount'      => 'decimal:2',
-        'total_amount'    => 'decimal:2',
-        'paid_amount'     => 'decimal:2',
-        'invoice_date'    => 'date',
-        'due_date'        => 'date',
+        'tax_amount' => 'decimal:2',
+        'total_amount' => 'decimal:2',
+        'paid_amount' => 'decimal:2',
+        'invoice_date' => 'date',
+        'due_date' => 'date',
     ];
 
     // ── Auto reference generation ────────────────────────────────────────────────
@@ -57,34 +56,34 @@ class Invoice extends Model
     {
         $prefix = SystemSetting::get('numbering.invoice_prefix', 'INV-');
         $digits = (int) SystemSetting::get('numbering.digits', 5);
-        $len    = strlen($prefix);
+        $len = strlen($prefix);
 
         $last = static::withTrashed()
             ->where('type', '!=', 'quotation')
-            ->whereRaw("reference_number ~ '^" . addslashes($prefix) . "[0-9]+$'")
-            ->orderByRaw("CAST(SUBSTRING(reference_number FROM " . ($len + 1) . ") AS INTEGER) DESC")
+            ->whereRaw("reference_number ~ '^".addslashes($prefix)."[0-9]+$'")
+            ->orderByRaw('CAST(SUBSTRING(reference_number FROM '.($len + 1).') AS INTEGER) DESC')
             ->value('reference_number');
 
         $num = $last ? ((int) substr($last, $len)) + 1 : 1;
 
-        return $prefix . str_pad($num, $digits, '0', STR_PAD_LEFT);
+        return $prefix.str_pad($num, $digits, '0', STR_PAD_LEFT);
     }
 
     public static function generateQuotationReference(): string
     {
         $prefix = SystemSetting::get('numbering.quotation_prefix', 'QUO-');
         $digits = (int) SystemSetting::get('numbering.digits', 5);
-        $len    = strlen($prefix);
+        $len = strlen($prefix);
 
         $last = static::withTrashed()
             ->where('type', 'quotation')
-            ->whereRaw("reference_number ~ '^" . addslashes($prefix) . "[0-9]+$'")
-            ->orderByRaw("CAST(SUBSTRING(reference_number FROM " . ($len + 1) . ") AS INTEGER) DESC")
+            ->whereRaw("reference_number ~ '^".addslashes($prefix)."[0-9]+$'")
+            ->orderByRaw('CAST(SUBSTRING(reference_number FROM '.($len + 1).') AS INTEGER) DESC')
             ->value('reference_number');
 
         $num = $last ? ((int) substr($last, $len)) + 1 : 1;
 
-        return $prefix . str_pad($num, $digits, '0', STR_PAD_LEFT);
+        return $prefix.str_pad($num, $digits, '0', STR_PAD_LEFT);
     }
 
     // ── Status helpers ───────────────────────────────────────────────────────────
@@ -119,40 +118,40 @@ class Invoice extends Model
         $last = self::withTrashed()
             ->where('type', 'sale_return')
             ->whereRaw("reference_number ~ '^RET-[0-9]+$'")
-            ->orderByRaw("CAST(SUBSTRING(reference_number FROM 5) AS INTEGER) DESC")
+            ->orderByRaw('CAST(SUBSTRING(reference_number FROM 5) AS INTEGER) DESC')
             ->value('reference_number');
 
         $num = $last ? ((int) substr($last, 4)) + 1 : 1;
 
-        return 'RET-' . str_pad($num, 5, '0', STR_PAD_LEFT);
+        return 'RET-'.str_pad($num, 5, '0', STR_PAD_LEFT);
     }
 
     public static function statusLabel(string $status): string
     {
         return match ($status) {
-            'draft'          => 'مسودة',
-            'confirmed'      => 'مؤكدة',
-            'delivered'      => 'مسلّمة',
+            'draft' => 'مسودة',
+            'confirmed' => 'مؤكدة',
+            'delivered' => 'مسلّمة',
             'partially_paid' => 'مدفوعة جزئياً',
-            'paid'           => 'مدفوعة',
-            'cancelled'      => 'ملغاة',
-            'quotation'      => 'عرض سعر',
-            'sale_return'    => 'مرتجع مبيعات',
-            default          => $status,
+            'paid' => 'مدفوعة',
+            'cancelled' => 'ملغاة',
+            'quotation' => 'عرض سعر',
+            'sale_return' => 'مرتجع مبيعات',
+            default => $status,
         };
     }
 
     public static function statusColor(string $status): string
     {
         return match ($status) {
-            'draft'          => 'gray',
-            'confirmed'      => 'info',
-            'delivered'      => 'primary',
+            'draft' => 'gray',
+            'confirmed' => 'info',
+            'delivered' => 'primary',
             'partially_paid' => 'warning',
-            'paid'           => 'success',
-            'cancelled'      => 'danger',
-            'sale_return'    => 'danger',
-            default          => 'gray',
+            'paid' => 'success',
+            'cancelled' => 'danger',
+            'sale_return' => 'danger',
+            default => 'gray',
         };
     }
 
@@ -188,7 +187,7 @@ class Invoice extends Model
 
     public function createdBy(): BelongsTo
     {
-        return $this->belongsTo(\App\Models\User::class, 'created_by');
+        return $this->belongsTo(User::class, 'created_by');
     }
 
     public function originalInvoice(): BelongsTo

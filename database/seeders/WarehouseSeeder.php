@@ -10,7 +10,7 @@ class WarehouseSeeder extends Seeder
 {
     public function run(): void
     {
-        $showroom     = BusinessUnit::where('type', 'showroom')->first();
+        $showroom = BusinessUnit::where('type', 'showroom')->first();
         $distribution = BusinessUnit::where('type', 'distribution')->first();
 
         // مخزن المعرض
@@ -18,8 +18,8 @@ class WarehouseSeeder extends Seeder
             Warehouse::firstOrCreate(
                 ['name' => 'مخزن المعرض', 'business_unit_id' => $showroom->id],
                 [
-                    'location'  => 'داخل المعرض — الطابق الأرضي',
-                    'notes'     => 'مخزن بيع التجزئة — كميات محدودة',
+                    'location' => 'داخل المعرض — الطابق الأرضي',
+                    'notes' => 'مخزن بيع التجزئة — كميات محدودة',
                     'is_active' => true,
                 ]
             );
@@ -30,8 +30,8 @@ class WarehouseSeeder extends Seeder
             Warehouse::firstOrCreate(
                 ['name' => 'مخزن التوزيع الرئيسي', 'business_unit_id' => $distribution->id],
                 [
-                    'location'  => 'المنطقة الصناعية — المخزن الكبير',
-                    'notes'     => 'مخزن الجملة الأساسي',
+                    'location' => 'المنطقة الصناعية — المخزن الكبير',
+                    'notes' => 'مخزن الجملة الأساسي',
                     'is_active' => true,
                 ]
             );

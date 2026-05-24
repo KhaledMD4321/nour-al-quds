@@ -24,6 +24,7 @@ class EditLookupType extends EditRecord
                             ->title('مش ممكن تحذف قائمة نظامية')
                             ->danger()
                             ->send();
+
                         return;
                     }
                     $this->record->delete();
