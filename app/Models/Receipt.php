@@ -2,7 +2,7 @@
 
 namespace App\Models;
 
-use App\Models\SystemSetting;
+use App\Enums\PaymentMethod;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -28,8 +28,8 @@ class Receipt extends Model
     ];
 
     protected $casts = [
-        'receipt_date'   => 'date',
-        'amount'         => 'decimal:2',
+        'receipt_date' => 'date',
+        'amount' => 'decimal:2',
         'cheque_details' => 'array',
     ];
 
@@ -71,25 +71,20 @@ class Receipt extends Model
     {
         $prefix = SystemSetting::get('numbering.receipt_prefix', 'REC-');
         $digits = (int) SystemSetting::get('numbering.digits', 5);
-        $len    = strlen($prefix);
+        $len = strlen($prefix);
 
         $last = static::withTrashed()
-            ->where('receipt_number', 'like', $prefix . '%')
+            ->where('receipt_number', 'like', $prefix.'%')
             ->orderByDesc('id')
             ->value('receipt_number');
 
         $next = $last ? ((int) substr($last, $len)) + 1 : 1;
 
-        return $prefix . str_pad($next, $digits, '0', STR_PAD_LEFT);
+        return $prefix.str_pad($next, $digits, '0', STR_PAD_LEFT);
     }
 
     public function getPaymentMethodLabelAttribute(): string
     {
-        return match ($this->payment_method) {
-            'cash'          => 'نقدي',
-            'cheque'        => 'شيك',
-            'bank_transfer' => 'تحويل بنكي',
-            default         => $this->payment_method,
-        };
+        return PaymentMethod::labelFor($this->payment_method);
     }
 }

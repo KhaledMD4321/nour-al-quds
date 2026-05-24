@@ -2,17 +2,21 @@
 
 namespace App\Models;
 
+use App\Modules\Accounting\LedgerService;
 use App\Traits\HasCustomFields;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Supplier extends Model
 {
-    use SoftDeletes, HasCustomFields;
+    use HasCustomFields, SoftDeletes;
 
-    protected function getCustomFieldEntityType(): string { return 'supplier'; }
+    protected function getCustomFieldEntityType(): string
+    {
+        return 'supplier';
+    }
 
     protected $fillable = [
         'code',
@@ -29,7 +33,7 @@ class Supplier extends Model
 
     protected $casts = [
         'opening_balance' => 'decimal:2',
-        'is_active'       => 'boolean',
+        'is_active' => 'boolean',
     ];
 
     // ======= العلاقات =======
@@ -63,12 +67,14 @@ class Supplier extends Model
 
     public function scopeSearch($query, ?string $term)
     {
-        if (!$term) return $query;
+        if (! $term) {
+            return $query;
+        }
 
         return $query->where(function ($q) use ($term) {
             $q->where('name', 'ILIKE', "%{$term}%")
-              ->orWhere('phone', 'ILIKE', "%{$term}%")
-              ->orWhere('code', 'ILIKE', "%{$term}%");
+                ->orWhere('phone', 'ILIKE', "%{$term}%")
+                ->orWhere('code', 'ILIKE', "%{$term}%");
         });
     }
 
@@ -86,34 +92,28 @@ class Supplier extends Model
     public static function generateCode(): string
     {
         $last = static::withTrashed()
-                      ->where('code', 'LIKE', 'SUP-%')
-                      ->orderByRaw("CAST(SUBSTRING(code FROM 5) AS INTEGER) DESC")
-                      ->value('code');
+            ->where('code', 'LIKE', 'SUP-%')
+            ->orderByRaw('CAST(SUBSTRING(code FROM 5) AS INTEGER) DESC')
+            ->value('code');
 
         $nextNumber = $last ? ((int) substr($last, 4)) + 1 : 1;
 
-        return 'SUP-' . str_pad($nextNumber, 5, '0', STR_PAD_LEFT);
+        return 'SUP-'.str_pad($nextNumber, 5, '0', STR_PAD_LEFT);
     }
 
     // ─── Financial Helpers ────────────────────────────────────────────────────
 
     /**
-     * الرصيد الحالي = رصيد افتتاحي + فواتير مشتريات - مرتجعات - مدفوعات
-     * موجب = مستحق للمورد، سالب = دائن لنا
+     * الرصيد الحالي للمورد — عبر LedgerService (مصدر واحد للحساب).
+     * موجب = مستحق للمورد، سالب = دائن لنا.
      */
     public function getCurrentBalanceAttribute(): float
     {
-        $purchased = (float) $this->purchaseInvoices()
-            ->whereIn('status', ['confirmed', 'paid'])
-            ->sum('total_amount');
+        if (! $this->exists) {
+            return round((float) $this->opening_balance, 2);
+        }
 
-        $returned = (float) PurchaseReturn::where('supplier_id', $this->id)
-            ->where('status', 'confirmed')
-            ->sum('total_amount');
-
-        $paid = (float) $this->payments()->sum('amount');
-
-        return round((float) $this->opening_balance + $purchased - $returned - $paid, 2);
+        return app(LedgerService::class)->supplierBalance($this->id);
     }
 
     /**

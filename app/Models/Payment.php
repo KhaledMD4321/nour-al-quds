@@ -2,7 +2,7 @@
 
 namespace App\Models;
 
-use App\Models\SystemSetting;
+use App\Enums\PaymentMethod;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -30,8 +30,8 @@ class Payment extends Model
     ];
 
     protected $casts = [
-        'amount'         => 'decimal:2',
-        'payment_date'   => 'date',
+        'amount' => 'decimal:2',
+        'payment_date' => 'date',
         'cheque_details' => 'array',
     ];
 
@@ -103,27 +103,22 @@ class Payment extends Model
 
     public function getPaymentMethodLabelAttribute(): string
     {
-        return match ($this->payment_method) {
-            'cash'          => 'كاش',
-            'cheque'        => 'شيك',
-            'bank_transfer' => 'تحويل بنكي',
-            default         => $this->payment_method,
-        };
+        return PaymentMethod::labelFor($this->payment_method);
     }
 
     public static function generateReference(): string
     {
         $prefix = SystemSetting::get('numbering.payment_prefix', 'PAY-');
         $digits = (int) SystemSetting::get('numbering.digits', 5);
-        $len    = strlen($prefix);
+        $len = strlen($prefix);
 
         $last = static::withTrashed()
-            ->where('payment_number', 'like', $prefix . '%')
+            ->where('payment_number', 'like', $prefix.'%')
             ->orderByDesc('id')
             ->value('payment_number');
 
         $next = $last ? ((int) substr($last, $len)) + 1 : 1;
 
-        return $prefix . str_pad($next, $digits, '0', STR_PAD_LEFT);
+        return $prefix.str_pad($next, $digits, '0', STR_PAD_LEFT);
     }
 }

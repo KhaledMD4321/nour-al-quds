@@ -1,62 +1,49 @@
-@extends('layouts.print-preview')
+<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <title>كشف حساب عميل — {{ $customer->name }}</title>
+    <style>
+        @page { size: A4; margin: 12mm 14mm 14mm 14mm; }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'xbriyaz', sans-serif; font-size: 12px; color: #1a1a1a; direction: rtl; background: #fff; }
 
-@php
-    $docLabel = 'كشف حساب — ' . $customer->name;
-@endphp
+        .header { text-align: center; border-bottom: 3px solid #1e40af; padding-bottom: 12px; margin-bottom: 16px; }
+        .company-name { font-size: 20px; font-weight: bold; color: #1e40af; }
+        .doc-title { font-size: 15px; font-weight: bold; color: #374151; margin-top: 6px; }
+        .doc-period { font-size: 11px; color: #6b7280; margin-top: 3px; }
 
-@section('title', $docLabel)
-@section('toolbar-title', $docLabel . ' | ' . $customer->code)
+        .customer-bar {
+            background: #1e40af; color: white; border-radius: 8px;
+            padding: 12px 16px; margin-bottom: 14px;
+            display: table; width: 100%;
+        }
+        .customer-bar-right { display: table-cell; vertical-align: middle; }
+        .customer-bar-left  { display: table-cell; vertical-align: middle; text-align: left; }
+        .customer-name  { font-size: 15px; font-weight: bold; }
+        .customer-meta  { font-size: 10px; opacity: .8; margin-top: 2px; }
+        .balance-label  { font-size: 10px; opacity: .8; }
+        .balance-amount { font-size: 20px; font-weight: bold; }
 
-@section('styles')
-<style>
-    body { font-size: 12px; color: #1a1a1a; }
+        .summary { display: table; width: 100%; margin-bottom: 14px; }
+        .card { display: table-cell; width: 25%; border: 1px solid #e5e7eb; border-radius: 8px; padding: 10px; text-align: center; }
+        .card + .card { border-right: none; }
+        .card-label { font-size: 10px; color: #6b7280; margin-bottom: 4px; }
+        .card-value { font-size: 15px; font-weight: bold; }
 
-    /* Header */
-    .header { text-align: center; border-bottom: 3px solid #1e40af; padding-bottom: 12px; margin-bottom: 16px; }
-    .company-name { font-size: 20px; font-weight: 800; color: #1e40af; }
-    .doc-title    { font-size: 15px; font-weight: 700; color: #374151; margin-top: 6px; }
-    .doc-period   { font-size: 11px; color: #6b7280; margin-top: 3px; }
+        table { width: 100%; border-collapse: collapse; font-size: 11px; }
+        thead { background: #f3f4f6; }
+        th { padding: 8px 10px; text-align: right; font-weight: 600; color: #6b7280; border-bottom: 2px solid #e5e7eb; }
+        th.num { text-align: left; }
+        td { padding: 7px 10px; border-bottom: 1px solid #f3f4f6; }
+        td.num { text-align: left; }
+        .opening-row { background: #f3f4f6; font-weight: 600; }
+        tfoot { background: #111827; color: white; }
+        tfoot td { padding: 10px; font-weight: bold; font-size: 12px; }
+    </style>
+</head>
+<body>
 
-    /* Customer bar */
-    .customer-bar {
-        background: #1e40af; color: white; border-radius: 8px;
-        padding: 12px 16px; margin-bottom: 14px;
-        display: table; width: 100%;
-    }
-    .customer-bar-right { display: table-cell; vertical-align: middle; }
-    .customer-bar-left  { display: table-cell; vertical-align: middle; text-align: left; }
-    .customer-name   { font-size: 15px; font-weight: 700; }
-    .customer-meta   { font-size: 10px; opacity: .8; margin-top: 2px; }
-    .balance-label   { font-size: 10px; opacity: .8; }
-    .balance-amount  { font-size: 20px; font-weight: 700; }
-
-    /* Summary cards */
-    .summary { display: table; width: 100%; margin-bottom: 14px; }
-    .card {
-        display: table-cell; width: 25%;
-        border: 1px solid #e5e7eb; border-radius: 8px;
-        padding: 10px; text-align: center;
-    }
-    .card + .card { border-right: none; }
-    .card-label { font-size: 10px; color: #6b7280; margin-bottom: 4px; }
-    .card-value { font-size: 15px; font-weight: 700; }
-
-    /* Table */
-    table { width: 100%; border-collapse: collapse; font-size: 11px; }
-    thead { background: #f3f4f6; }
-    th { padding: 8px 10px; text-align: right; font-weight: 600; color: #6b7280; border-bottom: 2px solid #e5e7eb; }
-    th.num { text-align: left; }
-    td { padding: 7px 10px; border-bottom: 1px solid #f3f4f6; }
-    td.num { text-align: left; }
-    .opening-row { background: #f3f4f6; font-weight: 600; }
-    tfoot { background: #111827; color: white; }
-    tfoot td { padding: 10px; font-weight: 700; font-size: 12px; }
-</style>
-@endsection
-
-@section('content')
-
-    {{-- Header --}}
     <div class="header">
         <div class="company-name">{{ \App\Models\SystemSetting::get('company.name', 'نور القدس للأدوات الصحية') }}</div>
         <div class="doc-title">كشف حساب عميل</div>
@@ -69,7 +56,6 @@
         </div>
     </div>
 
-    {{-- Customer bar --}}
     <div class="customer-bar">
         <div class="customer-bar-right">
             <div class="customer-name">{{ $customer->name }}</div>
@@ -86,7 +72,6 @@
         </div>
     </div>
 
-    {{-- Summary --}}
     <div class="summary">
         <div class="card">
             <div class="card-label">رصيد أول المدة</div>
@@ -108,23 +93,16 @@
         </div>
     </div>
 
-    {{-- Transactions table --}}
     <table>
         <thead>
             <tr>
-                <th>التاريخ</th>
-                <th>المرجع</th>
-                <th>البيان</th>
-                <th class="num">مدين</th>
-                <th class="num">دائن</th>
-                <th class="num">الرصيد</th>
+                <th>التاريخ</th><th>المرجع</th><th>البيان</th>
+                <th class="num">مدين</th><th class="num">دائن</th><th class="num">الرصيد</th>
             </tr>
         </thead>
         <tbody>
-            {{-- Opening balance row --}}
             <tr class="opening-row">
-                <td style="color:#9ca3af;">—</td>
-                <td style="color:#9ca3af;">—</td>
+                <td style="color:#9ca3af;">—</td><td style="color:#9ca3af;">—</td>
                 <td>رصيد أول المدة</td>
                 <td class="num" style="color:#9ca3af;">—</td>
                 <td class="num" style="color:#9ca3af;">—</td>
@@ -133,7 +111,6 @@
                     <span style="font-size:9px; color:#9ca3af;">{{ $opening >= 0 ? 'مدين' : 'دائن' }}</span>
                 </td>
             </tr>
-
             @php $running = $opening; @endphp
             @forelse($lines as $line)
                 @php $running += $line->debit - $line->credit; @endphp
@@ -153,11 +130,7 @@
                     </td>
                 </tr>
             @empty
-                <tr>
-                    <td colspan="6" style="padding:24px; text-align:center; color:#9ca3af;">
-                        لا توجد حركات في الفترة المحددة
-                    </td>
-                </tr>
+                <tr><td colspan="6" style="padding:24px; text-align:center; color:#9ca3af;">لا توجد حركات في الفترة المحددة</td></tr>
             @endforelse
         </tbody>
         @if($lines->isNotEmpty())
@@ -175,4 +148,5 @@
         @endif
     </table>
 
-@endsection
+</body>
+</html>

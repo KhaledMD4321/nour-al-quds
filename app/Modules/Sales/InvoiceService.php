@@ -6,10 +6,10 @@ use App\Models\Customer;
 use App\Models\FiscalPeriod;
 use App\Models\Invoice;
 use App\Models\InvoiceItem;
-use App\Models\Product;
 use App\Models\Stock;
 use App\Models\StockMovement;
 use App\Models\SystemSetting;
+use App\Modules\Accounting\LedgerService;
 use Exception;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -49,7 +49,7 @@ class InvoiceService
                 $available = $stock ? (float) $stock->quantity : 0;
 
                 if ($available < $qty) {
-                    $productName = $item->product?->name ?? '#' . $item->product_id;
+                    $productName = $item->product?->name ?? '#'.$item->product_id;
                     if (! SystemSetting::get('business_rules.allow_negative_stock', false)) {
                         throw new Exception(
                             "الكمية المطلوبة للصنف \"{$productName}\" ({$qty}) أكبر من المتاح ({$available})"
@@ -62,22 +62,22 @@ class InvoiceService
 
                 if ($stock) {
                     $stock->update([
-                        'quantity'     => $balanceAfter,
+                        'quantity' => $balanceAfter,
                         'last_updated' => now(),
                     ]);
                 }
 
                 StockMovement::create([
-                    'warehouse_id'   => $invoice->warehouse_id,
-                    'product_id'     => $item->product_id,
-                    'type'           => 'out',
-                    'quantity'       => $qty,
-                    'unit_cost'      => $stock ? (float) $stock->avg_cost : 0,
-                    'balance_after'  => $balanceAfter,
+                    'warehouse_id' => $invoice->warehouse_id,
+                    'product_id' => $item->product_id,
+                    'type' => 'out',
+                    'quantity' => $qty,
+                    'unit_cost' => $stock ? (float) $stock->avg_cost : 0,
+                    'balance_after' => $balanceAfter,
                     'reference_type' => Invoice::class,
-                    'reference_id'   => $invoice->id,
-                    'notes'          => 'فاتورة بيع — ' . $invoice->reference_number,
-                    'created_by'     => Auth::id(),
+                    'reference_id' => $invoice->id,
+                    'notes' => 'فاتورة بيع — '.$invoice->reference_number,
+                    'created_by' => Auth::id(),
                 ]);
             }
 
@@ -105,33 +105,33 @@ class InvoiceService
             $quotation->load('items');
 
             $invoice = Invoice::create([
-                'type'            => 'sale',
+                'type' => 'sale',
                 'reference_number' => Invoice::generateReference(),
                 'business_unit_id' => $quotation->business_unit_id,
-                'warehouse_id'     => $quotation->warehouse_id,
-                'customer_id'      => $quotation->customer_id,
-                'created_by'       => Auth::id(),
-                'status'           => 'draft',
-                'payment_type'     => $quotation->payment_type,
-                'subtotal'         => $quotation->subtotal,
-                'discount_amount'  => $quotation->discount_amount,
-                'tax_amount'       => $quotation->tax_amount,
-                'total_amount'     => $quotation->total_amount,
-                'invoice_date'     => now()->toDateString(),
-                'notes'            => 'محوّل من عرض سعر ' . $quotation->reference_number,
+                'warehouse_id' => $quotation->warehouse_id,
+                'customer_id' => $quotation->customer_id,
+                'created_by' => Auth::id(),
+                'status' => 'draft',
+                'payment_type' => $quotation->payment_type,
+                'subtotal' => $quotation->subtotal,
+                'discount_amount' => $quotation->discount_amount,
+                'tax_amount' => $quotation->tax_amount,
+                'total_amount' => $quotation->total_amount,
+                'invoice_date' => now()->toDateString(),
+                'notes' => 'محوّل من عرض سعر '.$quotation->reference_number,
             ]);
 
             foreach ($quotation->items as $item) {
                 InvoiceItem::create([
-                    'invoice_id'  => $invoice->id,
-                    'product_id'  => $item->product_id,
-                    'quantity'    => $item->quantity,
-                    'unit_price'  => $item->unit_price,
-                    'list_price'  => $item->list_price,
-                    'd1'          => $item->d1,
-                    'd2'          => $item->d2,
-                    'd3'          => $item->d3,
-                    'total'       => $item->total,
+                    'invoice_id' => $invoice->id,
+                    'product_id' => $item->product_id,
+                    'quantity' => $item->quantity,
+                    'unit_price' => $item->unit_price,
+                    'list_price' => $item->list_price,
+                    'd1' => $item->d1,
+                    'd2' => $item->d2,
+                    'd3' => $item->d3,
+                    'total' => $item->total,
                 ]);
             }
 
@@ -184,7 +184,7 @@ class InvoiceService
         );
 
         $invoice->update([
-            'subtotal'     => round($subtotal, 2),
+            'subtotal' => round($subtotal, 2),
             'total_amount' => $totalAmount,
         ]);
     }
@@ -211,19 +211,19 @@ class InvoiceService
     private function checkCreditLimit(Invoice $invoice): void
     {
         $customer = Customer::find($invoice->customer_id);
-        if (! $customer) return;
+        if (! $customer) {
+            return;
+        }
 
         $creditLimit = (float) $customer->credit_limit;
-        if ($creditLimit <= 0) return; // بدون حد ائتمان
+        if ($creditLimit <= 0) {
+            return;
+        } // بدون حد ائتمان
 
-        // المستحق الحالي (فواتير آجلة مؤكدة غير محصّلة بالكامل)
-        $outstanding = Invoice::where('customer_id', $invoice->customer_id)
-            ->whereIn('status', ['confirmed', 'delivered', 'partially_paid'])
-            ->where('payment_type', 'credit')
-            ->selectRaw('SUM(total_amount - paid_amount) as total_outstanding')
-            ->value('total_outstanding') ?? 0;
+        // المستحق الائتماني الحالي — عبر LedgerService (مصدر واحد للحساب)
+        $outstanding = app(LedgerService::class)->customerCreditExposure($invoice->customer_id);
 
-        if (((float) $outstanding + (float) $invoice->total_amount) > $creditLimit) {
+        if (($outstanding + (float) $invoice->total_amount) > $creditLimit) {
             // إذا كان الإعداد يسمح بتجاوز الحد — تحذير فقط وليس رفضاً
             if (SystemSetting::get('business_rules.allow_over_credit_limit', false)) {
                 return; // السماح بالمتابعة
@@ -256,44 +256,44 @@ class InvoiceService
             if ($stock) {
                 $newQty = (float) $stock->quantity + $qty;
                 $stock->update([
-                    'quantity'     => $newQty,
+                    'quantity' => $newQty,
                     'last_updated' => now(),
                 ]);
 
                 StockMovement::create([
-                    'warehouse_id'   => $invoice->warehouse_id,
-                    'product_id'     => $item->product_id,
-                    'type'           => 'in',
-                    'quantity'       => $qty,
-                    'unit_cost'      => (float) $stock->avg_cost,
-                    'balance_after'  => $newQty,
+                    'warehouse_id' => $invoice->warehouse_id,
+                    'product_id' => $item->product_id,
+                    'type' => 'in',
+                    'quantity' => $qty,
+                    'unit_cost' => (float) $stock->avg_cost,
+                    'balance_after' => $newQty,
                     'reference_type' => Invoice::class,
-                    'reference_id'   => $invoice->id,
-                    'notes'          => 'إلغاء فاتورة — ' . $invoice->reference_number,
-                    'created_by'     => Auth::id(),
+                    'reference_id' => $invoice->id,
+                    'notes' => 'إلغاء فاتورة — '.$invoice->reference_number,
+                    'created_by' => Auth::id(),
                 ]);
             } else {
                 // المخزون غير موجود — ننشئه
                 $newQty = $qty;
-                $stock  = Stock::create([
+                $stock = Stock::create([
                     'warehouse_id' => $invoice->warehouse_id,
-                    'product_id'   => $item->product_id,
-                    'quantity'     => $newQty,
-                    'avg_cost'     => (float) $item->unit_price,
+                    'product_id' => $item->product_id,
+                    'quantity' => $newQty,
+                    'avg_cost' => (float) $item->unit_price,
                     'last_updated' => now(),
                 ]);
 
                 StockMovement::create([
-                    'warehouse_id'   => $invoice->warehouse_id,
-                    'product_id'     => $item->product_id,
-                    'type'           => 'in',
-                    'quantity'       => $qty,
-                    'unit_cost'      => (float) $item->unit_price,
-                    'balance_after'  => $newQty,
+                    'warehouse_id' => $invoice->warehouse_id,
+                    'product_id' => $item->product_id,
+                    'type' => 'in',
+                    'quantity' => $qty,
+                    'unit_cost' => (float) $item->unit_price,
+                    'balance_after' => $newQty,
                     'reference_type' => Invoice::class,
-                    'reference_id'   => $invoice->id,
-                    'notes'          => 'إلغاء فاتورة — ' . $invoice->reference_number,
-                    'created_by'     => Auth::id(),
+                    'reference_id' => $invoice->id,
+                    'notes' => 'إلغاء فاتورة — '.$invoice->reference_number,
+                    'created_by' => Auth::id(),
                 ]);
             }
         }
