@@ -48,6 +48,36 @@ _An Arabic-first ERP for sanitary-ware & plumbing distribution_
 
 </div>
 
+## 📸 لقطات الشاشة (Screenshots)
+
+<div align="center">
+<table>
+  <tr>
+    <td width="50%" align="center"><b>لوحة التحكم</b><br><img src="docs/screenshots/dashboard.png" alt="Dashboard"></td>
+    <td width="50%" align="center"><b>البيع السريع</b><br><img src="docs/screenshots/quick-sale.png" alt="Quick Sale"></td>
+  </tr>
+  <tr>
+    <td align="center"><b>إنشاء فاتورة مبيعات</b><br><img src="docs/screenshots/new-invoice.png" alt="New Invoice"></td>
+    <td align="center"><b>شجرة الحسابات</b><br><img src="docs/screenshots/chart-of-accounts.png" alt="Chart of Accounts"></td>
+  </tr>
+  <tr>
+    <td align="center"><b>النظرة الشاملة للخزائن</b><br><img src="docs/screenshots/treasuries.png" alt="Treasuries"></td>
+    <td align="center"><b>الأرباح والخسائر</b><br><img src="docs/screenshots/profit-loss.png" alt="Profit &amp; Loss"></td>
+  </tr>
+  <tr>
+    <td align="center"><b>إدارة الفترات المالية</b><br><img src="docs/screenshots/fiscal-periods.png" alt="Fiscal Periods"></td>
+    <td align="center"><b>الأدوار والصلاحيات</b><br><img src="docs/screenshots/roles-permissions.png" alt="Roles &amp; Permissions"></td>
+  </tr>
+  <tr>
+    <td align="center"><b>إدارة وتنظيف البيانات</b><br><img src="docs/screenshots/data-cleanup.png" alt="Data Cleanup"></td>
+    <td align="center"><b>تسجيل الدخول</b><br><img src="docs/screenshots/login.png" alt="Login"></td>
+  </tr>
+</table>
+
+<sub>المزيد من الشاشات (التقارير، قوائم الأسعار، التحويلات بين الوحدات…) في مجلد <a href="docs/screenshots">docs/screenshots</a></sub>
+
+</div>
+
 ## 🛠️ التقنيات (Tech Stack)
 
 | الطبقة | التقنية |
