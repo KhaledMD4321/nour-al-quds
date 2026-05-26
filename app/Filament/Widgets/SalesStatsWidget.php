@@ -4,6 +4,7 @@ namespace App\Filament\Widgets;
 
 use App\Models\Invoice;
 use App\Models\QuickSale;
+use App\Modules\Reports\ExecutiveDashboardService;
 use Filament\Widgets\StatsOverviewWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
 
@@ -61,6 +62,10 @@ class SalesStatsWidget extends StatsOverviewWidget
             ->when($unitId, fn ($q) => $q->where('business_unit_id', $unitId))
             ->count();
 
+        $growth = app(ExecutiveDashboardService::class)->salesGrowth($unitId);
+        [$monthDesc, $monthColor, $monthIcon] = $this->growthLabel($growth['month'], 'الشهر الماضي');
+        [$yearDesc, $yearColor, $yearIcon] = $this->growthLabel($growth['year'], 'العام الماضي');
+
         return [
             Stat::make('مبيعات اليوم', number_format($todaySales, 2).' ج.م')
                 ->description($todayCount.' فاتورة')
@@ -68,14 +73,40 @@ class SalesStatsWidget extends StatsOverviewWidget
                 ->icon('heroicon-o-banknotes'),
 
             Stat::make('مبيعات الشهر', number_format($monthSales, 2).' ج.م')
-                ->description(today()->translatedFormat('F Y'))
-                ->color('info')
+                ->description($monthDesc)
+                ->descriptionIcon($monthIcon)
+                ->color($monthColor)
                 ->icon('heroicon-o-chart-bar'),
+
+            Stat::make('مبيعات السنة', number_format($growth['year']['current'], 2).' ج.م')
+                ->description($yearDesc)
+                ->descriptionIcon($yearIcon)
+                ->color($yearColor)
+                ->icon('heroicon-o-calendar'),
 
             Stat::make('فواتير مفتوحة', $openInvoices)
                 ->description('محتاجة تحصيل')
                 ->color($openInvoices > 0 ? 'warning' : 'success')
                 ->icon('heroicon-o-clock'),
         ];
+    }
+
+    /**
+     * صياغة فرق النمو (سهم + نسبة + لون).
+     *
+     * @param  array{current: float, previous: float, delta: float, up: bool}  $g
+     * @return array{0: string, 1: string, 2: string} [description, color, icon]
+     */
+    private function growthLabel(array $g, string $period): array
+    {
+        if ($g['previous'] <= 0 && $g['current'] <= 0) {
+            return ['لا بيانات للمقارنة', 'gray', 'heroicon-m-minus'];
+        }
+
+        $pct = number_format(abs($g['delta']), 1);
+
+        return $g['up']
+            ? ["▲ {$pct}% عن {$period}", 'success', 'heroicon-m-arrow-trending-up']
+            : ["▼ {$pct}% عن {$period}", 'danger', 'heroicon-m-arrow-trending-down'];
     }
 }
