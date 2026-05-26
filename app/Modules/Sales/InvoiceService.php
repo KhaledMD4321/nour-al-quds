@@ -117,6 +117,7 @@ class InvoiceService
                 'discount_amount' => $quotation->discount_amount,
                 'tax_amount' => $quotation->tax_amount,
                 'total_amount' => $quotation->total_amount,
+                'quotation_id' => $quotation->id,
                 'invoice_date' => now()->toDateString(),
                 'notes' => 'محوّل من عرض سعر '.$quotation->reference_number,
             ]);

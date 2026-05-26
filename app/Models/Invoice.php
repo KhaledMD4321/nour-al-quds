@@ -26,6 +26,7 @@ class Invoice extends Model
         'total_amount',
         'paid_amount',
         'original_invoice_id',
+        'quotation_id',
         'invoice_date',
         'due_date',
         'notes',
