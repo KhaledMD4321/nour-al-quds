@@ -579,4 +579,112 @@ class ReportService
             ->sortByDesc('gross_profit')
             ->values();
     }
+
+    // ══════════════════════════════════════════════════════════════════
+    // 7. دوران المخزون والركود — Inventory Turnover & Dead Stock
+    // ══════════════════════════════════════════════════════════════════
+
+    /**
+     * معدل دوران المخزون لكل صنف خلال فترة (مبني على قيمة المخزون الحالية).
+     * الدوران سنوي ≈ (تكلفة المبيعات في الفترة × 365/أيام) ÷ قيمة المخزون.
+     * أيام التغطية = قيمة المخزون ÷ (التكلفة اليومية).
+     */
+    public function inventoryTurnover(string $fromDate, string $toDate, ?int $businessUnitId = null): Collection
+    {
+        $from = Carbon::parse($fromDate)->startOfDay();
+        $to = Carbon::parse($toDate)->endOfDay();
+        $days = max(1, (int) $from->diffInDays($to) + 1);
+
+        // ── تكلفة المبيعات + الكمية المباعة لكل صنف ──
+        $cogsQuery = StockMovement::where('type', 'out')
+            ->where('reference_type', 'invoice')
+            ->whereBetween('created_at', [$from, $to]);
+
+        if ($businessUnitId) {
+            $cogsQuery->whereHas('warehouse', fn ($q) => $q->where('business_unit_id', $businessUnitId));
+        }
+
+        $sold = $cogsQuery
+            ->join('stock', function ($j) {
+                $j->on('stock_movements.warehouse_id', '=', 'stock.warehouse_id')
+                    ->on('stock_movements.product_id', '=', 'stock.product_id');
+            })
+            ->groupBy('stock_movements.product_id')
+            ->selectRaw('stock_movements.product_id as product_id, SUM(stock_movements.quantity) as qty_sold, SUM(stock_movements.quantity * stock.avg_cost) as cogs')
+            ->get()
+            ->keyBy('product_id');
+
+        // ── المخزون الحالي مجمّعاً بالصنف ──
+        $stockQuery = Stock::with(['product.company'])->where('quantity', '>', 0);
+
+        if ($businessUnitId) {
+            $stockQuery->whereHas('warehouse', fn ($q) => $q->where('business_unit_id', $businessUnitId));
+        }
+
+        return $stockQuery->get()
+            ->groupBy('product_id')
+            ->map(function ($rows) use ($sold, $days) {
+                $product = $rows->first()->product;
+                $stockQty = (float) $rows->sum('quantity');
+                $stockValue = round((float) $rows->sum(fn ($s) => (float) $s->quantity * (float) $s->avg_cost), 2);
+
+                $cogs = (float) ($sold[$product->id]->cogs ?? 0);
+                $qtySold = (float) ($sold[$product->id]->qty_sold ?? 0);
+
+                $turnover = $stockValue > 0 ? round(($cogs * 365 / $days) / $stockValue, 2) : 0.0;
+                $daysOfInventory = $cogs > 0 ? (int) round($stockValue / ($cogs / $days)) : null;
+
+                return (object) [
+                    'product_code' => $product->code,
+                    'product_name' => $product->name,
+                    'manufacturer' => $product->company?->name ?? 'بدون مصنّع',
+                    'qty_sold' => $qtySold,
+                    'cogs' => round($cogs, 2),
+                    'stock_qty' => $stockQty,
+                    'stock_value' => $stockValue,
+                    'turnover' => $turnover,
+                    'days_of_inventory' => $daysOfInventory,
+                ];
+            })
+            ->sortByDesc('stock_value')
+            ->values();
+    }
+
+    /**
+     * البضاعة الراكدة — أصناف لها رصيد ولم تتحرك منذ X يوم، مرتّبة بالقيمة المجمّدة.
+     */
+    public function deadStock(int $daysThreshold = 90, ?int $businessUnitId = null): Collection
+    {
+        $since = today()->subDays($daysThreshold);
+
+        $activeProductIds = StockMovement::where('created_at', '>=', $since)
+            ->distinct()
+            ->pluck('product_id');
+
+        $query = Stock::with(['product.company', 'warehouse'])
+            ->where('quantity', '>', 0)
+            ->whereNotIn('product_id', $activeProductIds);
+
+        if ($businessUnitId) {
+            $query->whereHas('warehouse', fn ($q) => $q->where('business_unit_id', $businessUnitId));
+        }
+
+        $stock = $query->get();
+
+        $lastMoves = StockMovement::whereIn('product_id', $stock->pluck('product_id'))
+            ->groupBy('product_id')
+            ->selectRaw('product_id, MAX(created_at) as last_move')
+            ->pluck('last_move', 'product_id');
+
+        return $stock->map(fn ($s) => (object) [
+            'warehouse_name' => $s->warehouse->name,
+            'product_code' => $s->product->code,
+            'product_name' => $s->product->name,
+            'manufacturer' => $s->product->company?->name ?? 'بدون مصنّع',
+            'quantity' => (float) $s->quantity,
+            'avg_cost' => (float) $s->avg_cost,
+            'total_value' => round((float) $s->quantity * (float) $s->avg_cost, 2),
+            'last_movement' => isset($lastMoves[$s->product_id]) ? Carbon::parse($lastMoves[$s->product_id])->toDateString() : null,
+        ])->sortByDesc('total_value')->values();
+    }
 }
