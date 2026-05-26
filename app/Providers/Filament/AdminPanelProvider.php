@@ -29,6 +29,8 @@ class AdminPanelProvider extends PanelProvider
             ->id('admin')
             ->path('admin')
             ->login(CustomLogin::class)
+            ->databaseNotifications()
+            ->databaseNotificationsPolling('60s')
             ->brandLogo(view('filament.components.brand-logo'))
             ->brandLogoHeight('44px')
             ->favicon(asset('favicon.ico'))

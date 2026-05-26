@@ -21,3 +21,10 @@ Schedule::command('backup:clean')
     ->dailyAt('03:00')
     ->withoutOverlapping()
     ->description('تنظيف النسخ الاحتياطية القديمة — 03:00 صباحاً');
+
+// ── الملخص اليومي + التنبيهات ──────────────────────────────────────────────
+// يرسل "ملخص الصباح" + التنبيهات لأصحاب الصلاحية (إيميل + داخل النظام).
+Schedule::command('app:daily-digest')
+    ->dailyAt('07:30')
+    ->withoutOverlapping()
+    ->description('ملخص يومي + تنبيهات الإدارة — 07:30 صباحاً');
