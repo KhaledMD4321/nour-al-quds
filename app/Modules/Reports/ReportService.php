@@ -488,4 +488,95 @@ class ReportService
 
         return $query->get();
     }
+
+    // ══════════════════════════════════════════════════════════════════
+    // 6. هامش الربح — Gross Margin
+    // ══════════════════════════════════════════════════════════════════
+
+    /**
+     * هامش الربح لكل صنف خلال فترة: الإيراد − تكلفة المبيعات.
+     * التكلفة من حركات المخزون (صادر/فاتورة) × متوسط التكلفة الحالي،
+     * بنفس منطق تقرير الأرباح والخسائر (مصدر واحد للتكلفة).
+     */
+    public function grossMarginByProduct(string $fromDate, string $toDate, ?int $businessUnitId = null): Collection
+    {
+        $from = Carbon::parse($fromDate)->startOfDay();
+        $to = Carbon::parse($toDate)->endOfDay();
+
+        // ── الإيراد + الكمية لكل صنف ──
+        $revenueQuery = DB::table('invoice_items')
+            ->join('invoices', 'invoices.id', '=', 'invoice_items.invoice_id')
+            ->join('products', 'products.id', '=', 'invoice_items.product_id')
+            ->leftJoin('companies', 'companies.id', '=', 'products.company_id')
+            ->where('invoices.type', 'sale')
+            ->whereIn('invoices.status', ['confirmed', 'delivered', 'partial_paid', 'partially_paid', 'paid'])
+            ->whereBetween('invoices.invoice_date', [$from, $to])
+            ->groupBy('invoice_items.product_id', 'products.code', 'products.name', 'companies.name')
+            ->selectRaw("invoice_items.product_id, products.code as product_code, products.name as product_name, COALESCE(companies.name, 'بدون مصنّع') as manufacturer, SUM(invoice_items.quantity) as qty, SUM(invoice_items.total) as revenue");
+
+        if ($businessUnitId) {
+            $revenueQuery->where('invoices.business_unit_id', $businessUnitId);
+        }
+
+        // ── التكلفة لكل صنف (حركات صادر مرتبطة بفواتير × متوسط التكلفة) ──
+        $cogsQuery = StockMovement::where('type', 'out')
+            ->where('reference_type', 'invoice')
+            ->whereBetween('created_at', [$from, $to]);
+
+        if ($businessUnitId) {
+            $cogsQuery->whereHas('warehouse', fn ($q) => $q->where('business_unit_id', $businessUnitId));
+        }
+
+        $cogs = $cogsQuery
+            ->join('stock', function ($j) {
+                $j->on('stock_movements.warehouse_id', '=', 'stock.warehouse_id')
+                    ->on('stock_movements.product_id', '=', 'stock.product_id');
+            })
+            ->groupBy('stock_movements.product_id')
+            ->selectRaw('stock_movements.product_id as product_id, SUM(stock_movements.quantity * stock.avg_cost) as cogs')
+            ->pluck('cogs', 'product_id');
+
+        return $revenueQuery->get()->map(function ($r) use ($cogs) {
+            $revenue = (float) $r->revenue;
+            $cost = (float) ($cogs[$r->product_id] ?? 0);
+            $profit = round($revenue - $cost, 2);
+
+            return (object) [
+                'product_code' => $r->product_code,
+                'product_name' => $r->product_name,
+                'manufacturer' => $r->manufacturer,
+                'qty' => (float) $r->qty,
+                'revenue' => round($revenue, 2),
+                'cogs' => round($cost, 2),
+                'gross_profit' => $profit,
+                'margin_pct' => $revenue > 0 ? round($profit / $revenue * 100, 1) : 0.0,
+            ];
+        })->sortByDesc('gross_profit')->values();
+    }
+
+    /**
+     * هامش الربح مجمّعاً بالمصنّع — يبني فوق grossMarginByProduct.
+     */
+    public function grossMarginByManufacturer(string $fromDate, string $toDate, ?int $businessUnitId = null): Collection
+    {
+        return $this->grossMarginByProduct($fromDate, $toDate, $businessUnitId)
+            ->groupBy('manufacturer')
+            ->map(function (Collection $rows, $name) {
+                $revenue = (float) $rows->sum('revenue');
+                $cogs = (float) $rows->sum('cogs');
+                $profit = round($revenue - $cogs, 2);
+
+                return (object) [
+                    'manufacturer' => $name,
+                    'products' => $rows->count(),
+                    'qty' => (float) $rows->sum('qty'),
+                    'revenue' => round($revenue, 2),
+                    'cogs' => round($cogs, 2),
+                    'gross_profit' => $profit,
+                    'margin_pct' => $revenue > 0 ? round($profit / $revenue * 100, 1) : 0.0,
+                ];
+            })
+            ->sortByDesc('gross_profit')
+            ->values();
+    }
 }
